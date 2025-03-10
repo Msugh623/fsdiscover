@@ -9,6 +9,7 @@
   "author": "Msugh623",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.8.2",
     "express": "^4.21.2"
   }
 }
