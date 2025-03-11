@@ -24,13 +24,21 @@ class NetworkProbe {
         this.netface = {};
         this.callback = callback || (() => { });
         this.fallback = fallback || (() => { });
+        this.heartbeat=true
         setInterval(() => {
             this.liveCheck(port,(err,live)=>{
                 if (err) {
+                    this.heartbeat = false
                     this.fallback()
                     console.error(err)
+                    console.log(`NetProbe: Network is offline... No fallback supplied. Retrying in 5 seconds\n`)
                 };
-                if(live) null
+                if (live) {
+                    if (!this.heartbeat) {
+                        console.log(`\nNetProbe: Network is back online @ http://${this.netface.address}:${port}`)
+                        this.heartbeat = true
+                    }
+                }
             });
         }
         ,5000)
@@ -86,16 +94,16 @@ class NetworkProbe {
         return othernetFace
     }
 
-    liveCheck(port=this.port,cb=((err=Error,live=false)=>{})) {
+    liveCheck(port=this.port,cb=((err=Error,live=false)=>{}),verbose=false) {
         const netFace = this.netface;
         axios.head(`http://${netFace.address}:${port}`)
         .then((_) => {
-            this.verbose&& console.log(`NetProbe: http://${netFace.address}:${port} is live`)
+           verbose && console.log(`NetProbe: http://${netFace.address}:${port} is live`)
             cb(null,true)
         }).catch((_) => {
-              const err=`NetProbeLiveError: !Faliure... http://${netFace.address}:${port} heartbeat failed DT: ${new Date()}`
+              const err=`NetProbeLiveCheck: !Faliure... http://${netFace.address}:${port} Heartbeat failed DT: ${new Date()}`
               cb(err,false)
-              this.verbose && console.error(err)
+              verbose && console.error(err)
         });
     }
 }
