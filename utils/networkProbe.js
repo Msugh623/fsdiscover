@@ -2,8 +2,10 @@ const { default: axios } = require('axios');
 const os = require('os');
 
 class NetworkProbe {
-    /*
+    /**
     * @param {function} callback - A callback function to be called after the network interface is detected
+    * @param {number} port - A port number to check if the network interface is live
+    * @param {function} fallback - A callback function to be called if the network interface is not live
     * @param {boolean} v - A boolean to enable verbose logging
     * @returns {object} - Returns the network prober object
     * @description - A class to auto detect the network interface and check if it is live

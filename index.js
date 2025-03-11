@@ -7,7 +7,7 @@ const dirname = require('./dirname')
 
 const app = express()
 const port = 3000
-const netProb =new NetworkProbe()
+const netProb =new NetworkProbe(port,null,true,null)
 const netFace = netProb.autoDetect()
 
 app.use(express.static(path.join(dirname(), 'public')))
