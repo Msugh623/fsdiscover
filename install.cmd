@@ -1,4 +1,11 @@
 @echo off
+REM Check if Node.js is installed
+node -v >nul 2>&1
+if errorlevel 1 (
+    echo Node.js is not installed. Please install Node.js from https://nodejs.org/en/download and try again.
+    exit /b 1
+)
+
 REM Install project dependencies
 if exist package.json (
     npm install

@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# Check if Node.js is installed
+if ! command -v node &> /dev/null; then
+    echo "Node.js is not installed. Please install Node.js from https://nodejs.org/en/download and try again."
+    exit 1
+fi
+
 # Install project dependencies
 if [ -f "package.json" ]; then
     npm install

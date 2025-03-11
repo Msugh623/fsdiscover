@@ -1,16 +1,25 @@
 # Sprint FSdiscover
+
 ## Overview
 
-FSdiscover is a file system discovery tool designed to help users navigate their file systems over network efficiently. It provides a seamless network connectivity interface and powerful NetProbe features to enhance user experience.
+FSdiscover is a file system discovery tool designed to help users navigate their file systems over the network efficiently. It provides a seamless network connectivity interface and powerful NetProbe features to enhance user experience.
 
 ## Features
 
-- **Easy Network file sharing over http**: Make file accesible to network over http, Making file transfer more seamless and easier.
+- **Easy Network File Sharing over HTTP**: Make files accessible over the network via HTTP, making file transfer more seamless and easier.
 - **Cross-Platform**: Available on Windows, macOS, and Linux.
+- **CLI Access**: Easily accessible from the command line with the `fsdiscover` command.
+- **Desktop Integration**: Includes a `.desktop` file for easy access on Linux.
+
+## Prerequisites
+
+- **Node.js**: Ensure that Node.js is installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
 
 ## Installation
 
 To install FSdiscover, follow these steps:
+
+### Linux and macOS
 
 1. Clone the repository:
     ```bash
@@ -20,16 +29,31 @@ To install FSdiscover, follow these steps:
     ```bash
     cd fsdiscover
     ```
-3. Install the dependencies:
+3. Run the installation script:
     ```bash
-    npm install
+    ./install.sh
+    ```
+
+### Windows
+
+1. Clone the repository:
+    ```cmd
+    git clone https://github.com/msugh623/fsdiscover.git
+    ```
+2. Navigate to the project directory:
+    ```cmd
+    cd fsdiscover
+    ```
+3. Run the installation script:
+    ```cmd
+    install.cmd
     ```
 
 ## Usage
 
 To start using FSdiscover, run the following command:
 ```bash
-npm start
+fsdiscover
 ```
 
 ## Contributing
