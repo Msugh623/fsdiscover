@@ -66,6 +66,7 @@ class NetworkProbe {
         // Wired Network Preference
         const eth = faceNames.find(face => face.includes('enp')) || 
                     faceNames.find(face => face.includes('eth')) || 
+                    faceNames.find(face => face.includes('ETH')) || 
                     faceNames.find(face => face.includes('Ethernet')) || 
                     faceNames.find(face => face.includes('en')) || 
                     faceNames.find(face => face.includes('eth0'))

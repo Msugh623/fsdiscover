@@ -46,6 +46,24 @@ class Handlers {
             return useData(stdout)
         })
     }
+
+    fsdarwin = (pathname, useData) => {
+        exec(`ls ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`)
+                useData('')
+                return
+            }
+            if (stderr) {
+                useData('')
+                console.error(`exec error: ${stderr}`)
+                return
+            }
+            
+            return useData(stdout)
+        })
+    }
+    
     fslinux = (pathname,useData) => {
         // const outputFilePath = path.join(dirname(), tempdir, 'paths.txt')
         exec(`ls ${path.join(homedir(), pathname)} `, (error, stdout, stderr) => {
