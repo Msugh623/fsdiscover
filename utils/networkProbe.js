@@ -31,7 +31,7 @@ class NetworkProbe {
                     this.heartbeat = false
                     this.fallback()
                     console.error(err)
-                    console.log(`NetProbe: Network is offline... No fallback supplied. Retrying in 5 seconds\n`)
+                    console.log(`NetProbe: Network is offline... No fallback supplied. Retrying heartbeat in 5 seconds\n`)
                 };
                 if (live) {
                     if (!this.heartbeat) {
