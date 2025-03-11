@@ -5,7 +5,7 @@ FSdiscover is a file system discovery tool designed to help users navigate their
 
 ## Features
 
-- **File Preview**: Preview the contents of files without opening them.
+- **Easy Network file sharing over http**: Make file accesible to network over http, Making file transfer more seamless and easier.
 - **Cross-Platform**: Available on Windows, macOS, and Linux.
 
 ## Installation
