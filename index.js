@@ -20,5 +20,5 @@ app.head('*', handlers.header)
 app.get('*', handlers.getPath)
 
 app.listen(port,netFace.address, () => {
-    console.log(`\nFS Explorer is live @ http://${netFace.address}:${port}`)
+    console.log(`\n Sprint FS Explorer is live @ http://${netFace.address}:${port}`)
 })
