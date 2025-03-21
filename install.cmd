@@ -31,7 +31,7 @@ if exist "%APP_DIR%\fsdiscover.cmd" (
 REM Create shortcut file
 set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FSDiscover.lnk"
 set "TARGET_PATH=%APP_DIR%\fsdiscover.cmd"
-set "ICON_PATH=%APP_DIR%\public\icon.ico"
+set "ICON_PATH=%APP_DIR%\public\icon.png"
 
 REM Check if the icon file exists
 if not exist "%ICON_PATH%" (

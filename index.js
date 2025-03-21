@@ -4,6 +4,7 @@ const handlers = require('./utils/handlers')
 const os = require('os')
 const path = require('path')
 const dirname = require('./dirname')
+const { screenCast } = require('./ffmpeg')
 
 const app = express()
 const port = 3000
@@ -16,6 +17,9 @@ app.use(express.static(os.homedir(), {
     index: false
 }))
 
+app.get('/sc', (req, res) => {
+    screenCast(res)
+})
 app.head('*', handlers.header)
 app.get('*', handlers.getPath)
 

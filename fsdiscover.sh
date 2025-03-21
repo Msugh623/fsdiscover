@@ -11,7 +11,7 @@ cd "$APP_DIR" || {
 
 # Check for node_modules and start the application
 if [ -d node_modules ]; then
-  npm start
+  node index.js
 else
   echo "Failure: node_modules not found... Run 'install.sh' or 'npm install' on CLI to install dependencies"
 fi
