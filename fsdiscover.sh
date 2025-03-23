@@ -1,4 +1,9 @@
 #!/bin/bash
+echo "-----------------------------------------"
+echo ""
+echo "       Sprint FS Discover 1.0.0"
+echo ""
+echo "-----------------------------------------"
 
 # Define application directory
 APP_DIR="$HOME/.local/share/fsdiscover"

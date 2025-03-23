@@ -64,12 +64,12 @@ class NetworkProbe {
        this.verbose&& console.log(`NetProbe: Found ${this.interfaceNames.length} network interfaces: ${this.interfaceNames.join(', ')}`)
     
         // Wired Network Preference
-        const eth = faceNames.find(face => face.includes('enp')) || 
-                    faceNames.find(face => face.includes('eth')) || 
-                    faceNames.find(face => face.includes('ETH')) || 
-                    faceNames.find(face => face.includes('Ethernet')) || 
-                    faceNames.find(face => face.includes('en')) || 
-                    faceNames.find(face => face.includes('eth0'))
+        const eth = faceNames.find(face => face.startsWith('enp')) || 
+                    faceNames.find(face => face.startsWith('eth')) || 
+                    faceNames.find(face => face.startsWith('ETH')) || 
+                    faceNames.find(face => face.startsWith('Ethernet')) || 
+                    faceNames.find(face => face.startsWith('en')) || 
+                    faceNames.find(face => face.startsWith('eth0'))
         if (eth) {
            this.verbose&& console.log(`NetProbe: Found what seems to be a wired network... Using ${eth} as the preferred network interface`)
             const theface = this.networkInterfaces[eth]
@@ -80,9 +80,9 @@ class NetworkProbe {
         }
     
         // No ETH use other Network Preference
-        const faces = faceNames.map(face => (this.networkInterfaces[face] || [])).flat()
+        const faces = faceNames.map(face => ((this.networkInterfaces[face]).map(net=>({...net,netface:face})) || [])).flat()
         if (faces.length === 0) {
-           this.verbose&& console.log(`NetProbe: No network interfaces found... Falling back to native loopback interface`)
+           this.verbose&& console.log(`NetProbe: No external network interfaces found... Falling back to native loopback interface`)
             const lo = this.getLocalNetwork()
             this.netface=lo;
             return lo
@@ -90,7 +90,7 @@ class NetworkProbe {
        
        this.verbose&& console.log(`NetProbe: Couldn't find a wired network... Using a wireless network interface`)
         const othernetFace = faces.find((network) => this.isIpAddr(network.address)) 
-       this.verbose&& console.log(`NetProbe: Found a wireless IPv4 network... Using ${othernetFace.address} as the preferred network`)
+       this.verbose&& console.log(`NetProbe: Found a wireless IPv4 network... Using ${othernetFace.address} from interface ${othernetFace.netface} as the preferred network`)
         this.netface=othernetFace;
         return othernetFace
     }

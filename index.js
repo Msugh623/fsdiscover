@@ -4,7 +4,6 @@ const handlers = require('./utils/handlers')
 const os = require('os')
 const path = require('path')
 const dirname = require('./dirname')
-const { screenCast } = require('./ffmpeg')
 
 const app = express()
 const port = 3000
@@ -17,12 +16,9 @@ app.use(express.static(os.homedir(), {
     index: false
 }))
 
-app.get('/sc', (req, res) => {
-    screenCast(res)
-})
 app.head('*', handlers.header)
 app.get('*', handlers.getPath)
 
 app.listen(port,netFace.address, () => {
-    console.log(`\n Sprint FS Explorer is live @ http://${netFace.address}:${port}`)
+    console.log(`\nSprint FS Explorer is serving home directory @ http://${netFace.address}:${port}`)
 })

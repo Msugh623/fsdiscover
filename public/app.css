@@ -28,6 +28,17 @@ body{
 }
 
 .dirlink{
-    padding-block: 3px;
+    padding: 5px;
     margin:0px
+}
+
+.dirlink:nth-of-type(odd){
+   background-color: #efefef10;
+}
+
+.navico{
+    display: none;
+    width: 30px;
+    border-radius: 6px;
+    margin: 5px;
 }

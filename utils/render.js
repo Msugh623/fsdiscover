@@ -10,7 +10,7 @@ async function render(title, paths) {
     const length = pathsRendered.length
     const arrToStr = pathsRendered.join('\n')
     const html = `
-    <h2>${title}</h2>
+    <h2> <img src='/icon.png' class='navico'> ${title}</h2>
     <a href="../">../</a> <br><br>
     ${length<1 ? '<h4>Empty Directory</h4>' : ''}
     ${arrToStr}
