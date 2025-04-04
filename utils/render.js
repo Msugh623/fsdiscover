@@ -2,8 +2,11 @@ const path=require('path')
 const {readFileSync}=require('fs')
 const dirname=require('../dirname')
 
-async function render(title, paths) {
+async function render(title, paths,json=false) {
     const pathsToArr = paths.split('\n').filter((path) => path)
+    if (json) {
+        return pathsToArr
+    }
    const pathsRendered= pathsToArr.map((path) => {
         return `<div class="dirlink"><a href="${path}">${path}</a></div>`
    })

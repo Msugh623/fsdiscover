@@ -11,14 +11,15 @@ const netProb =new NetworkProbe(port,null,true,null)
 const netFace = netProb.autoDetect()
 
 app.use(express.static(path.join(dirname(), 'public')))
+app.use(express.static(path.join(dirname(), 'public', 'client')))
 
 app.use(express.static(os.homedir(), {
     index: false
 }))
 
+app.use('/fs', handlers.getPath)
 app.head('*', handlers.header)
-app.get('*', handlers.getPath)
 
 app.listen(port,netFace.address, () => {
-    console.log(`\nSprint FS Explorer is serving home directory @ http://${netFace.address}:${port}`)
+    console.log(`\nSprint FS Explorer is serving home directory @ http://${netFace.address}:${port}\n`)
 })

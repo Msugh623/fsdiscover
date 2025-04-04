@@ -5,6 +5,7 @@ const { exec } = require("child_process")
 // const { createReadStream } = require("fs")
 // const { outputfile, tempdir } = require("../variables")
 const render = require("./render")
+const errorHandlers = require('./errorHandlers')
 
 const {homedir,platform}=os
 
@@ -14,12 +15,18 @@ class Handlers {
     }
     getPath =  (req, res) => {
         try {
-            const pathname = req.url
+            const pathname = req.url.replace('/fs','')
             this[('fs' + platform())](pathname,async (data) => {
-                // console.log(data.split('\n'))
-                res.set('Content-Type', 'text/html')
-                const prsData = await render('Sprint FS Explorer - index of: ' + pathname, data)
-                res.send(prsData)
+                if (data.startsWith('$ERR')) {
+                    errorHandlers.ENOENT(data,res)
+                }
+                const prsData = await render('Sprint FS Explorer - index of: ' + pathname, data, true)
+                if (typeof prsData == 'object') {
+                    res.json(prsData)
+                } else {
+                    res.set('Content-Type', 'text/html')
+                    res.send(prsData)
+                }
             })
         } catch (error) {
             // console.error(error)
@@ -30,12 +37,12 @@ class Handlers {
         // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
         exec(`dir /B ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
             if (error) {
-                useData('')
+                useData(`$ERR${error}`)
                 console.error(`exec error: ${error}`)
                 return
             }
             if (stderr) {
-                useData('')
+                useData(`$ERR${error}`)
                 console.error(`exec error: ${stderr}`)
                 return
             }
@@ -51,11 +58,11 @@ class Handlers {
         exec(`ls ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`)
-                useData('')
+                useData(`$ERR${error}`)
                 return
             }
             if (stderr) {
-                useData('')
+                useData(`$ERR${error}`)
                 console.error(`exec error: ${stderr}`)
                 return
             }
@@ -69,11 +76,11 @@ class Handlers {
         exec(`ls ${path.join(homedir(), pathname)} `, (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`)
-                useData('')
+                useData(`$ERR${error}`)
                 return
             }
             if (stderr) {
-                useData('')
+                useData(`$ERR${error}`)
                 console.error(`exec error: ${stderr}`)
                 return
             }

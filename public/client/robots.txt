@@ -1,0 +1,9 @@
+# Allow all web crawlers to index the entire site
+User-agent: *
+Allow: /
+
+# Disallow crawling of any admin or sensitive directories (if they exist)
+Disallow: /admin/
+
+# Specify the location of your sitemap
+Sitemap: https://sprintet.onrender.com/sitemap.xml

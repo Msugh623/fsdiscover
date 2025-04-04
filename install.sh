@@ -1,14 +1,43 @@
 #!/bin/bash
+echo "-----------------------------------------"
+echo ""
+echo "   Sprint FS Discover Installer 1.0.0 "
+echo ""
+echo "-----------------------------------------"
 
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
-    echo "Node.js is not installed. Please install Node.js from https://nodejs.org/en/download and try again."
-    exit 1
+    echo "Node.js is not installed. Do you want to install it? (y/n)"
+    read -r INSTALL_NODE
+    if [[ "$INSTALL_NODE" == "y" || "$INSTALL_NODE" == "Y" ]]; then
+        echo 'Installing Node.js...'
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
+        \. "$HOME/.nvm/nvm.sh"
+        nvm install 23
+        echo 'Node.js installed successfully.'
+        echo 'Node.js version:'
+        node -v 
+        echo 'NVM version:'
+        nvm current 
+        echo 'NPM version:'
+        npm -v
+    else
+        echo "Node.js is required to run this script. Exiting..."
+        exit 1
+    fi
 fi
 
 # Install project dependencies
 if [ -f "package.json" ]; then
+    echo "Installing project dependencies..."
     npm install
+    cd client 
+    echo "Building client..."
+    npm run build
+    cd ../
+    rm -rf public/client
+    echo "Copying build files..."
+    mv client/dist/ public/client
 else
     echo "Failure: package.json not found... Failed to find project dependencies"
     exit 1
