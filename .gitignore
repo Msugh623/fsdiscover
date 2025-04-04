@@ -1,6 +1,6 @@
 node_modules
 *lock.json
 *.log
-# ./public/client
+./public/client
 packager-lock.json
 .env
