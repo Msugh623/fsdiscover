@@ -11,10 +11,12 @@ const FsContext = ({ children }) => {
     const [locChildren, setLocChildren] = useState([])
     const [isFetching, setIsFetching] = useState(false)
     const [isHidden, setIsHidden] = useState(false)
-    const [key, setKey]=useState('')
+    const [key, setKey] = useState('')
+    const [err, setErr] = useState('')
 
     async function getFs(path=locPath) {
         setIsFetching(true)
+        setErr('')
         try {
             const res = await api.get('/fs' + path)
             // console.log(res.data)
@@ -22,6 +24,7 @@ const FsContext = ({ children }) => {
         }
         catch (err) {
             toast.error(`ERROR: ${err}`)
+            setErr((''+err?.status)=='404'?'No such file or directory':err)
         } finally {
             setIsFetching(false)
         }
@@ -43,7 +46,8 @@ const FsContext = ({ children }) => {
         isHidden,
         setIsHidden,
         key,
-        setKey
+        setKey,
+        err
     }}>
         {children}
     </context.Provider>

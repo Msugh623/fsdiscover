@@ -51,6 +51,7 @@ app.get('/hostname', handlers.getHost)
 app.get('/fs*', handlers.getPath)
 app.delete('/fs*', handlers.deletePath)
 app.head('*', handlers.header)
+app.get('*',handlers.sendUi)
 
 app.listen(port,netFace.address, () => {
     console.log(`\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${netFace.address}:${port}\n`)
