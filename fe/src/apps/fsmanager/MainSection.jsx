@@ -22,7 +22,8 @@ const MainSection = () => {
         <div className="w-100">
           <Header />
           <div className="p-4 pt-3 w-100" style={{
-            maxWidth:'100%'
+            maxWidth: '100%',
+            minWidth:window.innerWidth<500?'100vw':''
           }}>
             {isFetching && !locChildren.length ? <div className='fs-4 text-center'style={{
                 position: 'fixed',
