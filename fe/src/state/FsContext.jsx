@@ -11,6 +11,7 @@ const FsContext = ({ children }) => {
     const [locChildren, setLocChildren] = useState([])
     const [isFetching, setIsFetching] = useState(false)
     const [isHidden, setIsHidden] = useState(false)
+    const [key, setKey]=useState('')
 
     async function getFs(path=locPath) {
         setIsFetching(true)
@@ -40,7 +41,9 @@ const FsContext = ({ children }) => {
         isFetching,
         setIsFetching,
         isHidden,
-        setIsHidden
+        setIsHidden,
+        key,
+        setKey
     }}>
         {children}
     </context.Provider>

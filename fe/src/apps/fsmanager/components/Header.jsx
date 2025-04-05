@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFsContext } from '../../../state/FsContext';
 import { FaBars, FaUpload } from 'react-icons/fa6';
-import { BiLeftArrowCircle, BiSelectMultiple } from 'react-icons/bi';
+import { BiLeftArrowCircle, BiSearch, BiSelectMultiple } from 'react-icons/bi';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../../../axios/api';
 import { toast } from 'react-toastify';
@@ -9,12 +9,13 @@ import { FaTimes } from 'react-icons/fa';
 import { useStateContext } from '../../../state/StateContext';
 
 const Header = () => {
-    const { setIsHidden,getFs,isHidden } = useFsContext();
+    const { setIsHidden,getFs,isHidden,key,setKey } = useFsContext();
     const {hostname}=useStateContext()
     const navigate = useNavigate()
     const [uProgres, setProgress] = useState(0)
     const [isUploading, setIsUploading] = useState(false)
-    const [files,setFiles] = useState([])
+    const [files, setFiles] = useState([])
+    const [isSearching,setIsSearching]=useState(window.innerWidth>1280)
 
     const uploadFiles = async (fsd) => {
         if ((files.length > 0)|| (fsd||[]).length > 0) {
@@ -50,11 +51,33 @@ const Header = () => {
 
     return (
         <>
-            <nav className="navbar flex-column navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-                {isHidden&&<h2 className="h4 slideUp mx-4 ms-4 me-auto pb-2 mb-4 border-bottom d-flex">
-                    <Link to={'/'} className='text-light fw-bold fs-5'>{hostname}</Link>
+            <nav className="navbar flex-column gap-2 navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                <div className="w-100 nav">
+                {isHidden&&<h2 className="h4 mt-auto slideUp mx-4 ms-4  pb-2 mb-4 border-bottom d-flex">
+                    <Link to={'/'} className='text-light mt-auto  fw-bold fs-5'>{hostname}</Link>
                     <div className='mt-auto ms-2'> -  File Manager</div>
                 </h2>}
+                    {window.innerWidth < 360 &&<>
+                    
+                        <div className="ms-auto w-auto d-flex my-auto  p-1 form-group border rounded me-2" style={{
+                            maxWidth:'98vw'
+                        }}>
+                                {isSearching&&<input type="search" autoFocus value={key} className="rounded input px-1 no-dec bg-none themebg" 
+                                onChange={({target})=>setKey(target.value)}
+                                    style={{
+                                    border: 'none',
+                                    outline:"none"
+                                }} />}
+                                <button className="themebg border-0 border-start px-2 border my-auto text-light" onClick={() => {
+                                    setIsSearching(prev=>!prev)
+                                }}>
+                                    <BiSearch/>
+                                </button>
+                        </div>
+                        <div className="me-1"></div>
+                    </>
+                            }
+                </div>
             <div className="container-fluid">
                 <div className={`w-100 d-flex ${false ? 'd-none' : ''}`} id="navbarNav"> 
                     <a className="nav-link my-auto fs-3 border-end px-2 pe-3" onClick={()=>navigate(-1)}>
@@ -87,7 +110,21 @@ const Header = () => {
                                     :toast('Operation requires user permission which has been denied')
                             }} 
                     />
-                    <div className="d-flex ms-auto">
+                        <div className="d-flex ms-auto">
+                            {window.innerWidth>=360&&<div className="d-flex p-1 form-group border rounded me-2">
+                                {isSearching&&<input autoFocus type="search" value={key} className="rounded input px-1 no-dec bg-none themebg" 
+                                onChange={({target})=>setKey(target.value)}
+                                    style={{
+                                    border: 'none',
+                                    outline:"none"
+                                }} />}
+                                <button className="themebg border-0 border-start px-2 border text-light" onClick={() => {
+                                    setIsSearching(prev=>!prev)
+                                }}>
+                                    <BiSearch/>
+                                </button>
+                            </div>
+                            }
                         <button className="btn btn-outline-light" type="submit" onClick={() => setIsHidden(prev=>!prev)}>
                             <FaBars className='icon'/>
                         </button>

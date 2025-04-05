@@ -15,15 +15,18 @@ const MainSection = () => {
   },[window.innerWidth])  
 
   return (
-    <div>
+    <div style={{
+      minWidth:'300px'
+    }} >
       
       <div className="d-flex w-100">
         {isHidden?false:<Sidebar />}
-        <div className="w-100">
+        <div className="w-100 bg-dark" style={{
+            minWidth:window.innerWidth<500&&!isHidden?'100vw':''
+        }}>
           <Header />
           <div className="p-4 pt-3 w-100" style={{
             maxWidth: '100%',
-            minWidth:window.innerWidth<500?'100vw':''
           }}>
             {isFetching && !locChildren.length ? <div className='fs-4 text-center'style={{
                 position: 'fixed',
