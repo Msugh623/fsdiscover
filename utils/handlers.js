@@ -46,6 +46,41 @@ class Handlers {
             res.status(500).send(error)
         }
     }
+    deletePath =  (req, res) => {
+        try {
+            const pathname = req.url.replace('/fs','')
+            this[('del' + platform())](pathname,async (data) => {
+                if (data.startsWith('$ERR')) {
+                    errorHandlers.ENOENT(data, res)
+                    return
+                }
+                res.send(data)
+            })
+        } catch (error) {
+            // console.error(error)
+            res.status(500).send(error)
+        }
+    }
+    delwin32 = (pathname,useData) => {
+        // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
+        exec(`rem ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
+            if (error) {
+                useData(`$ERR${error}`)
+                console.error(`exec error: ${error}`)
+                return
+            }
+            if (stderr) {
+                useData(`$ERR${error}`)
+                console.error(`exec error: ${stderr}`)
+                return
+            }
+            if (stderr) {
+                throw stderr
+            }
+            
+            return useData(stdout)
+        })
+    }
     fswin32 = (pathname,useData) => {
         // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
         exec(`dir /B ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
@@ -66,7 +101,6 @@ class Handlers {
             return useData(stdout)
         })
     }
-
     fsdarwin = (pathname, useData) => {
         exec(`ls ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
             if (error) {
@@ -83,7 +117,39 @@ class Handlers {
             return useData(stdout)
         })
     }
-    
+
+    deldarwin = (pathname, useData) => {
+        exec(`rm ${path.join(homedir(), pathname)} `, (error, _ , stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`)
+                useData(`$ERR${error}`)
+                return
+            }
+            if (stderr) {
+                useData(`$ERR${error}`)
+                console.error(`exec error: ${stderr}`)
+                return
+            }
+            
+            return useData('Deleted '+pathname+'Succesfully')
+        })
+    }
+    dellinux = (pathname,useData) => {
+        exec(`rm ${path.join(homedir(), pathname)} `, (error, _ , stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`)
+                useData(`$ERR${error}`)
+                return
+            }
+            if (stderr) {
+                useData(`$ERR${error}`)
+                console.error(`exec error: ${stderr}`)
+                return
+            }
+            
+            return useData('Deleted '+pathname+'Succesfully')
+        })
+    }
     fslinux = (pathname,useData) => {
         // const outputFilePath = path.join(dirname(), tempdir, 'paths.txt')
         exec(`ls ${path.join(homedir(), pathname)} `, (error, stdout, stderr) => {

@@ -2,25 +2,25 @@ import React, { useState } from 'react';
 import { useFsContext } from '../../../state/FsContext';
 import { FaBars, FaUpload } from 'react-icons/fa6';
 import { BiLeftArrowCircle, BiSelectMultiple } from 'react-icons/bi';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../../../axios/api';
 import { toast } from 'react-toastify';
 import { FaTimes } from 'react-icons/fa';
 import { useStateContext } from '../../../state/StateContext';
 
 const Header = () => {
-    const { setIsHidden } = useFsContext();
+    const { setIsHidden,getFs,isHidden } = useFsContext();
     const {hostname}=useStateContext()
     const navigate = useNavigate()
     const [uProgres, setProgress] = useState(0)
     const [isUploading, setIsUploading] = useState(false)
     const [files,setFiles] = useState([])
 
-    const uploadFiles = async () => {
-        if (files.length > 0) {
+    const uploadFiles = async (fsd) => {
+        if ((files.length > 0)|| (fsd||[]).length > 0) {
             setIsUploading(true)
             const formData = new FormData();
-            for (const file of files) {
+            for (const file of (fsd||files)) {
                 formData.append('files', file);
               }
               formData.append('dir', location.pathname.replace('/fsexplorer', ''));
@@ -38,6 +38,7 @@ const Header = () => {
                 });
                 toast.success(res.data)
                 setFiles([])
+                getFs()
             } catch (err) {
                 toast.error(`ERROR: ${err}`)
             } finally {
@@ -49,7 +50,11 @@ const Header = () => {
 
     return (
         <>
-        <nav className="navbar flex-column navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+            <nav className="navbar flex-column navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                {isHidden&&<h2 className="h4 slideUp mx-4 ms-4 me-auto pb-2 mb-4 border-bottom d-flex">
+                    <Link to={'/'} className='text-light fw-bold fs-5'>{hostname}</Link>
+                    <div className='mt-auto ms-2'> -  File Manager</div>
+                </h2>}
             <div className="container-fluid">
                 <div className={`w-100 d-flex ${false ? 'd-none' : ''}`} id="navbarNav"> 
                     <a className="nav-link my-auto fs-3 border-end px-2 pe-3" onClick={()=>navigate(-1)}>
@@ -76,7 +81,11 @@ const Header = () => {
                             }} className=' rounded fs-5 ms-2'><FaTimes className='icon'/></span>:''}
                     </a>
                     <input type="file" name="files" id="filer" multiple style={{ opacity: '0', width:'0px', height:'0px' }} 
-                    onChange={({ target }) => setFiles(target.files)} 
+                            onChange={({ target }) => {
+                                setFiles(target.files)
+                                confirm(`Press "Okay" to upload ${target.files.length} files to ${hostname}`) ? uploadFiles(target.files)
+                                    :toast('Operation requires user permission which has been denied')
+                            }} 
                     />
                     <div className="d-flex ms-auto">
                         <button className="btn btn-outline-light" type="submit" onClick={() => setIsHidden(prev=>!prev)}>

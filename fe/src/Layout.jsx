@@ -44,7 +44,7 @@ const Layout = () => {
                     </Route>
                     
                     {/* Admin */}
-                    <Route path='/admin' element={
+                    <Route path='/os' element={
                         <>
                             <Background />
                             <Opened />
@@ -52,7 +52,7 @@ const Layout = () => {
                         </>
                     } >
                         <Route index element={<TaskBar />} />
-                        <Route path='/admin:page' element={<TaskBar />} />
+                        <Route path='/os:page' element={<TaskBar />} />
                     </Route>
 
                 </Routes>

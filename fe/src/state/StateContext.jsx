@@ -25,7 +25,16 @@ const StateContext = ({ children }) => {
         category: 'utility'
     }
 
-    const defaultApps=[sprintet,fsdiscover]
+    const sprintos={
+        name: 'Sprint OS',
+        location: '/os',
+        icon: '/os.png',
+        pinned: false,
+        about: 'Sprintet web Computer UI',
+        category: 'default'
+    }
+
+    const defaultApps=[sprintet,fsdiscover,sprintos]
 
     const navigate = useNavigate()
     const [searchParams, _] = useSearchParams()
@@ -126,7 +135,7 @@ const StateContext = ({ children }) => {
                 document.theApp = theApp.location
             }
         } catch (err) {
-            location.pathname == '/' && toast.error(`ERROR: ${err.message}`)
+            // location.pathname !== '/' && toast.error(`ERROR: ${err.message}`)
         }
     }
 
