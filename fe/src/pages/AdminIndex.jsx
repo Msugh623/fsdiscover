@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useStateContext } from '../state/StateContext'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { BsPlusLg } from 'react-icons/bs'
 import api from '../../axios/api'
 import { toast } from 'react-toastify'
@@ -10,7 +10,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 import PlaceHolder from '../components/PlaceHolder'
 
 const AdminIndex = () => {
-    const { apps, fetchSrc, categories } = useStateContext()
+    const { apps, fetchSrc, categories,hostname } = useStateContext()
     const [prs, setPrs] = useState(apps)
     const [category, setCategory] = useState('All')
 
@@ -22,6 +22,7 @@ const AdminIndex = () => {
     }, [category, apps])
 
     useEffect(() => {
+        document.title='Sprintet  - Admin'
         fetchSrc()
     }, [])
 
@@ -30,25 +31,29 @@ const AdminIndex = () => {
             <section className="section site-portfolio py-5 darkTheme">
                 <div className="container">
                     <div className="row mb-5">
-                        <div className="d-flex slideIn mb-4 mb-lg-0" data-aos="fade-up">
+                        <div className="d-flex flex-column flex-md-row slideIn mb-4 mb-lg-0" data-aos="fade-up">
                             <h2 className=''>
                                 <Link to={'/'}>
                                     <diviDotsNineBold style={{ fontSize: '2em', color: 'steelblue' }} className='text-primary icon' />
                                     <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src="/sprintetName.png" height={'100px'} alt="" />
                                 </Link>
                             </h2>
-                            <div className="ms-auto">
-                                <Link to={`/admin/app/add`} className="rounded shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu text-light">
+                            <div className="ms-0 ms-md-auto">
+                                {/* <Link to={`/admin/app/add`} className="rounded shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu text-light">
                                     <BsPlusLg className='fs-4' />
-                                </Link>
+                                </Link> */}
+                                {'Device Hostname: '+hostname}
                             </div>
                         </div>
                         <div className="text-start text-lg-end mt-3" data-aos="fade-up" data-aos-delay="100">
-                            <div id="categories" className="ms-auto categories slideLeft">
-                                <a href="#All" data-category="*" className={'p-1 shadow rounded' + (category == 'All' && 'active rounded border')} onClick={() => setCategory('All')}>All </a>
+                            <div id="categories" className="ms-auto py-2 categories d-flex slideLeft" style={{
+                                maxWidth:'98vw',
+                                overflow:'auto'
+                            }}>
+                                <a href="#All" data-category="*" className={'p-1 mx-1 shadow rounded' + (category == 'All' && 'active rounded border')} onClick={() => setCategory('All')}>All </a>
                                 {
                                     categories.map(flt => (
-                                        <a href={`#${flt}`} data-category="*" className={'p-1 border-bottom ms-2 shadow rounded me-1' + (category == flt && 'active border ')} onClick={() => setCategory('' + flt)}>{flt}</a>
+                                        <a href={`#${flt}`} data-category="*" className={'p-1 border-bottom mx-1 shadow rounded me-1' + (category == flt && 'active border ')} onClick={() => setCategory('' + flt)}>{flt}</a>
                                     ))
                                 }
                             </div>
@@ -68,21 +73,23 @@ const AdminIndex = () => {
 export default AdminIndex
 
 const AppCard = ({ app }) => {
-    const { setPop } = useStateContext()
+    const navigate=useNavigate ()
 
-    return <div className="col-6 col-md-4 col-lg-3">
-        <div onClick={() => setPop(<AppDetails app={app} />)} className="panel rounded shadow growUp c-pointer" style={{ maxWidth: '' }}>
-            <div className='p-2'>
+    return <div className="col-6 col-md-4 col-lg-3 py-3">
+        <div onClick={() => app.location.includes('http')?location.href=app.location:navigate(app.location)}>
+            <div className='p-2 active rounded fadeIn'>
                 {app?.pinned &&
                     <div className="d-flex" style={{ position: 'absolute' }}>
                         <div className="p-1 btn btn-primary shadow rounded"></div>
                     </div>
                 }
-                <div className="row">
-                    <div className='col-5'>
-                        <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src={app.icon} className='img-fluid' alt="" />
+                <div className="row" style={{
+                    minHeight:'90px'
+                }}>
+                    <div className='col-sm-5 my-auto'>
+                        <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src={app.icon} className='my-auto img-fluid rounded' alt="" />
                     </div>
-                    <div className='col-7'>
+                    <div className='col-sm-7'>
 
                         <h4 className='text-ligt mb-1'>
                             {app?.name}

@@ -4,6 +4,7 @@ echo ""
 echo "   Sprint FS Discover Installer 1.0.0 "
 echo ""
 echo "-----------------------------------------"
+echo ""
 
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
@@ -31,13 +32,15 @@ fi
 if [ -f "package.json" ]; then
     echo "Installing project dependencies..."
     npm install
-    cd client 
+    cd fe 
     echo "Building client..."
     npm run build
     cd ../
     rm -rf public/client
+    echo ""
     echo "Copying build files..."
-    mv client/dist/ public/client
+    mv fe/dist/ public/client
+    echo "Build Succesfull"
 else
     echo "Failure: package.json not found... Failed to find project dependencies"
     exit 1
@@ -48,7 +51,8 @@ APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 
 # Copy project files to application directory
-cp -r ./* "$APP_DIR"
+echo 'Copying files to application directory... This can take a while'
+rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
 
 # Ensure fsdiscover script is executable
 chmod +x "$APP_DIR/fsdiscover.sh"

@@ -15,9 +15,6 @@ const Loader = ({ animate }) => {
             position: 'fixed',
             top: '45vh'
         }}>
-            <div className="fixed-top w-100 h-100 bg-dark" style={{ zIndex: -1 }}>
-
-            </div>
 
             <div className="d-flex">
                 <div className="mx-auto">
@@ -34,22 +31,6 @@ const Loader = ({ animate }) => {
                                             width:'150px'
                                         }}>
                                             <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src="/sprintetS.png" className='m-auto slideUp rounded img-fluid'  alt="bg"  />
-                                        </div>
-                                    </div>
-                                </div>
-                            </Delay>
-                        }
-                        {animate &&
-                            <Delay delay={!animate ? 800 : 0}>
-                                <div className="img">
-                                    <div className="fixed-top d-flex w-100" style={{
-                                        height: '90%'
-                                    }}>
-                                        <div className="m-auto" style={{
-                                            maxWidth: '70%',
-                                            width:'400px'
-                                        }}>
-                                            <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src="/sprintetName.png" className={`m-auto rounded slideLeft  img-fluid`} alt="bg" />
                                         </div>
                                     </div>
                                 </div>

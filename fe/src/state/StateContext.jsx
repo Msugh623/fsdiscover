@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import api from "../../axios/api";
+import api, { remoteApi } from "../../axios/api";
 
 const context = createContext()
 
@@ -9,19 +9,30 @@ const StateContext = ({ children }) => {
 
     const sprintet = {
         name: 'Sprintet',
-        location: 'about',
+        location: '/about',
         icon: '/sprintetS.png',
         pinned: true,
         about: 'About Sprintet',
         category: 'default'
     }
 
+    const fsdiscover={
+        name: 'Files',
+        location: '/fsexplorer',
+        icon: '/icon.png',
+        pinned: true,
+        about: 'Sprintet File Explorer',
+        category: 'utility'
+    }
+
+    const defaultApps=[sprintet,fsdiscover]
+
     const navigate = useNavigate()
     const [searchParams, _] = useSearchParams()
 
 
     const [apps, setApps] = useState([
-        sprintet
+        ...defaultApps
     ])
 
     const pinned = apps.filter(app => app?.pinned)
@@ -30,6 +41,7 @@ const StateContext = ({ children }) => {
     const [winIsFs, setWinIsFs] = useState(false)
     const [pop, setPop] = useState('')
     const [vw, setVw] = useState(window.innerWidth)
+    const [hostname,setHostname]=useState('')
 
     async function init() {
         window.onresize = () => setVw(window.innerWidth)
@@ -103,8 +115,10 @@ const StateContext = ({ children }) => {
 
     const fetchSrc = async () => {
         try {
-            const appsRes = (await api.get('/rq/apps')).data
-            const psr = [sprintet, ...appsRes]
+            const hn = await api.get('/hostname')
+            setHostname(hn.data)
+            const appsRes = (await remoteApi.get('/rq/apps')).data
+            const psr = [...defaultApps, ...appsRes]
             setApps(psr)
             const appName = searchParams.get('a') || ''
             const theApp = psr.find(a => (a.name + '').toLowerCase() == ('' + appName.replace('%20', ' ')).toLowerCase())
@@ -117,8 +131,9 @@ const StateContext = ({ children }) => {
     }
 
     useEffect(() => {
-        api.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage?.access || ''
+        remoteApi.defaults.headers.common['Authorization'] = 'Bearer ' + localStorage?.access || ''
         init()
+        fetchSrc()
     }, [])
 
     useEffect(() => {
@@ -154,11 +169,13 @@ const StateContext = ({ children }) => {
         vw,
         openApp,
         sprintet,
+        fsdiscover,
         fetchSrc,
         categories,
         setCategories,
         pop,
-        setPop
+        setPop,
+        hostname
     }}>
         {children}
     </context.Provider>

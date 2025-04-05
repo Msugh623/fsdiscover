@@ -1915,7 +1915,8 @@ a:hover {
   # Header
   --------------------------------------------------------------*/
 /* Custom Navmenu */
-.custom-navmenu {
+.custom-navmenu,
+.themebg {
     background: #0d1e2d;
 }
 
