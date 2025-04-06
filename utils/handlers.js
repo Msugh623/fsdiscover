@@ -28,7 +28,7 @@ class Handlers {
     }
     getPath =  (req, res) => {
         try {
-            const pathname = req.url.replace('/fs','')
+            const pathname = req.url.replace('/fs','').replaceAll("%20",' ').split('/').map(u=>`"${u}"`).join("/")
             this[('fs' + platform())](pathname,async (data) => {
                 if (data.startsWith('$ERR')) {
                     errorHandlers.ENOENT(data, res)
@@ -63,7 +63,7 @@ class Handlers {
     }
     delwin32 = (pathname,useData) => {
         // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
-        exec(`rem ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
+        exec(`rem ${path.join(homedir(), pathname.replaceAll('/','\\'))}`, (error, stdout, stderr) => {
             if (error) {
                 useData(`$ERR${error}`)
                 console.error(`exec error: ${error}`)
@@ -83,7 +83,7 @@ class Handlers {
     }
     fswin32 = (pathname,useData) => {
         // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
-        exec(`dir /B ${path.join(homedir(), pathname)}`, (error, stdout, stderr) => {
+        exec(`dir /B ${path.join(homedir(), pathname.replaceAll('/','\\'))}`, (error, stdout, stderr) => {
             if (error) {
                 useData(`$ERR${error}`)
                 console.error(`exec error: ${error}`)
