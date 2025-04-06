@@ -39,7 +39,7 @@ const Header = () => {
                 });
                 toast.success(res.data)
                 setFiles([])
-                getFs()
+               setTimeout(()=> getFs(),800)
             } catch (err) {
                 toast.error(`ERROR: ${err}`)
             } finally {
