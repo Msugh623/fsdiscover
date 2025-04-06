@@ -27,7 +27,7 @@ const DirItem = ({ item }) => {
             <div className="ms-auto">
               {type == 'file' ? <div className="pe-2" style={{cursor:'pointer'}} onClick={() => {
                   const a = document.createElement('a')
-                  a.href = psr.url
+                  a.href = location.pathname+'/'+psr?.name
                   a.download = psr.name
                   a.click()
              }}><FaDownload className='icon'/></div>:''}

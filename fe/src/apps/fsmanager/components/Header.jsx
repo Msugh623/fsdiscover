@@ -69,7 +69,8 @@ const Header = () => {
                                     outline:"none"
                                 }} />}
                                 <button className="themebg border-0 border-start px-2 border my-auto text-light" onClick={() => {
-                                    setIsSearching(prev=>!prev)
+                                setIsSearching(prev => !prev)
+                                setKey('')
                                 }}>
                                     <BiSearch/>
                                 </button>
@@ -119,7 +120,8 @@ const Header = () => {
                                     outline:"none"
                                 }} />}
                                 <button className="themebg border-0 border-start px-2 border text-light" onClick={() => {
-                                    setIsSearching(prev=>!prev)
+                                    setIsSearching(prev => !prev)
+                                    setKey('')
                                 }}>
                                     <BiSearch/>
                                 </button>

@@ -9,14 +9,15 @@ import { useStateContext } from '../../state/StateContext'
 import { useLocation } from 'react-router-dom'
 
 const MainSection = () => {
-  const { isFetching, locChildren, isHidden, setIsHidden ,err} = useFsContext()
+  const { isFetching, locChildren, isHidden, setIsHidden ,err,key,setKey} = useFsContext()
   const { hostname } = useStateContext()
   const location=useLocation()
     
   useEffect(() => {
     // console.log(locChildren)
     window.innerWidth < 768 ? setIsHidden(true) : setIsHidden(false)
-    document.title=''+hostname+' - File System: '+(location.pathname.replace('/fsexplorer','')||'/')
+    document.title = '' + hostname + ' - File System: ' + (location.pathname.replace('/fsexplorer', '') || '/')
+    key&&setKey('')
   },[window.innerWidth, location.pathname])  
 
   return (
