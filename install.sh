@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "-----------------------------------------"
 echo ""
-echo "   Sprint FS Discover Installer 1.0.0 "
+echo "   Sprint FS Discover Installer 1.0.1 "
 echo ""
 echo "-----------------------------------------"
 echo ""
@@ -28,13 +28,23 @@ if ! command -v node &> /dev/null; then
     fi
 fi
 
+PARAM=${1:-null}
+
 # Install project dependencies
-if [ -f "package.json" ]; then
+if ! [ -f "package.json" ]; then
+    echo "Failure: package.json not found... Failed to find project dependencies"
+    exit 1
+elif [ $PARAM == "--build" ]; then
     echo "Installing project dependencies..."
     npm install
     cd fe 
     echo "Building client..."
     npm run build
+    if ! [ $? -eq 0 ]; then
+        echo '!!! Installer Exited prematurely... Too many errors during build. Restart installer to try again'
+        echo "Contact "
+        exit 1
+    fi
     cd ../
     rm -rf public/client
     echo ""
@@ -42,8 +52,12 @@ if [ -f "package.json" ]; then
     mv fe/dist/ public/client
     echo "Build Succesfull"
 else
-    echo "Failure: package.json not found... Failed to find project dependencies"
-    exit 1
+    npm install
+fi
+if ! [ $? -eq 0 ]; then
+   echo '!!! Installer Exited prematurely... Installer failed to install necessary dependencies'
+   echo "Contact "
+   exit 1
 fi
 
 # Define application directory
@@ -83,3 +97,4 @@ echo "Installation Finished."
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"
+echo 'Use "fsdiscover --help" for details'
