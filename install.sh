@@ -6,6 +6,14 @@ echo ""
 echo "-----------------------------------------"
 echo ""
 
+echo "Fsdiscover is a tool that allows you to access your filesystem over local http network"
+echo "Do you want to proceed installation (y/n)"
+read -r ACCEPT
+if ! [ $ACCEPT == "y" ]; then
+   echo "Exiting...Installer Aborted by User"
+   exit 2
+fi
+
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
     echo "Node.js is not installed. Do you want to install it? (y/n)"
@@ -52,6 +60,7 @@ elif [ $PARAM == "--build" ]; then
     mv fe/dist/ public/client
     echo "Build Succesfull"
 else
+    echo "Prepareing to install..."
     npm install
 fi
 if ! [ $? -eq 0 ]; then
@@ -60,18 +69,13 @@ if ! [ $? -eq 0 ]; then
    exit 1
 fi
 
-# Define application directory
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
-
-# Copy project files to application directory
 echo 'Copying files to application directory... This can take a while'
 rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
-
-# Ensure fsdiscover script is executable
 chmod +x "$APP_DIR/fsdiscover.sh"
 
-# Create .desktop file
+# .desktop ENTRY
 DESKTOP_FILE="[Desktop Entry]
 Name=FSDiscover
 Comment=File System Discoverer
@@ -81,18 +85,21 @@ Terminal=true
 Type=Application
 Categories=Utility;"
 
-# Write the .desktop file to the appropriate directory
 DESKTOP_DIR="$HOME/.local/share/applications"
 mkdir -p "$DESKTOP_DIR"
 echo "$DESKTOP_FILE" > "$DESKTOP_DIR/fsdiscover.desktop"
 
-# Refresh the application list
 update-desktop-database "$HOME/.local/share/applications"
 
-# Create a symbolic link to make the application accessible from the CLI
-sudo ln -sf "$APP_DIR/fsdiscover.sh" "/bin/fsdiscover"
+UNAME=$(id -u)
 
-# Print completion message
+if [ $UNAME -eq 0 ]; then
+    ln -sf "$APP_DIR/fsdiscover.sh" "/bin/fsdiscover"
+else
+    echo "Installer needs root access to create Global executable"
+    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/bin/fsdiscover"
+fi
+
 echo "Installation Finished."
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /bin/fsdiscover"
