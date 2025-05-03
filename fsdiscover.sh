@@ -22,6 +22,7 @@ if ! [ $PARAM2 == "nil" ]; then
     exit 1
 elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
     ./uninstall.sh
+    exit $?
 elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "Usage: fsdiscover [option...]"
     echo ""
