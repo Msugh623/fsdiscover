@@ -56,6 +56,24 @@ To start using FSdiscover, run the following command:
 fsdiscover
 ```
 
+To Uninstall FSdiscover, run the following command:
+```bash
+fsdiscover -u
+```
+or
+```bash
+fsdiscover --uninstall
+```
+
+To See Help, run the following command:
+```bash
+fsdiscover -h
+```
+or
+```bash
+fsdiscover --help
+```
+
 ## Contributing
 
 We welcome contributions from the community. To contribute, please follow these steps:
