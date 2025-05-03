@@ -56,7 +56,7 @@ class NetworkProbe {
     }
 
     getLocalNetwork() {
-        return (this.networkInterfaces?.lo||[]).find(network => this.isIpAddr(network.address)) 
+        return (this.networkInterfaces['lo']||[]).find(network => this.isIpAddr(network.address)) 
     }
     
     autoDetect() {
