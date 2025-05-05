@@ -93,7 +93,7 @@ const Menu = () => {
                                     <div className="my-2">
                                         <div className="p-2 active d-inline"
                                             style={{ borderRadius: '3px' }}
-                                            onClick={() => { navigate(page == 'apps' ? '/' : '/apps'); setHref('') }}>
+                                            onClick={() => { navigate(page == 'apps' ? '/os' : '/os/apps'); setHref('') }}>
                                             {page == 'apps' ? <span className="slideLeft aniFast"><BiChevronLeft className='fs-5 icon' />Menu</span>
                                                 : <span className="slideRight aniFast">All Apps<BiChevronRight className='fs-5 icon' /></span>}
                                         </div>

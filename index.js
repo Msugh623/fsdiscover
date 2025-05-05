@@ -7,6 +7,7 @@ const dirname = require('./dirname')
 const cors = require('cors')
 const multer = require('multer')
 const { exec } = require('child_process')
+const axios=require('axios')
 
 const app = express()
 const storage = multer.diskStorage({
@@ -17,11 +18,15 @@ const storage = multer.diskStorage({
       cb(null, file.originalname )
     }
 })
+
+function chport (port) {
+  return port+1
+}
   
-const upload = multer({storage:storage})
-const port = 3000
-const netProb =new NetworkProbe(port,null,true,null)
-const netFace = netProb.autoDetect()
+const upload = multer({storage:storage});
+let port = 3000;
+const netProb =new NetworkProbe(port,null,true,null);
+const netFace = netProb.autoDetect();
     
 app.use(cors({
     origin: '*',
@@ -53,6 +58,18 @@ app.delete('/fs*', handlers.deletePath)
 app.head('*', handlers.header)
 app.get('*',handlers.sendUi)
 
-app.listen(port,netFace.address, () => {
-    console.log(`\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${netFace.address}:${port}\n`)
-})
+async function getNewPort (port){
+    const url = "http://"+netFace.address+':'+port
+     try{
+       const res = await axios.head(url)
+       console.log(`EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`)
+       return getNewPort(chport(port))
+     } catch (err){
+      //  console.log(err.message)
+        app.listen(port,netFace.address, () => {
+          console.log(`\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${netFace.address}:${port}\n`)
+        })
+     }
+   }
+   
+getNewPort(port)

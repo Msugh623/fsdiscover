@@ -94,7 +94,7 @@ const Header = () => {
                                     :toast('Operation requires user permission which has been denied')
                             }
                     }}>
-                            <FaUpload className='icon' /> Upload {files.length ? files.length + ' files' : ''}
+                            <FaUpload className='icon' /> {window.innerWidth>600||!files.length?"Upload":""} {files.length ? files.length + ' files' : ''}
                             {files?.length ? <span title='Change selection' onClick={(e) => {
                                 e.stopPropagation()
                                 document.getElementById('filer').click()
