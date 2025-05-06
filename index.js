@@ -7,7 +7,6 @@ const dirname = require('./dirname')
 const cors = require('cors')
 const multer = require('multer')
 const { exec } = require('child_process')
-const axios=require('axios')
 
 const app = express()
 const storage = multer.diskStorage({
@@ -61,7 +60,7 @@ app.get('*',handlers.sendUi)
 async function getNewPort (port){
     const url = "http://"+netFace.address+':'+port
      try{
-       const res = await axios.head(url)
+       const res = await fetch(url,{method:"HEAD"})
        console.log(`EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`)
        return getNewPort(chport(port))
      } catch (err){
