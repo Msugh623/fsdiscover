@@ -13,6 +13,9 @@ const FsContext = ({ children }) => {
     const [isHidden, setIsHidden] = useState(false)
     const [key, setKey] = useState('')
     const [err, setErr] = useState('')
+    const [title, setTitle] = useState('')
+    const [modal, setModal] = useState('')
+    
 
     async function getFs(path=locPath) {
         setIsFetching(true)
@@ -47,7 +50,11 @@ const FsContext = ({ children }) => {
         setIsHidden,
         key,
         setKey,
-        err
+        err,
+        modal,
+        setModal,
+        title,
+setTitle
     }}>
         {children}
     </context.Provider>

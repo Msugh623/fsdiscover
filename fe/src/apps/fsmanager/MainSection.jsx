@@ -4,12 +4,12 @@ import DirItem from './components/DirItem'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import { useEffect } from 'react'
-import { FaSpinner } from 'react-icons/fa'
+import { FaSpinner, FaTimes } from 'react-icons/fa'
 import { useStateContext } from '../../state/StateContext'
 import { useLocation } from 'react-router-dom'
 
 const MainSection = () => {
-  const { isFetching, locChildren, isHidden, setIsHidden ,err,key,setKey} = useFsContext()
+  const { isFetching, locChildren, isHidden, setIsHidden ,err,key,setKey,modal,setModal,title} = useFsContext()
   const { hostname } = useStateContext()
   const location=useLocation()
     
@@ -63,6 +63,32 @@ const MainSection = () => {
           
         </div>
       </div>
+
+            {
+        modal && <>
+          <div className="d-flex" style={{
+            position:'fixed',
+            top: 0+'px',
+            bottom: 0+'px',
+            left: '0px',
+            right: '0px',
+            background: '#0e0e030',
+            zIndex:'10'
+          }}>
+            <div className="m-auto p-1 active">
+              <div className="d-flex fw-bold">
+                {title}
+                <div className="ms-auto rounded themebg fs-5" onClick={()=>setModal('')}>
+<FaTimes className='icon'/>
+                </div>
+              </div>
+              <div className="themebg round">
+                {modal}
+              </div>
+            </div>
+          </div>
+        </>
+            }
     </div>
   )
 }
