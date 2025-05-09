@@ -1,7 +1,8 @@
 #!/bin/bash
+V=$(cat ./version)
 echo "-----------------------------------------"
 echo ""
-echo "   Sprint FS Discover Installer 1.0.1 "
+echo "   Sprint FS Discover Installer $V"
 echo ""
 echo "-----------------------------------------"
 echo ""
@@ -75,6 +76,13 @@ echo 'Copying files to application directory... This can take a while'
 rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
 chmod +x "$APP_DIR/fsdiscover.sh"
 
+if ! [ -d "$APP_DIR/temp" ]; then 
+    echo "Could not find temp dir... creating temp dir"
+    mkdir -m 777 "$APP_DIR/temp"
+fi
+
+chmod 777 "$APP_DIR/temp" 
+
 # .desktop ENTRY
 DESKTOP_FILE="[Desktop Entry]
 Name=FSDiscover
@@ -94,14 +102,14 @@ update-desktop-database "$HOME/.local/share/applications"
 UNAME=$(id -u)
 
 if [ $UNAME -eq 0 ]; then
-    ln -sf "$APP_DIR/fsdiscover.sh" "/bin/fsdiscover"
+    ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
 else
     echo "Installer needs root access to create Global executable"
-    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/bin/fsdiscover"
+    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
 fi
 
 echo "Installation Finished."
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
-echo "Symbolic link created at /bin/fsdiscover"
+echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"
 echo 'Use "fsdiscover --help" for details'

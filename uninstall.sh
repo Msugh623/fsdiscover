@@ -1,7 +1,8 @@
 #!/bin/bash
+V=$(cat ./version)
 echo "-----------------------------------------"
 echo ""
-echo "   Sprint FS Discover Uninstaller 1.0.1"
+echo "   Sprint FS Discover Uninstaller $V"
 echo ""
 echo "-----------------------------------------"
 echo ""
@@ -18,7 +19,7 @@ fi
 
 APP_DIR="$HOME/.local/share/fsdiscover"
 DESKTOP_DIR="$HOME/.local/share/applications/fsdiscover.desktop"
-BIN_DIR="/bin/fsdiscover"
+BIN_DIR="/usr/bin/fsdiscover"
 UNAME=$(id -u)
 
 if [ $UNAME -eq 0 ]; then

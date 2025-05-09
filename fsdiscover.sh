@@ -1,7 +1,9 @@
 #!/bin/bash
+V=$(cat ./version)
+
 echo "-----------------------------------------"
 echo ""
-echo "       Sprint FS Discover 1.0.1"
+echo "        Sprint FS Discover $V"
 echo ""
 echo "-----------------------------------------"
 
@@ -23,10 +25,13 @@ if ! [ $PARAM2 == "nil" ]; then
 elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
     ./uninstall.sh
     exit $?
+elif [ $PARAM1 == "--version" ] || [ $PARAM1 == "-v" ]; then
+    exit 0
 elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "Usage: fsdiscover [option...]"
     echo ""
     echo "-u, --uninstall       Uninstall (remove) fsdiscover"
+    echo "-v, --version         See current version"
     echo "-h, --help            See Help"
     echo ""
     echo "This program only takes one argument at a time"
