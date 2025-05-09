@@ -3,16 +3,8 @@ REM Check if Node.js is installed
 node -v >nul 2>&1
 if errorlevel 1 (
     echo Node.js is not installed. Please install Node.js from https://nodejs.org/en/download and try again.
-    exit /b 1
-)
-
-REM Install project dependencies
-if exist package.json (
-    npm install
-) else (
-    echo Failure: package.json not found... Failed to find project dependencies
     REM Prompt user to acknowledge before proceeding
-    echo This script will download and install fnm and Node.js. Do you want to continue? (Y/N)
+    echo FSDiscover depends NodeJs... Proceed to install fnm and Node.js? (Y/N)
     set /p "USER_CONFIRM=Enter Y to continue or N to cancel: "
     if /I not "%USER_CONFIRM%"=="Y" (
         echo Installation canceled by user.
@@ -30,6 +22,14 @@ if exist package.json (
 
     REM Verify npm version:
     npm -v
+)
+
+REM Install project dependencies
+if exist package.json (
+    npm install
+) else (
+    echo Failure: package.json not found... Failed to find project dependencies
+    exit /b 1
 )
 
 REM Define application directory
@@ -85,3 +85,4 @@ echo Installation Finished.
 echo Shortcut created at %SHORTCUT_PATH%
 echo Bin name set to 'fsdiscover'
 echo Run 'fsdiscover' on the CLI to start the application.
+echo Use 'fsdiscover --help' for more information.

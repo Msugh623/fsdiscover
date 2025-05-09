@@ -25,8 +25,12 @@ class NetworkProbe {
         this.callback = callback || (() => { });
         this.fallback = fallback || (() => { });
         this.heartbeat=true
-        setInterval(() => {
-            this.liveCheck(port,(err,live)=>{
+    }
+
+    initLiveCheck = () => {
+        this.stopLiveCheck()
+        this.liveInterval= setInterval(() => {
+            this.liveCheck(this.port,(err,live)=>{
                 if (err) {
                     this.heartbeat = false
                     this.fallback()
@@ -42,6 +46,13 @@ class NetworkProbe {
             });
         }
         ,5000)
+    }
+
+    stopLiveCheck = () => {
+        if (this.liveInterval) {
+            clearInterval(this.liveInterval)
+            this.liveInterval = null
+        }
     }
 
     isIpAddr(ip) {

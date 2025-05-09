@@ -1,6 +1,6 @@
 {
   "name": "fsdiscover",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,7 @@
   "author": "Msugh623",
   "license": "ISC",
   "dependencies": {
+    "archiver": "^7.0.1",
     "axios": "^1.8.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",

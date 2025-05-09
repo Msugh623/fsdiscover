@@ -8,6 +8,7 @@ const render = require("./render")
 const errorHandlers = require('./errorHandlers')
 const { readFileSync } = require('fs')
 const dirname = require('../dirname')
+const archiver = require('archiver')
 
 const {homedir,platform}=os
 
@@ -44,6 +45,24 @@ class Handlers {
         } catch (error) {
             // console.error(error)
             res.status(500).send(error)
+        }
+    }
+    zipDir = (req, res) => { 
+        try {
+            const pathname = req.url.replace('/zipper','').replaceAll("%20",' ')
+            const zipper = archiver('zip', {
+                zlib: { level: 9 } 
+            })
+            zipper.on('error', (err) => {
+                console.error(err)
+                throw err
+            })
+            zipper.pipe(res)
+            zipper.directory(path.join(homedir(), pathname), false)
+            zipper.finalize()
+        } catch (error) {
+            // console.error(error)
+            res.status(500).send(`ERROR: ${error}`)
         }
     }
     deletePath =  (req, res) => {

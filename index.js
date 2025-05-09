@@ -52,6 +52,7 @@ app.post('/fs/upload', upload.array('files', 10), (req, res) => {
 })
 app.get('/fsexplorer*',handlers.sendUi)
 app.get('/hostname', handlers.getHost)
+app.get('/zipper*', handlers.zipDir)
 app.get('/fs*', handlers.getPath)
 app.delete('/fs*', handlers.deletePath)
 app.head('*', handlers.header)
@@ -64,9 +65,11 @@ async function getNewPort (port){
        console.log(`EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`)
        return getNewPort(chport(port))
      } catch (err){
-      //  console.log(err.message)
+       //  console.log(err.message)
+       netProb.port = port
         app.listen(port,netFace.address, () => {
           console.log(`\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${netFace.address}:${port}\n`)
+          netProb.initLiveCheck()
         })
      }
    }
