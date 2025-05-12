@@ -1,16 +1,7 @@
 #!/bin/bash
-V=$(cat ./version)
-
-echo "-----------------------------------------"
-echo ""
-echo "        Sprint FS Discover $V"
-echo ""
-echo "-----------------------------------------"
-
-# Define application directory
 APP_DIR="$HOME/.local/share/fsdiscover"
+V=$(cat "$APP_DIR/.version")
 
-# Change to application directory
 cd "$APP_DIR" || {
   echo "Failure: Unable to change to application directory $APP_DIR"
   exit 1
@@ -26,6 +17,7 @@ elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
     ./uninstall.sh
     exit $?
 elif [ $PARAM1 == "--version" ] || [ $PARAM1 == "-v" ]; then
+    cat $V
     exit 0
 elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "Usage: fsdiscover [option...]"
@@ -38,6 +30,13 @@ elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "For more information, contact sprintetmail@gmail.com"
     exit 0
 fi
+
+
+echo "-----------------------------------------"
+echo ""
+echo "        Sprint FS Discover $V"
+echo ""
+echo "-----------------------------------------"
 
 # Check for node_modules and start the application
 if [ -d node_modules ]; then

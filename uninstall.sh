@@ -1,5 +1,10 @@
 #!/bin/bash
-V=$(cat ./version)
+APP_DIR="$HOME/.local/share/fsdiscover"
+DESKTOP_DIR="$HOME/.local/share/applications/fsdiscover.desktop"
+BIN_DIR="/usr/bin/fsdiscover"
+UNAME=$(id -u)
+V=$(cat "$APP_DIR/.version")
+
 echo "-----------------------------------------"
 echo ""
 echo "   Sprint FS Discover Uninstaller $V"
@@ -16,11 +21,6 @@ else
     echo "Uninstaller Terminated by user"
     exit 2
 fi
-
-APP_DIR="$HOME/.local/share/fsdiscover"
-DESKTOP_DIR="$HOME/.local/share/applications/fsdiscover.desktop"
-BIN_DIR="/usr/bin/fsdiscover"
-UNAME=$(id -u)
 
 if [ $UNAME -eq 0 ]; then
     rm -r $APP_DIR

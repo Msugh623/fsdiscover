@@ -1,5 +1,5 @@
 #!/bin/bash
-V=$(cat ./version)
+V=$(cat .version)
 echo "-----------------------------------------"
 echo ""
 echo "   Sprint FS Discover Installer $V"

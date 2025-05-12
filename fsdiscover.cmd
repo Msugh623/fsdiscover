@@ -1,7 +1,7 @@
 @echo off
 
 REM Read version from the version file
-set "VERSION_FILE=%LOCALAPPDATA%\fsdiscover\version"
+set "VERSION_FILE=%LOCALAPPDATA%\fsdiscover\.version"
 for /f "delims=" %%v in (%VERSION_FILE%) do set "VERSION=%%v"
 
 echo -----------------------------------------
