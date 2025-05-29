@@ -272,7 +272,9 @@ class AuthHandler {
   enforceAuth = (req, res, next) => {
     const { headers, token } = req;
     if (!token.token) {
-      return res.status(401).send("Unauthorized");
+      return res
+        .status(401)
+        .send("<center><h1> EACCES </h1> <hr> \n 401 Unauthorized\n</center>");
     }
     if (!this.tokenIsYoung(token)) {
       return res.status(401).send("Session Expired");
@@ -334,11 +336,43 @@ class AuthHandler {
     res.status(200).send({ token: cred.token });
   };
 
+  logout = async (req, res) => {
+    this.ejectCred(req.token.token);
+    res.status(200).send("Logged out");
+  };
+
   getVisitors = (req, res) => {
     res.status(200).json(this.config.visitors);
   };
 
-  getSafeConfig = (req, res) => {
+  getForbidden = (req, res) => {
+    res.status(200).json(this.config.forbidden);
+  };
+
+  updateForbidden = (req, res) => {
+    const { body } = req;
+    const newForbidden = body.forbidden || [];
+    this.config.forbidden = newForbidden;
+    this.saveConfig();
+    res.status(200).json(this.config.forbidden);
+  };
+
+  remForbidden = (req, res) => {
+    const { body } = req;
+    const { agent, addr } = body;
+    this.config.forbidden = this.config.forbidden.filter(
+      (f) => f.agent !== agent || f.addr !== addr
+    );
+    this.saveConfig();
+    res.status(200).json(this.config.forbidden);
+  };
+
+  updatePassword = (req, res) => {
+    const { body } = req;
+    const newPassword = body.password || this.config.password;
+    this.config.password = newPassword;
+    this.hasAuth = Boolean(newPassword);
+    this.saveConfig();
     res.status(200).json({
       password: this.config.password,
       forbidden: this.config.forbidden,
@@ -346,12 +380,7 @@ class AuthHandler {
     });
   };
 
-    updateConfig = (req, res) => {
-        const { body } = req
-        const newConfig = {
-            password: body.password || this.config.password,
-            forbidden: body.forbidden
-        }
+  getSafeConfig = (req, res) => {
     res.status(200).json({
       password: this.config.password,
       forbidden: this.config.forbidden,

@@ -1,11 +1,18 @@
 const express = require('express')
 const handlers = require('./handlers')
-const router = express.Router({})
+const adminRouter = express.Router({})
 
-router.route('/').get(handlers.sendUi())
-router
-    .route('/rq/config')
+adminRouter.route('/rq/config')
     .get(handlers.authHandler.getSafeConfig)
-    .put(handlers.config.updateConfig)
+adminRouter.route('/rq/forbidden')
+    .get(handlers.authHandler.getForbidden)
+    .put(handlers.authHandler.updateForbidden)
+adminRouter.route('/rq/forbidden/pardon')
+    .post(handlers.authHandler.remForbidden)
+adminRouter.route('/rq/change-password')
+    .post(handlers.authHandler.updatePassword)
+adminRouter.route('/rq/logout')
+    .post(handlers.authHandler.logout)
+adminRouter.route('*').get(handlers.sendUi)
 
-module.exports=router
+module.exports=adminRouter
