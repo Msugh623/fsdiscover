@@ -78,6 +78,7 @@ if ! [ $? -eq 0 ]; then
    exit 1
 fi
 
+echo "" > auth.config.json
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 echo 'Copying files to application directory... This can take a while'
