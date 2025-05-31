@@ -17,7 +17,7 @@ elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
     ./uninstall.sh
     exit $?
 elif [ $PARAM1 == "--version" ] || [ $PARAM1 == "-v" ]; then
-    cat $V
+    echo $V
     exit 0
 elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "Usage: fsdiscover [option...]"

@@ -22,12 +22,18 @@ const FsContext = ({ children }) => {
         setErr('')
         try {
             const res = await api.get('/fs' + path)
-            // console.log(res.data)
             setLocChildren(res.data)
         }
         catch (err) {
-            toast.error(`ERROR: ${err}`)
-            setErr((''+err?.status)=='404'?'No such file or directory':err)
+            toast.error(
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: `${err?.response?.data || err.message || "" + err}`,
+                }}
+              >
+              </div>
+            );
+            setErr((''+err?.status)=='404'?'No such file or directory':err?.response?.data||err.message||''+err)
         } finally {
             setIsFetching(false)
         }

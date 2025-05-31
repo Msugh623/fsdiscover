@@ -6,12 +6,20 @@ const { exec } = require("child_process")
 // const { outputfile, tempdir } = require("../variables")
 const render = require("./render")
 const errorHandlers = require('./errorHandlers')
-const { readFileSync } = require('fs')
-const dirname = require('../dirname')
-const archiver = require('archiver')
+const { readFileSync, existsSync, mkdirSync } = require("fs");
+const dirname = require("../dirname");
+const archiver = require("archiver");
 const { writeFile } = require("fs/promises");
 
 const { homedir, platform } = os;
+let config = {
+  password: "password",
+  verbose: Boolean(),
+  forbidden: [],
+  visitors: [],
+  authorizations: [],
+  protectedroutes: [],
+};
 
 class Handlers {
   header = (_, res) => {
@@ -39,6 +47,7 @@ class Handlers {
         .split("/")
         .map((u) => `"${u}"`)
         .join("/");
+
       this["fs" + platform()](pathname, async (data) => {
         if (data.startsWith("$ERR")) {
           errorHandlers.ENOENT(data, res);
@@ -50,7 +59,14 @@ class Handlers {
           true
         );
         if (typeof prsData == "object") {
-          res.json(prsData);
+          res.json(
+            prsData.filter(
+              (r) =>
+                !config.protectedroutes.some(
+                  (v) => r.includes(v) || v.includes(r)
+                )
+            )
+          );
         } else {
           res.send(prsData);
         }
@@ -220,20 +236,21 @@ class Middleware {
   };
 }
 
-const config = {
-  password: "",
-  forbidden: [],
-  visitors: [],
-  authorizations: [],
-};
-
 class AuthHandler {
   constructor() {
-    const authconfigRaw = readFileSync(path.join(dirname(), "config.json"), {
-      encoding: "utf-8",
-    });
-    let toJson = JSON.parse(authconfigRaw);
-    this.config = authconfigRaw ? toJson : config;
+    if (!existsSync(path.join(dirname(), "auth.config.json"))) {
+      this.config = config;
+      this.saveConfig();
+    }
+    const authconfigRaw = readFileSync(
+      path.join(dirname(), "auth.config.json"),
+      {
+        encoding: "utf-8",
+      }
+    );
+    let toJson = JSON.parse(authconfigRaw || JSON.stringify(config));
+    this.config = toJson;
+    config = toJson;
     this.hasAuth = Boolean(toJson?.password);
   }
 
@@ -245,6 +262,7 @@ class AuthHandler {
       agent: headers["user-agent"],
       addr: socket.remoteAddress,
     };
+    req.user = uInfo;
     const theVisitor = this.config.visitors.find(
       (v) => v.agent == uInfo.agent && v.addr == uInfo.addr
     );
@@ -257,27 +275,58 @@ class AuthHandler {
         (u) => u.agent == uInfo.agent && u.addr == uInfo.addr
       )
     ) {
-      return res.status(403).send("You have been forbidden by Admin");
+      return res
+        .status(403)
+        .send(
+          "<center><h1> EACCES </h1> <hr> \n 403 Forbidden by Admin\n</center>"
+        );
     }
     if (this.hasAuth) {
-      const token = headers["Authorization"];
+      const token = headers["authorization"];
       const theToken = this.config.authorizations.find((a) => a.token == token);
       req.token = theToken;
       return next();
     }
-    req.token = {};
+    req.token = uInfo;
+    next();
+  };
+
+  checkDirAuth = async (req, res, next) => {
+    const { url } = req;
+    const pathname = url.replace("/fs", "").replaceAll("%20", " ");
+    if (
+      this.config.protectedroutes.find((u) => {
+        return pathname.includes(u);
+      })
+    ) {
+      return res
+        .status(403)
+        .send(
+          "<center><h1> EACCES </h1> <hr> \n 403 Entity Forbidden by Admin\n</center>"
+        );
+    }
     next();
   };
 
   enforceAuth = (req, res, next) => {
     const { headers, token } = req;
-    if (!token.token) {
-      return res
-        .status(401)
-        .send("<center><h1> EACCES </h1> <hr> \n 401 Unauthorized\n</center>");
+    const user = req.user;
+    const haslogin = this.config.authorizations.find(
+      (a) => a?.addr == user?.addr && a?.agent == user?.agent
+    );
+    if (!token?.token) {
+      return res.status(401).send(`<center>
+          <h1> EACCES </h1> <hr> \n ${!haslogin?'401 Unauthorized':''}\n 
+          ${
+            haslogin
+              ? 'Entering fsdiscover from admin page or reloading the admin page is forbidden. Return to the <a href="/">homepage</a> and click the button on the top right corner to enter admin page'
+              : ""
+          }
+          </center>`);
     }
     if (!this.tokenIsYoung(token)) {
-      return res.status(401).send("Session Expired");
+      res.status(401).send("Session Expired");
+      return this.ejectCred(token.token);
     }
     if (token.agent !== headers["user-agent"]) {
       res.status(403).send("Authorization compromised");
@@ -293,10 +342,7 @@ class AuthHandler {
 
   injectCred = async (data) => {
     this.config.authorizations.push(data);
-    await writeFile(
-      path.join(dirname(), "config.json"),
-      JSON.stringify(this.config)
-    );
+    this.saveConfig();
   };
 
   ejectCred = async (token) => {
@@ -304,35 +350,54 @@ class AuthHandler {
       (a) => a.token !== token
     );
     this.config.authorizations = newAuths;
-    await writeFile(
-      path.join(dirname(), "config.json"),
-      JSON.stringify(this.config)
-    );
+    this.saveConfig();
+  };
+
+  returnProtected = () => {
+    return this.config.protectedroutes;
   };
 
   saveConfig = async () => {
     await writeFile(
-      path.join(dirname(), "config.json"),
+      path.join(dirname(), "auth.config.json"),
       JSON.stringify(this.config)
     );
+    config = this.config;
   };
 
   login = async (req, res) => {
+    this.config.verbose &&
+      console.log(
+        `AuthHandler: ${new Date()} ${req.user.addr} attempting login with ${
+          req.user.agent
+        }`
+      );
     const { body, headers, socket } = req;
     if (body.password !== this.config.password) {
-      return res.status(401).send("Invalid Credentials");
+      this.config.verbose &&
+        console.log(
+          `AuthHandler: ${new Date()} ${
+            req.user.addr
+          } login attempt FAILED with invalid credentials`
+        );
+      return res.status(401).send("Invalid Password");
     }
-    const agent = headers[agent];
+    const agent = headers["user-agent"];
     const token = crypto.randomUUID();
     const addr = socket.remoteAddress;
     const cred = {
-      name: body.name,
+      name: body.email,
       agent,
       token,
       addr,
-      oldAge: Date.now(),
+      oldAge: Date.now() + 1000 * 60 * 60,
     };
     await this.injectCred(cred);
+    console.log(
+      `AuthHandler: ${new Date()} ${req.user.addr} Logged in with ${
+        req.user.agent
+      }`
+    );
     res.status(200).send({ token: cred.token });
   };
 
@@ -351,8 +416,15 @@ class AuthHandler {
 
   updateForbidden = (req, res) => {
     const { body } = req;
-    const newForbidden = body.forbidden || [];
-    this.config.forbidden = newForbidden;
+    const newForbidden = body || {};
+    if (
+      this.config.forbidden.find(
+        (f) => f.agent == body.agent && f.addr == body.addr
+      )
+    ) {
+      return res.status(200).json(this.config.forbidden);
+    }
+    this.config.forbidden = [...this.config.forbidden, newForbidden];
     this.saveConfig();
     res.status(200).json(this.config.forbidden);
   };
@@ -367,9 +439,39 @@ class AuthHandler {
     res.status(200).json(this.config.forbidden);
   };
 
+  protectroute = (req, res) => {
+    const { body } = req;
+    const newForbidden = body.route;
+    if (this.config.protectedroutes.find((f) => f == body.route)) {
+      return res.status(200).json(this.config.protectedroutes);
+    }
+    this.config.protectedroutes = [
+      ...this.config.protectedroutes,
+      newForbidden,
+    ];
+    this.saveConfig();
+    res.status(200).json(this.config.protectedroutes);
+  };
+
+  remprotected = (req, res) => {
+    const { body } = req;
+    this.config.protectedroutes = this.config.protectedroutes.filter(
+      (f) => f !== body.route
+    );
+    this.saveConfig();
+    res.status(200).json(this.config.protectedroutes);
+  };
+
+  getProtectedRoutes = (_, res) => {
+    res.status(200).json(this.config.protectedroutes);
+  };
+
   updatePassword = (req, res) => {
     const { body } = req;
-    const newPassword = body.password || this.config.password;
+    if (body.oldpassword !== this.config.password) {
+      return res.status(401).send("Old password is not correct");
+    }
+    const newPassword = body.newpassword || this.config.password;
     this.config.password = newPassword;
     this.hasAuth = Boolean(newPassword);
     this.saveConfig();
@@ -380,11 +482,12 @@ class AuthHandler {
     });
   };
 
-  getSafeConfig = (req, res) => {
+  getSafeConfig = (_, res) => {
     res.status(200).json({
-      password: this.config.password,
+      password: this.config.password == config.password ? config.password : "",
       forbidden: this.config.forbidden,
       visitors: this.config.visitors,
+      protectedRoutes: this.config.protectedroutes,
     });
   };
 }

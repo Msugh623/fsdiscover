@@ -41,7 +41,15 @@ const Header = () => {
                 setFiles([])
                setTimeout(()=> getFs(),800)
             } catch (err) {
-                toast.error(`ERROR: ${err}`)
+                toast.error(
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: `${
+                        err?.response?.data || err.message || "" + err
+                      }`,
+                    }}
+                  ></div>
+                );
             } finally {
                 setIsUploading(false)
             }

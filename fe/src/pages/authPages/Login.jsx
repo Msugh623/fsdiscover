@@ -26,10 +26,16 @@ const Login = () => {
         try {
             const cred = (await api.post('/rq/login', data))?.data
             localStorage.access = cred.token
-            api.defaults.headers.common['Authorization'] = 'Bearer ' + cred.token
-            location.replace('/admin')
+            api.defaults.headers.common['Authorization'] = cred.token
+            location.replace('/')
         } catch (err) {
-            toast.error(`ERROR: ${err?.response?.data?.message || err?.message}`)
+            toast.error(
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: `${err?.response?.data || err.message || "" + err}`,
+                }}
+              ></div>
+            );
         } finally {
             toast.dismiss(tst)
         }

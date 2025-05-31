@@ -30,7 +30,13 @@ const AddApp = () => {
       const _ = await api.post('/rq/apps', fd)
       navigate('/admin', { replace: true })
     } catch (err) {
-      toast.error(`ERROR: ${err.message}`)
+      toast.error(
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `${err?.response?.data || err.message || "" + err}`,
+          }}
+        ></div>
+      );
     } finally {
       toast.dismiss(tst)
     }

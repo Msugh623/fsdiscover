@@ -2590,3 +2590,8 @@ path {
 .text-truncate-pro:hover {
     white-space: nowrap;
 }
+
+.paper{
+    background-color: #efefef20 !important;
+    border-radius: 8px !important;
+}

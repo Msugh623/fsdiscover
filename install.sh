@@ -1,5 +1,7 @@
 #!/bin/bash
 V=$(cat .version)
+PARAM=${1:-null}
+
 echo "-----------------------------------------"
 echo ""
 echo "   Sprint FS Discover Installer $V"
@@ -8,11 +10,18 @@ echo "-----------------------------------------"
 echo ""
 
 echo "Fsdiscover is a tool that allows you to access your filesystem over local http network"
-echo "Do you want to proceed installation (y/n)"
-read -r ACCEPT
-if ! [ $ACCEPT == "y" ]; then
-   echo "Exiting...Installer Aborted by User"
-   exit 2
+
+
+if [ $PARAM == "--auto" ]; then
+    echo "Skipping permission because auto is supplied... automatic installer shall proceed"
+else
+    echo "Do you want to proceed installation (y/n)"
+    echo "Use --auto to prevent this prompt"
+    read -r ACCEPT
+    if ! [ $ACCEPT == "y" ]; then
+        echo "Exiting...Installer Aborted by User, $ACCEPT is not y"
+        exit 2
+    fi
 fi
 
 # Check if Node.js is installed
@@ -37,7 +46,6 @@ if ! command -v node &> /dev/null; then
     fi
 fi
 
-PARAM=${1:-null}
 
 # Install project dependencies
 if ! [ -f "package.json" ]; then
@@ -51,7 +59,7 @@ elif [ $PARAM == "--build" ]; then
     npm run build
     if ! [ $? -eq 0 ]; then
         echo '!!! Installer Exited prematurely... Too many errors during build. Restart installer to try again'
-        echo "Contact "
+        echo "Please, Contact sprintetmail@gmail.com with the details of this error"
         exit 1
     fi
     cd ../
@@ -66,14 +74,26 @@ else
 fi
 if ! [ $? -eq 0 ]; then
    echo '!!! Installer Exited prematurely... Installer failed to install necessary dependencies'
-   echo "Contact "
+   echo "Please, Contact sprintetmail@gmail.com with the details of this error "
    exit 1
 fi
 
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 echo 'Copying files to application directory... This can take a while'
-rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
+if [ -c rsync ]; then
+    rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
+else
+    echo "rsync not found... falling back to cp (This should take a bi longer)"
+    cp -r ./ "$APP_DIR"
+fi
+
+# if ! [ $? -eq 0 ]; then
+#    echo '!!! Installer Exited prematurely... Installer failed to copy neccesary files'
+#    echo "Please, Contact sprintetmail@gmail.com with the details of this error "
+#    exit 1
+# fi
+
 chmod +x "$APP_DIR/fsdiscover.sh"
 
 if ! [ -d "$APP_DIR/temp" ]; then 
@@ -109,6 +129,7 @@ else
 fi
 
 echo "Installation Finished."
+echo '>>> Default password is set to "password", please change it as soon as possible'
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"

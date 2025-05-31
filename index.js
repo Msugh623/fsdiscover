@@ -39,7 +39,7 @@ app.use(cors({
 }))
 
 app.use(handlers.middleware.logger)
-app.use('/fsexplorer', express.static(os.homedir(), {
+app.use('/fsexplorer', handlers.authHandler.checkDirAuth,express.static(os.homedir(), {
     index: false
 }))
 
@@ -55,12 +55,12 @@ app.post('/fs/upload', upload.array('files', 10), (req, res) => {
     exec(`mv temp/* ${absoluteDir}`)
     res.status(201).send(`${req.files.length} file Uploaded to ${os.hostname()} placed at ${placeDir} succesfully`)
 })
-app.use('/admin', handlers.authHandler.enforceAuth, adminRouter)
-app.post('/login', handlers.authHandler.login)
+app.use('/admin',handlers.authHandler.enforceAuth, adminRouter)
+app.post("/rq/login", handlers.authHandler.login);
 app.get('/fsexplorer*',handlers.sendUi)
 app.get('/hostname', handlers.getHost)
 app.get('/zipper*', handlers.zipDir)
-app.get('/fs*', handlers.getPath)
+app.get('/fs*',handlers.authHandler.checkDirAuth, handlers.getPath)
 app.delete('/fs*', handlers.deletePath)
 app.head('*', handlers.header)
 app.get('*',handlers.sendUi)

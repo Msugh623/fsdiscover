@@ -5,7 +5,7 @@ import { BsPlusLg } from 'react-icons/bs'
 import api from '../../axios/api'
 import { toast } from 'react-toastify'
 import { FaTrash } from 'react-icons/fa'
-import { BiPencil, BiSync, BiX } from 'react-icons/bi'
+import { BiLogIn, BiPencil, BiSync, BiX } from 'react-icons/bi'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import PlaceHolder from '../components/PlaceHolder'
 
@@ -27,47 +27,95 @@ const AdminIndex = () => {
     }, [])
 
     return (
-        <main id="main">
-            <section className="section site-portfolio py-5 darkTheme">
-                <div className="container">
-                    <div className="row mb-5">
-                        <div className="d-flex flex-column flex-md-row slideIn mb-4 mb-lg-0" data-aos="fade-up">
-                            <h2 className=''>
-                                <Link to={'/'}>
-                                    <diviDotsNineBold style={{ fontSize: '2em', color: 'steelblue' }} className='text-primary icon' />
-                                    <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src="/sprintetName.png" height={'100px'} alt="" />
-                                </Link>
-                            </h2>
-                            <div className="ms-0 ms-md-auto">
-                                {/* <Link to={`/admin/app/add`} className="rounded shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu text-light">
-                                    <BsPlusLg className='fs-4' />
-                                </Link> */}
-                                {'Device Hostname: '+hostname}
-                            </div>
-                        </div>
-                        <div className="text-start text-lg-end mt-3" data-aos="fade-up" data-aos-delay="100">
-                            <div id="categories" className="ms-auto py-2 categories d-flex slideLeft" style={{
-                                maxWidth:'98vw',
-                                overflow:'auto'
-                            }}>
-                                <a href="#All" data-category="*" className={'p-1 mx-1 shadow rounded' + (category == 'All' && 'active rounded border')} onClick={() => setCategory('All')}>All </a>
-                                {
-                                    categories.map(flt => (
-                                        <a href={`#${flt}`} data-category="*" className={'p-1 border-bottom mx-1 shadow rounded me-1' + (category == flt && 'active border ')} onClick={() => setCategory('' + flt)}>{flt}</a>
-                                    ))
-                                }
-                            </div>
-                        </div>
-                    </div>
-                    <div id="portfolio-grid" className="row" data-aos="fade-up" data-aos-delay="200">
-                        {prs.map(app => {
-                            return <AppCard key={app.id} app={app} />
-                        })}
-                    </div>
+      <main id="main">
+        <section className="section site-portfolio py-5 darkTheme">
+          <div className="container">
+            <div className="row mb-5">
+              <div
+                className="d-flex flex-column flex-md-row slideIn mb-4 mb-lg-0"
+                data-aos="fade-up"
+              >
+                <h2 className="">
+                  <Link to={"/"}>
+                    <diviDotsNineBold
+                      style={{ fontSize: "2em", color: "steelblue" }}
+                      className="text-primary icon"
+                    />
+                    <LazyLoadImage
+                      effect="opacity"
+                      placeholder={<PlaceHolder />}
+                      src="/sprintetName.png"
+                      height={"100px"}
+                      alt=""
+                    />
+                  </Link>
+                </h2>
+                <div className="ms-0 ms-md-auto">
+                  <div className="d-flex pb-2">
+                    <Link
+                      to={!localStorage.access ? `/login` : "/admin"}
+                      className="rounded shadow-lg p-3 ms-auto py-2 border border-dashed readmore custom-navmenu text-light"
+                    >
+                      <BiLogIn className="fs-4" />
+                    </Link>
+                  </div>
+                  {"Device Hostname: " + hostname}
                 </div>
-            </section>
-        </main >
-    )
+              </div>
+              <div
+                className="text-start text-lg-end mt-3"
+                data-aos="fade-up"
+                data-aos-delay="100"
+              >
+                <div
+                  id="categories"
+                  className="ms-auto py-2 categories d-flex slideLeft"
+                  style={{
+                    maxWidth: "98vw",
+                    overflow: "auto",
+                  }}
+                >
+                  <a
+                    href="#All"
+                    data-category="*"
+                    className={
+                      "p-1 mx-1 shadow rounded" +
+                      (category == "All" && "active rounded border")
+                    }
+                    onClick={() => setCategory("All")}
+                  >
+                    All{" "}
+                  </a>
+                  {categories.map((flt) => (
+                    <a
+                      href={`#${flt}`}
+                      data-category="*"
+                      className={
+                        "p-1 border-bottom mx-1 shadow rounded me-1" +
+                        (category == flt && "active border ")
+                      }
+                      onClick={() => setCategory("" + flt)}
+                    >
+                      {flt}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div
+              id="portfolio-grid"
+              className="row"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              {prs.map((app) => {
+                return <AppCard key={app.id} app={app} />;
+              })}
+            </div>
+          </div>
+        </section>
+      </main>
+    );
 }
 
 export default AdminIndex
@@ -120,7 +168,13 @@ const AppDetails = ({ app }) => {
             fetchSrc()
             setIsEdit('')
         } catch (err) {
-            toast.error(`ERROR: ${err?.response?.data?.message || err.message}`)
+            toast.error(
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: `${err?.response?.data || err.message || "" + err}`,
+                }}
+              ></div>
+            );
         } finally {
             toast.dismiss(tst)
         }
@@ -153,7 +207,17 @@ const AppDetails = ({ app }) => {
                                     const _ = await api.delete('/rq/app/' + app?.id)
                                     setPop('')
                                 } catch (err) {
-                                    toast.error(`ERROR: ${err?.response?.data?.message || err.message}`)
+                                    toast.error(
+                                      <div
+                                        dangerouslySetInnerHTML={{
+                                          __html: `${
+                                            err?.response?.data ||
+                                            err.message ||
+                                            "" + err
+                                          }`,
+                                        }}
+                                      ></div>
+                                    );
                                 } finally {
                                     toast.dismiss(tst)
                                 }

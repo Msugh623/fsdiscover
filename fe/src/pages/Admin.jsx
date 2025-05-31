@@ -1,15 +1,27 @@
-import React, { useLayoutEffect } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useEffect } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-const Admin = () => {
-    // const navigate = useNavigate()
-    useLayoutEffect(() => {
-        // !localStorage.access && navigate(-1, { replace: true })
-    }, [])
+const Admin = ({sudo}) => {
+    const navigate = useNavigate()
+    const loc = useLocation()
+    const [show,setShow]=useState(false)
+
+    useEffect(() => {
+        if (sudo) {
+            if (!localStorage.access) {
+                navigate("/", { replace: true });
+            } else {
+                setShow(true)
+            }
+        } else {
+            setShow(true)
+        }
+    }, [loc])
 
     return (
         <>
-            <Outlet />
+           {show && <Outlet />}
         </>
     )
 }
