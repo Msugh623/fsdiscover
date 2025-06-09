@@ -24,6 +24,15 @@ const StateContext = ({ children }) => {
       about: "Sprintet File Explorer",
       category: "utility",
     };
+  
+    const touchpad = {
+      name: "Remote Input",
+      location: "/touchpad",
+      icon: "/sprintetS.png",
+      pinned: true,
+      about: "Remote touchpad for host machine",
+      category: "utility",
+    };
 
     const sprintos = {
       name: "Sprint OS",
@@ -34,7 +43,7 @@ const StateContext = ({ children }) => {
       category: "default",
     };
 
-    const defaultApps = [sprintet, fsdiscover, sprintos];
+    const defaultApps = [sprintet, fsdiscover, sprintos, touchpad];
 
     const navigate = useNavigate();
     const [searchParams, _] = useSearchParams();

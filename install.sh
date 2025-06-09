@@ -78,11 +78,15 @@ if ! [ $? -eq 0 ]; then
    exit 1
 fi
 
-echo "" > auth.config.json
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
+
+if ! [ head "$APP_DIR/auth.config.json" ]; then
+    echo "{}" > auth.config.json
+fi
+
 echo 'Copying files to application directory... This can take a while'
-if [ -c rsync ]; then
+if [ rsync ]; then
     rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
 else
     echo "rsync not found... falling back to cp (This should take a bi longer)"

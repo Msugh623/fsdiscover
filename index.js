@@ -9,9 +9,27 @@ const multer = require('multer')
 const { exec } = require('child_process')
 const { config }=require('dotenv')
 const adminRouter = require('./utils/adminRouter')
+const SocketIo = require("socket.io");
+const http=require('http')
 
 config({ path: path.join(dirname(), '.env') })
 const app = express()
+const server = http.createServer(app);
+const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
+socket.use(handlers.authHandler.checkSocketAuth);
+
+socket.on("connection", (client) => {
+  console.log(`New client connected: ${client.id}`);
+
+  client.on("disconnect", () => {
+    console.log(`Client disconnected: ${client.id}`);
+  });
+
+  client.on("pointerEvent", (data) => {
+    console.log(`Pointer event received from:`, data);
+  });
+});
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, 'temp/')
@@ -68,13 +86,13 @@ app.get('*',handlers.sendUi)
 async function getNewPort (port){
     const url = "http://"+netFace.address+':'+port
      try{
-       const res = await fetch(url,{method:"HEAD"})
+       const _ = await fetch(url,{method:"HEAD"})
        console.log(`EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`)
        return getNewPort(chport(port))
      } catch (err){
        //  console.log(err.message)
        netProb.port = port
-        app.listen(port,netFace.address, () => {
+        server.listen(port,netFace.address, () => {
           console.log(`\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${netFace.address}:${port}\n`)
           netProb.initLiveCheck()
         })

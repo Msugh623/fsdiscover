@@ -248,7 +248,7 @@ class AuthHandler {
         encoding: "utf-8",
       }
     );
-    let toJson = JSON.parse(authconfigRaw || JSON.stringify(config));
+    let toJson = JSON.parse(authconfigRaw.length>10? authconfigRaw: JSON.stringify(config));
     this.config = toJson;
     config = toJson;
     this.hasAuth = Boolean(toJson?.password);
@@ -261,6 +261,7 @@ class AuthHandler {
     const uInfo = {
       agent: headers["user-agent"],
       addr: socket.remoteAddress,
+      type:'rest'
     };
     req.user = uInfo;
     const theVisitor = this.config.visitors.find(
@@ -290,6 +291,47 @@ class AuthHandler {
     req.token = uInfo;
     next();
   };
+
+  checkSocketAuth = async (socket, next) => {
+    const headers = socket.handshake.headers;
+    const uInfo = {
+      agent: headers["user-agent"],
+      addr: socket.handshake.address || socket.request.connection.remoteAddress,
+      type:'socket'
+    };
+
+    // Track visitors
+    const theVisitor = this.config.visitors.find(
+      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr
+    );
+    if (!theVisitor) {
+      this.config.visitors.push(uInfo);
+      await this.saveConfig();
+    }
+
+    // Check forbidden
+    if (
+      this.config.forbidden.find(
+        (u) => u.agent == uInfo.agent && u.addr == uInfo.addr
+      )
+    ) {
+      return next(new Error("403 Forbidden by Admin"));
+    }
+
+    // Auth check
+    if (this.hasAuth) {
+      const token =
+        headers["authorization"] ||
+        socket.handshake.auth?.token ||
+        socket.handshake.query?.token;
+      const theToken = this.config.authorizations.find((a) => a.token == token);
+      socket.token = theToken;
+      return next();
+    }
+
+    socket.token = uInfo;
+    next();
+  }
 
   checkDirAuth = async (req, res, next) => {
     const { url } = req;

@@ -15,6 +15,7 @@ import FileManager from './apps/fsmanager/FileManager'
 import FsContext from './state/FsContext'
 import MainSection from './apps/fsmanager/MainSection'
 import SysAdminIndex from './pages/SysAdminIndex'
+import TouchPad from './apps/touchpad/Index'
 
 const Layout = () => {
     const {  pop } = useStateContext()
@@ -42,6 +43,8 @@ const Layout = () => {
               <Route index element={<MainSection />} />
               <Route path="*" element={<MainSection />} />
             </Route>
+
+            <Route path="/touchpad" element={<TouchPad />} />
 
             {/* Home */}
             <Route path="/admin" element={<Admin sudo={true} />}>
