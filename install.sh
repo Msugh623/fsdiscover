@@ -130,7 +130,7 @@ if [ $UNAME -eq 0 ]; then
     ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
 else
     echo "Installer needs root access to create Global executable"
-    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
+    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
 fi
 
 echo "Installation Finished."
