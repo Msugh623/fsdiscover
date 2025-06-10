@@ -81,9 +81,7 @@ fi
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 
-if ! [ head "$APP_DIR/auth.config.json" ]; then
-    echo "{}" > auth.config.json
-fi
+head "$APP_DIR/auth.config.json" ||   echo "{}" > auth.config.json
 
 echo 'Copying files to application directory... This can take a while'
 if [ rsync ]; then

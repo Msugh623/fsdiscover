@@ -5,9 +5,17 @@ import InputConext from "../../state/InputContext";
 
 const TouchPad = () => {
   return (
-    <div className="themebg" style={{
-        minHeight:'100vh'
-    }}>
+    <div
+      className="themebg"
+      style={{
+        minHeight: "100vh",
+        maxHeight: "100vh",
+        overscrollBehavior: "contain",
+        overscrollBehaviorBlock: "contain",
+        overscrollBehaviorInline: "contain",
+        overflow: "hidden",
+      }}
+    >
       <InputConext>
         <Panel />
         <Controller />

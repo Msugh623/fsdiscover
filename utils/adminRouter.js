@@ -1,27 +1,25 @@
 const express = require('express')
-const handlers = require('./handlers')
+const { handlers, authHandler } = require("./handlers");
 const adminRouter = express.Router({})
 
-adminRouter.route('/rq/config')
-    .get(handlers.authHandler.getSafeConfig)
+adminRouter.route("/rq/config").get(authHandler.getSafeConfig);
     
-adminRouter.route('/rq/forbidden')
-    .get(handlers.authHandler.getForbidden)
-    .put(handlers.authHandler.updateForbidden)
+adminRouter
+  .route("/rq/forbidden")
+  .get(authHandler.getForbidden)
+  .put(authHandler.updateForbidden);
     
-adminRouter.route('/rq/forbidden/pardon')
-    .post(handlers.authHandler.remForbidden)
+adminRouter.route("/rq/forbidden/pardon").post(authHandler.remForbidden);
     
-adminRouter.route('/rq/change-password')
-    .post(handlers.authHandler.updatePassword)
+adminRouter.route("/rq/change-password").post(authHandler.updatePassword);
     
-adminRouter.route('/rq/logout')
-    .post(handlers.authHandler.logout)
+adminRouter.route("/rq/logout").post(authHandler.logout);
 
-adminRouter.route('/rq/protectedroutes')
-    .get(handlers.authHandler.getProtectedRoutes)
-    .post(handlers.authHandler.protectroute)
-    .put(handlers.authHandler.remprotected)
+adminRouter
+  .route("/rq/protectedroutes")
+  .get(authHandler.getProtectedRoutes)
+  .post(authHandler.protectroute)
+  .put(authHandler.remprotected);
     
 adminRouter.route('*')
     .get(handlers.sendUi)

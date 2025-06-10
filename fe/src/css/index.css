@@ -2595,3 +2595,11 @@ path {
     background-color: #efefef20 !important;
     border-radius: 8px !important;
 }
+
+:root,html,body{
+    overscroll-behavior:contain;
+    overscroll-behavior-x:contain;
+    overscroll-behavior-y:contain;
+    overscroll-behavior-block:contain;
+    overscroll-behavior-inline:contain;
+}

@@ -6,11 +6,21 @@ const Panel = () => {
   const [didInit,setDidInit] = useState(false);
   
     return (
-      <div className="p-4 d-flex">
+      <div className="d-flex" style={{
+        overflow: 'hidden',
+        maxWidth:'99vw'
+      }} >
         <canvas
           id="tp"
-          className="border m-auto w-100"
-          style={{ height: "85vh" }}
+          className="border"
+          style={{
+            height: "85vh",
+            position: 'fixed',
+            top: '1.2rem',
+            left: '1.2rem',
+            right: '1.2rem',
+            width:'calc( 100vw - 2.4rem )'
+           }}
         ></canvas>
         {!didInit&&(() => {
           init(document.getElementById("tp"));

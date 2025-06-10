@@ -10,6 +10,7 @@ const { readFileSync, existsSync, mkdirSync } = require("fs");
 const dirname = require("../dirname");
 const archiver = require("archiver");
 const { writeFile } = require("fs/promises");
+const { mouse } = require('./devices')
 
 const { homedir, platform } = os;
 let config = {
@@ -19,6 +20,7 @@ let config = {
   visitors: [],
   authorizations: [],
   protectedroutes: [],
+  devices:[]
 };
 
 class Handlers {
@@ -248,7 +250,9 @@ class AuthHandler {
         encoding: "utf-8",
       }
     );
-    let toJson = JSON.parse(authconfigRaw.length>10? authconfigRaw: JSON.stringify(config));
+    let toJson = JSON.parse(
+      authconfigRaw.length > 10 ? authconfigRaw : JSON.stringify(config)
+    );
     this.config = toJson;
     config = toJson;
     this.hasAuth = Boolean(toJson?.password);
@@ -261,7 +265,7 @@ class AuthHandler {
     const uInfo = {
       agent: headers["user-agent"],
       addr: socket.remoteAddress,
-      type:'rest'
+      type: "rest",
     };
     req.user = uInfo;
     const theVisitor = this.config.visitors.find(
@@ -297,7 +301,7 @@ class AuthHandler {
     const uInfo = {
       agent: headers["user-agent"],
       addr: socket.handshake.address || socket.request.connection.remoteAddress,
-      type:'socket'
+      type: "socket",
     };
 
     // Track visitors
@@ -331,7 +335,7 @@ class AuthHandler {
 
     socket.token = uInfo;
     next();
-  }
+  };
 
   checkDirAuth = async (req, res, next) => {
     const { url } = req;
@@ -358,7 +362,7 @@ class AuthHandler {
     );
     if (!token?.token) {
       return res.status(401).send(`<center>
-          <h1> EACCES </h1> <hr> \n ${!haslogin?'401 Unauthorized':''}\n 
+          <h1> EACCES </h1> <hr> \n ${!haslogin ? "401 Unauthorized" : ""}\n 
           ${
             haslogin
               ? 'Entering fsdiscover from admin page or reloading the admin page is forbidden. Return to the <a href="/">homepage</a> and click the button on the top right corner to enter admin page'
@@ -504,6 +508,20 @@ class AuthHandler {
     res.status(200).json(this.config.protectedroutes);
   };
 
+  getDevices = (_, res) => {
+    res.status(200).json(this.config.devices);
+  };
+
+  remDevice = (req, res) => {
+    const { body } = req;
+    const { clientId } = body;
+    mouse.remDevice(clientId, (err) => {
+      res.status(500).send(err);
+    });
+    this.saveConfig();
+    res.status(200).json(this.config.devices);
+  };
+
   getProtectedRoutes = (_, res) => {
     res.status(200).json(this.config.protectedroutes);
   };
@@ -532,8 +550,12 @@ class AuthHandler {
       protectedRoutes: this.config.protectedroutes,
     });
   };
+
+  getConfig = () => {
+    return this.config;
+  };
 }
 
-module.exports = new Handlers();
+module.exports.handlers = new Handlers();
 module.exports.middleware = new Middleware();
 module.exports.authHandler = new AuthHandler();

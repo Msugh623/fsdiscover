@@ -1,6 +1,6 @@
 const express = require('express')
 const NetworkProbe = require('./utils/networkProbe')
-const handlers = require('./utils/handlers')
+const { handlers, authHandler, middleware } = require("./utils/handlers");
 const os = require('os')
 const path = require('path')
 const dirname = require('./dirname')
@@ -11,22 +11,33 @@ const { config }=require('dotenv')
 const adminRouter = require('./utils/adminRouter')
 const SocketIo = require("socket.io");
 const http=require('http')
+const Mouse = require('./utils/devices');
 
-config({ path: path.join(dirname(), '.env') })
-const app = express()
+config({ path: path.join(dirname(), ".env") });
+const app = express();
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
-socket.use(handlers.authHandler.checkSocketAuth);
+socket.use(authHandler.checkSocketAuth);
 
 socket.on("connection", (client) => {
   console.log(`New client connected: ${client.id}`);
 
+  const mouse = new Mouse(handlers, authHandler); 
+  
+  mouse.parseDevice(client.id, (err) => {
+    client.emit("error", err);
+  });
+
   client.on("disconnect", () => {
-    console.log(`Client disconnected: ${client.id}`);
+    mouse.remDevice(client.id, (err) => {
+      client.emit("error", err);
+    });
   });
 
   client.on("pointerEvent", (data) => {
-    console.log(`Pointer event received from:`, data);
+    mouse.mouseEvent(client.id, data, (err) => {
+      client.emit("error", err);
+    });
   });
 });
 
@@ -48,7 +59,7 @@ let port = process.env.PORT || 3000;
 const netProb =new NetworkProbe(port,null,true,null);
 const netFace = netProb.autoDetect();
 
-app.use(handlers.authHandler.checkAuth)
+app.use(authHandler.checkAuth);
 
 app.use(cors({
     origin: '*',
@@ -56,10 +67,14 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
-app.use(handlers.middleware.logger)
-app.use('/fsexplorer', handlers.authHandler.checkDirAuth,express.static(os.homedir(), {
-    index: false
-}))
+app.use(middleware.logger)
+app.use(
+  "/fsexplorer",
+  authHandler.checkDirAuth,
+  express.static(os.homedir(), {
+    index: false,
+  })
+);
 
 app.use(express.json({ limit: '1000000mb' }))
 app.use(express.urlencoded({ extended: true, limit: '1000000mb' }))
@@ -73,12 +88,12 @@ app.post('/fs/upload', upload.array('files', 10), (req, res) => {
     exec(`mv temp/* ${absoluteDir}`)
     res.status(201).send(`${req.files.length} file Uploaded to ${os.hostname()} placed at ${placeDir} succesfully`)
 })
-app.use('/admin',handlers.authHandler.enforceAuth, adminRouter)
-app.post("/rq/login", handlers.authHandler.login);
+app.use("/admin", authHandler.enforceAuth, adminRouter);
+app.post("/rq/login", authHandler.login);
 app.get('/fsexplorer*',handlers.sendUi)
 app.get('/hostname', handlers.getHost)
 app.get('/zipper*', handlers.zipDir)
-app.get('/fs*',handlers.authHandler.checkDirAuth, handlers.getPath)
+app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
 app.delete('/fs*', handlers.deletePath)
 app.head('*', handlers.header)
 app.get('*',handlers.sendUi)

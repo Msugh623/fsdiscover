@@ -15,7 +15,7 @@ const InputConext = ({ children }) => {
   const [touchConfig, setTouchConfig] = useState({
     dispX: 0,
     dispY: 0,
-    LastX: 0,
+    lastX: 0,
     lastY: 0,
     mouseX: 0,
     mouseY: 0,
@@ -34,7 +34,7 @@ const InputConext = ({ children }) => {
 
   useEffect(() => {
     return () => {
-      // socket.disconnect();
+      socket.disconnect();
     };
   }, []);
 
@@ -44,7 +44,7 @@ const InputConext = ({ children }) => {
       if (!pad) {
         return init();
       }
-      console.log("new pad", pad);
+
       setTouchConfig((prev) => {
         setPad(pad);
         return {
@@ -52,16 +52,28 @@ const InputConext = ({ children }) => {
           ready: true,
         };
       });
-      pad.onmousemove = (e) => {
+
+      pad.ontouchmove = drawMove;
+      pad.onmousemove = drawMove;
+      pad.ontouchstart = drawStart;
+      pad.onmousedown = drawStart;
+      pad.ontouchend = drawEnd;
+      pad.onmouseup = drawEnd;
+
+      function drawMove(e) {
         clearTimeout(msTimeout);
         setTouchConfig((prev) => ({
           ...prev,
-          dispX: e.clientX - prev.mouseX,
-          dispY: e.clientY - prev.mouseY,
+          dispX: localStorage.mouseDown
+            ? (e.clientX || e.touches.item(0).clientX) - prev.mouseX
+            : 0,
+          dispY: localStorage.mouseDown
+            ? (e.clientY || e.touches.item(0).clientY) - prev.mouseY
+            : 0,
           lastX: prev.mouseX,
           lastY: prev.mouseY,
-          mouseX: e.clientX,
-          mouseY: e.clientY,
+          mouseX: e.clientX || e.touches.item(0).clientX,
+          mouseY: e.clientY || e.touches.item(0).clientY,
           mouseIsMoving: true,
         }));
         setMsTimeout(
@@ -69,8 +81,9 @@ const InputConext = ({ children }) => {
             setTouchConfig((prev) => ({ ...prev, mouseIsMoving: false }));
           }, 400)
         );
-      };
-      pad.onmousedown = (e) => {
+      }
+
+      function drawStart(e) {
         const id = "" + Date.now();
         setTouchConfig((prev) => {
           localStorage.mouseDown = "true";
@@ -80,8 +93,8 @@ const InputConext = ({ children }) => {
             dispY: 0,
             mouseDown: true,
             mouseDownHold: false,
-            lastMouseDownX: e.clientX,
-            lastMouseDownY: e.clientY,
+            lastMouseDownX: e.clientX || e.touches.item(0).clientX,
+            lastMouseDownY: e.clientY || e.touches.item(0).clientY,
           };
         });
         setTimeout(() => {
@@ -90,17 +103,18 @@ const InputConext = ({ children }) => {
           }
           localStorage.clickId = id;
         }, 250);
-      };
-      pad.onmouseup = (e) => {
+      }
+
+      function drawEnd(e) {
         localStorage.mouseDown = "";
         setTouchConfig((prev) => ({
           ...prev,
           mouseDown: false,
           mouseDownHold: false,
-          lastMouseUpX: e.clientX,
-          lastMouseUpY: e.clientY,
+          lastMouseUpX: e.clientX || e.touches.item(0)?.clientX || prev?.lastX,
+          lastMouseUpY: e.clientY || e.touches.item(0)?.clientY || prev?.lastY,
         }));
-      };
+      }
     }, 500);
   };
 
@@ -132,7 +146,7 @@ const InputConext = ({ children }) => {
       }}
     >
       {children}
-      <pre
+      {/* <pre
         className="small p-5 fixed-top "
         style={{
           whiteSpace: "pre-wrap",
@@ -143,7 +157,7 @@ const InputConext = ({ children }) => {
         {err && "ERROR: " + err}
         <br />
         {JSON.stringify(touchConfig)}
-      </pre>
+      </pre> */}
     </context.Provider>
   );
 };

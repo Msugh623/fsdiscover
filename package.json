@@ -9,6 +9,7 @@
   "author": "Msugh623",
   "license": "ISC",
   "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
     "archiver": "^7.0.1",
     "axios": "^1.8.2",
     "bcrypt": "^6.0.0",
