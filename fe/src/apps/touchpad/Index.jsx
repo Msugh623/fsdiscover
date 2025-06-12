@@ -8,8 +8,8 @@ const TouchPad = () => {
     <div
       className="themebg"
       style={{
-        minHeight: "100vh",
-        maxHeight: "100vh",
+        height: "100dvh",
+        maxHeight: "100dvh",
         overscrollBehavior: "contain",
         overscrollBehaviorBlock: "contain",
         overscrollBehaviorInline: "contain",

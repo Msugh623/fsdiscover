@@ -36,7 +36,7 @@
 
 #root {
     background-color: #181818;
-    min-height: 100vh;
+    min-height: 100dvh;
     color: #efefef;
 }
 
@@ -2603,3 +2603,15 @@ path {
     overscroll-behavior-block:contain;
     overscroll-behavior-inline:contain;
 }
+ 
+button.btn.active:hover{
+    border: 1px solid #efefef !important;
+}
+
+#noPoint::after{
+   content: "Scrollbar";
+}#rc::after{
+    content: "Right Click";
+ }#lc::after{
+    content: "Left Click";
+ }

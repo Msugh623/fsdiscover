@@ -24,7 +24,6 @@ const Layout = () => {
 
   return (
     <>
-      <main>
         <ToastContainer progressStyle={{ opacity: "0" }} />
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -85,7 +84,6 @@ const Layout = () => {
             <Route path="/os:page" element={<TaskBar />} />
           </Route>
         </Routes>
-      </main>
       {pop && (
         <div
           className="d-flex w-100"

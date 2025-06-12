@@ -5,11 +5,11 @@ import PlaceHolder from './PlaceHolder'
 import { FaSpinner } from "react-icons/fa";
 
 const Loader = ({ animate }) => {
-    const [rm, setRm] = useState(Boolean(animate))
+    const [rm, setRm] = useState(Boolean(false))
 
-    useEffect(() => {
-        setTimeout(() => setRm(true), 800)
-    }, [])
+    // useEffect(() => {
+    //     setTimeout(() => setRm(true), 800)
+    // }, [])
 
     return (
       <div

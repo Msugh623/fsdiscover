@@ -82,6 +82,7 @@ const Menu = ({ hasDivider }) => {
                         className="menuimg"
                         alt="Sprintet S logo"
                         height={"100px"}
+                        onClick={()=>navigate('/')}
                       />
                     </div>
                     {vw < 768 && page !== "apps" && (
@@ -90,7 +91,7 @@ const Menu = ({ hasDivider }) => {
                           className="p-2 active "
                           style={{ borderRadius: "3px" }}
                           onClick={() => {
-                            navigate(page == "apps" ? "/" : "/apps");
+                            navigate("/os/apps");
                             setHref("");
                           }}
                         >
@@ -117,7 +118,7 @@ const Menu = ({ hasDivider }) => {
                     high-quality results, and continuous improvement.
                     <div className="mt-3">
                       <Link
-                        to={"?a=/about"}
+                        to={"/os?a=/about"}
                         title="Learn more"
                         aria-label="About Us - Learn more about Sprintet"
                         onClick={() => {

@@ -31,12 +31,14 @@ socket.on("connection", (client) => {
   client.on("disconnect", () => {
     mouse.remDevice(client.id, (err) => {
       client.emit("error", err);
+      console.log("ERROR: "+err)
     });
   });
 
-  client.on("pointerEvent", (data) => {
-    mouse.mouseEvent(client.id, data, (err) => {
+  client.on("pointerEvent", async (data) => {
+    await mouse.mouseEvent(client.id, data, (err) => {
       client.emit("error", err);
+      console.log("ERROR: "+err)
     });
   });
 });
