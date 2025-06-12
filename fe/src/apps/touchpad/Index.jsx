@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Panel from "./components/Panel";
 import Controller from "./components/Controller";
 import InputConext from "../../state/InputContext";
+import Opened from "../../components/Opened";
 
 const TouchPad = () => {
   return (
@@ -17,6 +18,7 @@ const TouchPad = () => {
       }}
     >
       <InputConext>
+        <Opened/>
         <Panel />
         <Controller />
       </InputConext>

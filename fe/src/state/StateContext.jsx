@@ -28,7 +28,7 @@ const StateContext = ({ children }) => {
     const touchpad = {
       name: "Remote Input",
       location: "/touchpad",
-      icon: "/sprintetS.png",
+      icon: "/touchpad.png",
       pinned: true,
       about: "Remote touchpad for host machine",
       category: "utility",

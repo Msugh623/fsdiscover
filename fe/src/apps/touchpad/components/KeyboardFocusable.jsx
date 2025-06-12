@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useInputContext } from '../../../state/InputContext';
 import {  FaRegKeyboard } from 'react-icons/fa'
 import { useEffect } from 'react';
+import Menu from '../../../components/Menu';
 
 const KeyboardFocusable = ({hasDivider}) => {
     const [panelClassName, setPanelClassName] = useState("d-none");
@@ -81,6 +82,7 @@ const KeyboardFocusable = ({hasDivider}) => {
             }}
           />
         </div>
+        <Menu hasDivider={false}/>
         {hasDivider !== false && (
           <div
             className="divider my-auto mx-2"
