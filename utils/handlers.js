@@ -304,6 +304,8 @@ class AuthHandler {
       type: "socket",
     };
 
+    console.log(`${new Date()} SOCKET request from ${uInfo.addr}`);
+
     // Track visitors
     const theVisitor = this.config.visitors.find(
       (v) => v.agent == uInfo.agent && v.addr == uInfo.addr
@@ -312,6 +314,8 @@ class AuthHandler {
       this.config.visitors.push(uInfo);
       await this.saveConfig();
     }
+
+    socket.user=uInfo
 
     // Check forbidden
     if (
@@ -334,6 +338,36 @@ class AuthHandler {
     }
 
     socket.token = uInfo;
+    next();
+  };
+
+  enforceSocketAuth = (socket, next) => {
+    const headers = socket.handshake.headers;
+    const user = req.token;
+    const haslogin = this.config.authorizations.find(
+      (a) => a?.addr == user?.addr && a?.agent == user?.agent
+    );
+  
+    if (!token?.token) {
+      console.log(`${new Date()} SOCKET REJECTED (EACCES) from ${socket.user.addr}`);
+      return socket.emit('error', `<center>
+          <h1> EACCES </h1> <hr> \n ${!haslogin ? "401 Unauthorized" : ""}\n 
+          </center>`);
+    }
+    if (!this.tokenIsYoung(token)) {
+      console.log(
+        `${new Date()} SOCKET REJECTED (ESESSSIONTIMEOUT) from ${socket.user.addr}`
+      );
+      socket.emit('error', "Session Expired");
+      return this.ejectCred(token.token);
+    }
+    if (token.agent !== headers["user-agent"]) {
+      console.log(
+        `${new Date()} SOCKET REJECTED (EACCESCOMPROMISED) from ${socket.user.addr}`
+      );
+      socket.emit('error', "Authorization compromised");
+      return this.ejectCred(token.token);
+    }
     next();
   };
 

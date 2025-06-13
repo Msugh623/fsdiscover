@@ -1,21 +1,18 @@
-const { mouse, Point, Button } = require("@nut-tree-fork/nut-js");
+const { mouse, Point, Button, keyboard, Key } = require("@nut-tree-fork/nut-js");
 
 class Device {
-  constructor(handlers, authHandler) {
+  constructor(handlers, authHandler,type=String(),user={}) {
     this.handlers = handlers;
     this.authHandler = authHandler;
     this.history = [];
+    this.type = type
+    this.user=user
   }
-  parseHistory = (history) => {
-    this.history.push(history);
-    this.history.length > 10 && this.history.pop();
-  };
-}
 
-class Mouse extends Device {
   parseDevice(clientId, reject = (error = String()) => error) {
+    this.clientId = clientId;
     if (
-      this.authHandler.getConfig().devices.filter((d) => d.type == "mouse")
+      this.authHandler.getConfig().devices.filter((d) => d.type == this.type)
         .length > 100
     ) {
       return reject(
@@ -31,16 +28,18 @@ class Mouse extends Device {
     }
     this.authHandler.config.devices.push({
       clientId,
-      type: "mouse",
+      type:this.type,
       name: "Controller",
       buttons: 3,
       scrollWheel: true,
       gestures: [],
+      user:this.user
     });
     this.authHandler.saveConfig();
   }
 
-  remDevice(clientId, reject = (error = String()) => error) {
+  remDevice(reject = (error = String()) => error) {
+    const clientId = this.clientId;
     const deviceIndex = this.authHandler
       .getConfig()
       .devices.findIndex((device) => device.clientId === clientId);
@@ -55,7 +54,15 @@ class Mouse extends Device {
     return reject("Device removed successfully.");
   }
 
-  async mouseEvent(clientId, event, reject = (error = String()) => error) {
+  parseHistory = (history) => {
+    this.history.push(history);
+    this.history.length > 10 && this.history.pop();
+  };
+}
+
+class Mouse extends Device {
+  async mouseEvent(event, reject = (error = String()) => error) {
+    const clientId = this.clientId;
     const device = this.authHandler
       .getConfig()
       .devices.find((device) => device.clientId === clientId);
@@ -94,4 +101,17 @@ class Mouse extends Device {
   }
 }
 
-module.exports = Mouse;
+class Keyboard extends Device {
+  async keydown(event, reject = (error = String()) => error) {
+    console.log('keydown', event)
+    keyboard.pressKey(event.keyCode)
+  }
+  async keyup(event, reject = (error = String()) => error) {
+    console.log('keyup', event)
+    keyboard.releaseKey(event.keyCode)
+  }
+}
+
+module.exports.Mouse = Mouse;
+module.exports.Keyboard = Keyboard;
+

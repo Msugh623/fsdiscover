@@ -11,36 +11,58 @@ const { config }=require('dotenv')
 const adminRouter = require('./utils/adminRouter')
 const SocketIo = require("socket.io");
 const http=require('http')
-const Mouse = require('./utils/devices');
+const { Mouse } = require("./utils/devices");
+const { Keyboard } = require("./utils/devices");
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
-socket.use(authHandler.checkSocketAuth);
+
+socket.use(authHandler.checkSocketAuth, authHandler.enforceSocketAuth);
 
 socket.on("connection", (client) => {
-  console.log(`New client connected: ${client.id}`);
+  console.log(`${new Date()} SOCKET connected ID ${client.id}`);
+  const mouse = new Mouse(handlers, authHandler,'mouse');
+  const keyboard = new Keyboard(handlers, authHandler,'keyboard');
 
-  const mouse = new Mouse(handlers, authHandler); 
-  
   mouse.parseDevice(client.id, (err) => {
+    client.emit("error", err);
+  });
+  keyboard.parseDevice(client.id, (err) => {
     client.emit("error", err);
   });
 
   client.on("disconnect", () => {
-    mouse.remDevice(client.id, (err) => {
+    mouse.remDevice((err) => {
       client.emit("error", err);
-      console.log("ERROR: "+err)
+      console.log("ERROR: " + err);
+    });
+    keyboard.remDevice((err) => {
+      client.emit("error", err);
+      console.log("ERROR: " + err);
     });
   });
 
   client.on("pointerEvent", async (data) => {
-    await mouse.mouseEvent(client.id, data, (err) => {
+    await mouse.mouseEvent(data, (err) => {
       client.emit("error", err);
-      console.log("ERROR: "+err)
+      console.log("ERROR: " + err);
     });
   });
+
+  client.on("keydown",async (data) =>
+   await keyboard.keydown(data, (err) => {
+      client.emit("error", err);
+      console.log("ERROR: " + err);
+    })
+  );
+  client.on("keyup",async (data) =>
+   await keyboard.keyup(data, (err) => {
+      client.emit("error", err);
+      console.log("ERROR: " + err);
+    })
+  );
 });
 
 const storage = multer.diskStorage({

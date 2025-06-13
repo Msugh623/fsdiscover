@@ -58,7 +58,8 @@ const KeyboardFocusable = ({hasDivider}) => {
                     type="text"
                     onKeyDown={handleKeydown}
                     onKeyUp={handleKeyUp}
-                    key={[panelClassName]}
+                    key={panelClassName}
+                    onChange={()=>null}
                     className="form-control bg-dark border rounded text-light"
                     value={"Write Here (Writeup will not display here)"}
                     autoFocus
@@ -71,7 +72,7 @@ const KeyboardFocusable = ({hasDivider}) => {
         </div>
         <div
           id="start"
-          title="Sprintet Menu"
+          title="Keyboard Menu"
           className={`app my-auto p-2 py-1 btn fs-5 ${hasPannel && "active"}`}
           onClick={() => setHasPannel((prev) => !prev)}
         >
