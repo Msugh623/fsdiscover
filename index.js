@@ -63,6 +63,14 @@ socket.on("connection", (client) => {
       console.log("ERROR: " + err);
     })
   );
+  client.on(
+    "keypress",
+    async (data) =>
+      await keyboard.keypress(data, (err) => {
+        client.emit("error", err);
+        console.log("ERROR: " + err);
+      })
+  );
 });
 
 const storage = multer.diskStorage({

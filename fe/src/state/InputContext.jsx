@@ -2,6 +2,7 @@ import { useContext, createContext, useState, useEffect } from "react";
 import { baseUrl } from "../../axios/api";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
+import { keyMap } from "../assets/keymap";
 
 // Create the socket instance outside the component
 export const socket = io(baseUrl, {
@@ -33,8 +34,8 @@ const InputConext = ({ children }) => {
     scrollY: 0,
     scrollPointX: 0,
     scrollPointY: 0,
-    scrollDown:false,
-    hasKeyboard:false
+    scrollDown: false,
+    hasKeyboard: false,
   });
   const [keyConfig, setKeyConfig] = useState({
     downKeys: [],
@@ -42,6 +43,10 @@ const InputConext = ({ children }) => {
   const [pad, setPad] = useState("");
   const [err, setErr] = useState("");
   const [msTimeout, setMsTimeout] = useState(0);
+  const [hasPannel, setHasPannel] = useState(undefined);
+  const [keyVal, setKeyVal] = useState("");
+  const [badKey, setBadKey] = useState(false);
+  const [mouseHistory,setMouseHistory]=useState([])
   function ensinRange(val) {
     if (val < 20 && val > -20) {
       return val;
@@ -96,8 +101,7 @@ const InputConext = ({ children }) => {
       const diffY = localStorage.mouseDown
         ? (e.clientY || e.touches.item(0).clientY) - prev.mouseY
         : 0;
-
-      return {
+      const newval = {
         ...prev,
         dispX: ensinRange(diffX),
         dispY: ensinRange(diffY),
@@ -106,9 +110,16 @@ const InputConext = ({ children }) => {
         mouseX: e.clientX || e.touches.item(0).clientX,
         mouseY: e.clientY || e.touches.item(0).clientY,
         mouseIsMoving: true,
-        mouseDown: true,
+        mouseDown:Boolean(localStorage.mouseDown),
         click: false,
       };
+      setMouseHistory(prev => {
+        let first = [...prev, { dispX: newval.dispX, dispY: newval.dispY }]
+        first.length > 10 && first.shift()
+        setErr([Date.now(),...first.map(d=>JSON.stringify(d))])
+        return first
+      })
+      return newval
     });
     setMsTimeout(
       setTimeout(() => {
@@ -148,7 +159,7 @@ const InputConext = ({ children }) => {
     localStorage.mouseDown = "";
     setTouchConfig((prev) => ({
       ...prev,
-      mouseDown: true,
+      mouseDown: false,
       click: "left",
     }));
   }
@@ -158,7 +169,7 @@ const InputConext = ({ children }) => {
     localStorage.mouseDown = "";
     setTouchConfig((prev) => ({
       ...prev,
-      mouseDown: true,
+      mouseDown: false,
       click: "right",
     }));
   }
@@ -225,42 +236,57 @@ const InputConext = ({ children }) => {
   }
 
   function fingerPrint(key = {}) {
-    return JSON.stringify(key);
+    return "" + key.code + key.keyCode + key.key;
   }
 
   function judgeEvent(e) {
-    const { keyCode, key, code } = e.nativeEvent;
+    const { keyCode, key, code } = e;
     const model = {
       code,
-      key,
+      key: key,
       keyCode,
     };
     return model;
   }
 
+  function isBad(e) {
+    e.key=='Backspace'&&setKeyVal('')
+    return e.keyCode == 229;
+  }
+
   function handleKeydown(e) {
+    e.preventDefault();
+    if (isBad(e)) {
+      return setBadKey(true);
+    }
     const data = judgeEvent(e);
     const print = fingerPrint(data);
     const inDownKeys = keyConfig.downKeys.find((k) => fingerPrint(k) == print);
     if (!inDownKeys) {
       setKeyConfig((prev) => ({
         ...prev,
-        downKeys: [...prev.downKeys, data],
+        downKeys: [data, ...prev.downKeys],
       }));
-      socket.emit("keydown", data);
+      const key = keyMap[data.code || data.key];
+      socket.emit("keydown", key);
     }
   }
 
   function handleKeyUp(e) {
+    e.preventDefault();
+    if (isBad(e)) {
+      return setBadKey(true);
+    }
     const data = judgeEvent(e);
     const print = fingerPrint(data);
     const inDownKeys = keyConfig.downKeys.find((k) => fingerPrint(k) == print);
     if (inDownKeys) {
       setKeyConfig((prev) => ({
         ...prev,
-        downKeys:prev.downKeys.filter(k=>fingerPrint(k)!==print)
+        downKeys: prev.downKeys.filter((k) => fingerPrint(k) !== print),
       }));
-      socket.emit("keyup", data);
+      const key = keyMap[data.code||data.key];
+      socket.emit("keyup", key);
     }
   }
 
@@ -279,6 +305,12 @@ const InputConext = ({ children }) => {
         dispY: 0,
       }));
   }, [touchConfig.mouseIsMoving]);
+
+  useEffect(() => {
+    if (badKey) {
+      socket.emit("keypress", keyVal);
+    }
+  }, [keyVal]);
 
   useEffect(() => {
     try {
@@ -306,6 +338,11 @@ const InputConext = ({ children }) => {
         handleKeyUp,
         keyConfig,
         setKeyConfig,
+        hasPannel,
+        setHasPannel,
+        keyVal,
+        setKeyVal,
+        socket,
       }}
     >
       {" "}
@@ -319,10 +356,8 @@ const InputConext = ({ children }) => {
       >
         {err && <div className="slideUp d-flex text-center">{err}</div>}
         <br />
-        {/* {JSON.stringify(touchConfig)} */}
-        <div className="m-auto">
-          {keyConfig.downKeys.map(k=>k.key)}
-        </div>
+        {JSON.stringify(keyConfig)}
+        <div className="m-auto">{keyVal}</div>
       </pre>
       {children}
     </context.Provider>

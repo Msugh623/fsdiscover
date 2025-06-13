@@ -8,8 +8,15 @@ import Menu from '../../../components/Menu';
 const KeyboardFocusable = ({hasDivider}) => {
     const [panelClassName, setPanelClassName] = useState("d-none");
     const [href, setHref] = useState(location.href);
-    const [hasPannel, setHasPannel] = useState(undefined);
-    const { toggleKeyboard, handleKeydown, handleKeyUp } = useInputContext();
+  const {
+    toggleKeyboard,
+    setKeyVal,
+    keyVal,
+    hasPannel,
+    setHasPannel,
+    handleKeyUp,
+    handleKeydown,
+  } = useInputContext();
   
     useEffect(() => {
       location.href !== href && setHref(location.href);
@@ -58,10 +65,17 @@ const KeyboardFocusable = ({hasDivider}) => {
                     type="text"
                     onKeyDown={handleKeydown}
                     onKeyUp={handleKeyUp}
-                    key={panelClassName}
-                    onChange={()=>null}
+                    autoComplete='off'
+                    autoCorrect='off'
+                    spellCheck='false'
+                    onChange={({ target }) => {
+                      setKeyVal(
+                        target.value[target.value.length - 1] || target.value
+                      );
+                    }}
                     className="form-control bg-dark border rounded text-light"
-                    value={"Write Here (Writeup will not display here)"}
+                    placeholder={"Write Here (Writeup will not display here)"}
+                    value={keyVal}
                     autoFocus
                     id="keystroke"
                   />
@@ -83,7 +97,7 @@ const KeyboardFocusable = ({hasDivider}) => {
             }}
           />
         </div>
-        <Menu hasDivider={false}/>
+        <Menu hasDivider={false} />
         {hasDivider !== false && (
           <div
             className="divider my-auto mx-2"

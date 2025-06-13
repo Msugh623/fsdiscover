@@ -22,7 +22,7 @@ class Device {
     if (
       this.authHandler
         .getConfig()
-        .devices.some((device) => device.clientId === clientId)
+        .devices.some((device) => device.clientId == clientId&&device.type==this.type)
     ) {
       return reject("Device already exists.");
     }
@@ -42,21 +42,21 @@ class Device {
     const clientId = this.clientId;
     const deviceIndex = this.authHandler
       .getConfig()
-      .devices.findIndex((device) => device.clientId === clientId);
+      .devices.findIndex((device) => device.clientId == clientId&&device.type==this.type);
     if (deviceIndex === -1) {
       return reject("Device not found.");
     }
     this.authHandler.config.devices ==
       this.authHandler
         .getConfig()
-        .devices.filter((d) => d.clientId !== clientId);
+        .devices.filter((d) => d.clientId !== clientId&&d.type!==this.type);
     this.authHandler.saveConfig();
     return reject("Device removed successfully.");
   }
 
   parseHistory = (history) => {
     this.history.push(history);
-    this.history.length > 10 && this.history.pop();
+    this.history.length > 10 && this.history.shift();
   };
 }
 
@@ -65,7 +65,7 @@ class Mouse extends Device {
     const clientId = this.clientId;
     const device = this.authHandler
       .getConfig()
-      .devices.find((device) => device.clientId === clientId);
+      .devices.find((device) => device.clientId == clientId&&device.type==this.type);
     if (!device) {
       return reject("Device not found.");
     }
@@ -101,14 +101,24 @@ class Mouse extends Device {
   }
 }
 
+
+
 class Keyboard extends Device {
   async keydown(event, reject = (error = String()) => error) {
-    console.log('keydown', event)
-    keyboard.pressKey(event.keyCode)
+    const key = Key[event];
+    // return console.log("keydown", event, key);
+    await keyboard.pressKey(key || 229);
   }
   async keyup(event, reject = (error = String()) => error) {
-    console.log('keyup', event)
-    keyboard.releaseKey(event.keyCode)
+    const key = Key[event];
+    // return console.log("keyup", event, key);
+    await keyboard.releaseKey(key || 229);
+  }
+
+  async keypress(event, reject = (error = String()) => error) {
+    const key = event;
+    // return console.log("keypress", key);
+    await keyboard.type(key || 229);
   }
 }
 
