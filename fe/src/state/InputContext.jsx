@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 import { keyMap } from "../assets/keymap";
 
 // Create the socket instance outside the component
-export const socket = io(baseUrl, {
+const socket = io(baseUrl, {
   auth: { token: localStorage.token || "" },
   autoConnect: true,
 });
@@ -29,6 +29,7 @@ const InputConext = ({ children }) => {
     ready: false,
     click: false,
     mouseDownHold: false,
+    mouseDownHoldExt: false,
     mouseIsMoving: false,
     scrollX: 0,
     scrollY: 0,
@@ -46,7 +47,7 @@ const InputConext = ({ children }) => {
   const [hasPannel, setHasPannel] = useState(undefined);
   const [keyVal, setKeyVal] = useState("");
   const [badKey, setBadKey] = useState(false);
-  const [mouseHistory,setMouseHistory]=useState([])
+  const [lastPress,setLastPress]=useState(Date.now())
   function ensinRange(val) {
     if (val < 20 && val > -20) {
       return val;
@@ -113,12 +114,10 @@ const InputConext = ({ children }) => {
         mouseDown:Boolean(localStorage.mouseDown),
         click: false,
       };
-      setMouseHistory(prev => {
-        let first = [...prev, { dispX: newval.dispX, dispY: newval.dispY }]
+      const msHist=JSON.parse(localStorage?.mouseHistory||'[]')
+        let first = [...msHist, { dispX: newval.dispX, dispY: newval.dispY }]
         first.length > 10 && first.shift()
-        setErr([Date.now(),...first.map(d=>JSON.stringify(d))])
-        return first
-      })
+        localStorage.mouseHistory=JSON.stringify(first)
       return newval
     });
     setMsTimeout(
@@ -147,7 +146,9 @@ const InputConext = ({ children }) => {
       };
     });
     setTimeout(() => {
-      if (localStorage.mouseDown) {
+      const didMove=(localStorage?.mouseHistory?JSON.parse(localStorage?.mouseHistory):[]).find(instance=>instance.dispX||instance.dispY)
+      if (localStorage.mouseDown && !Boolean(didMove)) {
+        console.log(didMove)
         setTouchConfig((prev) => ({ ...prev, mouseDownHold: true }));
       }
       localStorage.clickId = id;
@@ -181,12 +182,16 @@ const InputConext = ({ children }) => {
       ...prev,
       mouseDown: false,
       mouseDownHold: false,
+      mouseDownHoldExt: false,
       click: false,
       lastMouseUpX: e.clientX || e.touches.item(0)?.clientX || prev?.lastX,
       lastMouseUpY: e.clientY || e.touches.item(0)?.clientY || prev?.lastY,
       lastX: 0,
       lastY: 0,
     }));
+    const msHist = JSON.parse(localStorage?.mouseHistory || "[]");
+    let first = msHist.map(() => ({ dispX: 0, dispY: 0 }))
+    localStorage.mouseHistory = JSON.stringify(first);
   }
 
   function scrollStart(e) {
@@ -310,12 +315,12 @@ const InputConext = ({ children }) => {
     if (badKey) {
       socket.emit("keypress", keyVal);
     }
-  }, [keyVal]);
+  }, [lastPress]);
 
   useEffect(() => {
     try {
       socket.emit("pointerEvent", touchConfig);
-      setErr("");
+      // setErr("");
     } catch {
       setErr("Failed to sync pointer data. Please check your connection.");
     }
@@ -343,6 +348,7 @@ const InputConext = ({ children }) => {
         keyVal,
         setKeyVal,
         socket,
+        setLastPress
       }}
     >
       {" "}
@@ -358,6 +364,7 @@ const InputConext = ({ children }) => {
         <br />
         {JSON.stringify(keyConfig)}
         <div className="m-auto">{keyVal}</div>
+        {`${touchConfig.mouseDownHoldExt}`}
       </pre>
       {children}
     </context.Provider>

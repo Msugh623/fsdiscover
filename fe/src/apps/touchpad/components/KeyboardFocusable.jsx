@@ -16,6 +16,7 @@ const KeyboardFocusable = ({hasDivider}) => {
     setHasPannel,
     handleKeyUp,
     handleKeydown,
+    setLastPress
   } = useInputContext();
   
     useEffect(() => {
@@ -72,6 +73,7 @@ const KeyboardFocusable = ({hasDivider}) => {
                       setKeyVal(
                         target.value[target.value.length - 1] || target.value
                       );
+                      setLastPress(Date.now())
                     }}
                     className="form-control bg-dark border rounded text-light"
                     placeholder={"Write Here (Writeup will not display here)"}

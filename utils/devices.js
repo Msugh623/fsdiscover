@@ -71,10 +71,20 @@ class Mouse extends Device {
     }
     // const lastEvent = this.history[this.history.length - 1] || {};
     const currentPos = await mouse.getPosition();
+
     if (event.click) {
-      await mouse.click(event.click == "right" ? Button.RIGHT : Button.LEFT);
+      const h = Boolean(this.clickHold);
+      this.clickHold && mouse.releaseButton(Button.LEFT)
+      this.clickHold && (this.clickHold = !this.clickHold)
+      !h && await mouse.click(event.click == "right" ? Button.RIGHT : Button.LEFT);
     }
-    await mouse.move([
+
+    if (event.mouseDownHold && !this.clickHold) {
+      this.clickHold = true;
+      await mouse.pressButton(Button.LEFT);
+    } 
+
+    await mouse["move"]([
       new Point(currentPos.x + event.dispX, currentPos.y + event.dispY),
     ]);
 
