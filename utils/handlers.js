@@ -1,16 +1,16 @@
 // const dirname = require("../dirname")
-const path = require('path')
-const os = require('os')
-const { exec } = require("child_process")
+const path = require("path");
+const os = require("os");
+const { exec } = require("child_process");
 // const { createReadStream } = require("fs")
 // const { outputfile, tempdir } = require("../variables")
-const render = require("./render")
-const errorHandlers = require('./errorHandlers')
+const render = require("./render");
+const errorHandlers = require("./errorHandlers");
 const { readFileSync, existsSync, mkdirSync } = require("fs");
 const dirname = require("../dirname");
 const archiver = require("archiver");
 const { writeFile } = require("fs/promises");
-const { mouse } = require('./devices')
+const { mouse } = require("./devices");
 
 const { homedir, platform } = os;
 let config = {
@@ -20,7 +20,7 @@ let config = {
   visitors: [],
   authorizations: [],
   protectedroutes: [],
-  devices:[]
+  devices: [],
 };
 
 class Handlers {
@@ -266,6 +266,8 @@ class AuthHandler {
       agent: headers["user-agent"],
       addr: socket.remoteAddress,
       type: "rest",
+      date: `${new Date()}`,
+      lastAccess: `${new Date()}`,
     };
     req.user = uInfo;
     const theVisitor = this.config.visitors.find(
@@ -274,6 +276,12 @@ class AuthHandler {
     if (!theVisitor) {
       this.config.visitors.push(uInfo);
       await this.saveConfig();
+    } else {
+      this.config.visitors = this.config.visitors.map((u) =>
+        u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
+          ? { ...u, lastAccess: `${new Date()}` }
+          : u
+      );
     }
     if (
       this.config.forbidden.find(
@@ -302,8 +310,10 @@ class AuthHandler {
       agent: headers["user-agent"],
       addr: socket.handshake.address || socket.request.connection.remoteAddress,
       type: "socket",
+      date: `${new Date()}`,
+      lastAccess: `${new Date()}`,
     };
-
+    const auth = socket.handshake.auth.token;
     console.log(`${new Date()} SOCKET request from ${uInfo.addr}`);
 
     // Track visitors
@@ -313,9 +323,15 @@ class AuthHandler {
     if (!theVisitor) {
       this.config.visitors.push(uInfo);
       await this.saveConfig();
+    } else {
+      this.config.visitors = this.config.visitors.map((u) =>
+        u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
+          ? { ...u, lastAccess: `${new Date()}` }
+          : u
+      );
     }
 
-    socket.user=uInfo
+    socket.user = uInfo;
 
     // Check forbidden
     if (
@@ -323,50 +339,44 @@ class AuthHandler {
         (u) => u.agent == uInfo.agent && u.addr == uInfo.addr
       )
     ) {
-      return next(new Error("403 Forbidden by Admin"));
+      return next("Forbidden By Admin");
     }
-
     // Auth check
-    if (this.hasAuth) {
-      const token =
-        headers["authorization"] ||
-        socket.handshake.auth?.token ||
-        socket.handshake.query?.token;
+    if (auth) {
+      const token = auth;
       const theToken = this.config.authorizations.find((a) => a.token == token);
-      socket.token = theToken;
+      socket.token = { ...uInfo, ...theToken };
       return next();
     }
-
     socket.token = uInfo;
     next();
   };
 
   enforceSocketAuth = (socket, next) => {
     const headers = socket.handshake.headers;
-    const user = req.token;
-    const haslogin = this.config.authorizations.find(
-      (a) => a?.addr == user?.addr && a?.agent == user?.agent
-    );
-  
-    if (!token?.token) {
-      console.log(`${new Date()} SOCKET REJECTED (EACCES) from ${socket.user.addr}`);
-      return socket.emit('error', `<center>
-          <h1> EACCES </h1> <hr> \n ${!haslogin ? "401 Unauthorized" : ""}\n 
-          </center>`);
-    }
-    if (!this.tokenIsYoung(token)) {
-      console.log(
-        `${new Date()} SOCKET REJECTED (ESESSSIONTIMEOUT) from ${socket.user.addr}`
+    const user = socket.token;
+    if (!user.token) {
+      console.log(`${new Date()} SOCKET REJECTED (EACCES) from ${user.addr}`);
+      return socket.emit(
+        "error",
+        `<center>
+          <h1> EACCES </h1> <hr> \n ${true ? "401 Unauthorized" : ""}\n 
+          </center>`
       );
-      socket.emit('error', "Session Expired");
-      return this.ejectCred(token.token);
     }
-    if (token.agent !== headers["user-agent"]) {
+    if (!this.tokenIsYoung(user)) {
       console.log(
-        `${new Date()} SOCKET REJECTED (EACCESCOMPROMISED) from ${socket.user.addr}`
+        `${new Date()} SOCKET REJECTED (ESESSSIONTIMEOUT) from ${user.addr}`
       );
-      socket.emit('error', "Authorization compromised");
-      return this.ejectCred(token.token);
+      socket.emit("error", "Session Expired");
+      return this.ejectCred(user.token);
+    }
+    if (user.agent !== headers["user-agent"]) {
+      console.log(
+        `${new Date()} SOCKET REJECTED (EACCESCOMPROMISED) from ${user.addr}`
+      );
+      socket.emit("error", "Authorization compromised");
+      return this.ejectCred(user.token);
     }
     next();
   };
@@ -548,10 +558,11 @@ class AuthHandler {
 
   remDevice = (req, res) => {
     const { body } = req;
-    const { clientId } = body;
-    mouse.remDevice(clientId, (err) => {
-      res.status(500).send(err);
-    });
+    const { clientId, type } = body;
+    // console.log(body)
+    this.config.devices = this.config.devices.filter(
+      (d) => d.clientId !== clientId && d.type !== type
+    );
     this.saveConfig();
     res.status(200).json(this.config.devices);
   };
@@ -582,6 +593,7 @@ class AuthHandler {
       forbidden: this.config.forbidden,
       visitors: this.config.visitors,
       protectedRoutes: this.config.protectedroutes,
+      devices: this.config.devices,
     });
   };
 

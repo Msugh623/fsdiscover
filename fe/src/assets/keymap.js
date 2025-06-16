@@ -134,7 +134,7 @@ export const keyMap = {
   MediaTrackNext: "AudioNext",
   MediaTrackPrevious: "AudioPrev",
   MediaStop: "AudioStop",
-  MediaPlayPause: "AudioPlay",
+  MediaPlayPause: "LeftShift",
   VolumeMute: "AudioMute",
   VolumeDown: "AudioVolDown",
   VolumeUp: "AudioVolUp",

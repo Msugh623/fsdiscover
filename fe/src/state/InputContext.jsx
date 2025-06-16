@@ -6,7 +6,7 @@ import { keyMap } from "../assets/keymap";
 
 // Create the socket instance outside the component
 const socket = io(baseUrl, {
-  auth: { token: localStorage.token || "" },
+  auth: { token: localStorage.access || "" },
   autoConnect: true,
 });
 
@@ -43,13 +43,14 @@ const InputConext = ({ children }) => {
   });
   const [pad, setPad] = useState("");
   const [err, setErr] = useState("");
+  const [status, setStatus] = useState("");
   const [msTimeout, setMsTimeout] = useState(0);
   const [hasPannel, setHasPannel] = useState(undefined);
   const [keyVal, setKeyVal] = useState("");
   const [badKey, setBadKey] = useState(false);
   const [lastPress,setLastPress]=useState(Date.now())
   function ensinRange(val) {
-    if (val < 20 && val > -20) {
+    if (val < 30 && val > -30) {
       return val;
     }
     return 0;
@@ -57,7 +58,16 @@ const InputConext = ({ children }) => {
   useEffect(() => {
     socket.on("error", (err) => {
       setErr("ERROR: " + err);
-      setTimeout(() => setErr(""), 6000);
+      setTimeout(() => !err.includes('termina') && setErr(""), 6000);
+    });
+    socket.on('disconnect', () => {
+      setStatus('Invalid Heartbeat... Retrying')
+    })
+    socket.on('connect', () => {
+      setStatus("Heartbeat restored... parsing device");
+      setTimeout(() => {
+        setStatus('')
+      }, 4000);
     });
     return () => {
       !location.href.includes(":5173") && socket.disconnect();
@@ -220,6 +230,7 @@ const InputConext = ({ children }) => {
         ...prev,
         scrollX: ensinRange(diffX),
         scrollY: ensinRange(diffY),
+        scrollDown: true,
         scrollPointX: e.clientX || e.touches.item(0)?.clientX,
         scrollPointY: e.clientY || e.touches.item(0)?.clientY,
       };
@@ -313,7 +324,9 @@ const InputConext = ({ children }) => {
 
   useEffect(() => {
     if (badKey) {
-      socket.emit("keypress", keyVal);
+      const fabKey = keyMap[`Key${keyVal.toUpperCase()}`];
+      fabKey ? socket.emit("keydown", fabKey) : socket.emit("keypress", keyVal);
+      fabKey && socket.emit("keyup", fabKey);
     }
   }, [lastPress]);
 
@@ -362,9 +375,7 @@ const InputConext = ({ children }) => {
       >
         {err && <div className="slideUp d-flex text-center">{err}</div>}
         <br />
-        {JSON.stringify(keyConfig)}
-        <div className="m-auto">{keyVal}</div>
-        {`${touchConfig.mouseDownHoldExt}`}
+        <div className="small">{status}</div>
       </pre>
       {children}
     </context.Provider>

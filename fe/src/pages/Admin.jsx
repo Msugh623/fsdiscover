@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
-const Admin = ({sudo}) => {
+const Admin = ({children,sudo}) => {
     const navigate = useNavigate()
     const loc = useLocation()
     const [show,setShow]=useState(false)
@@ -10,7 +11,9 @@ const Admin = ({sudo}) => {
     useEffect(() => {
         if (sudo) {
             if (!localStorage.access) {
-                navigate("/", { replace: true });
+                localStorage.go = location.pathname
+                toast('Remote input requires administrator access')
+                navigate("/login", { replace: true });
             } else {
                 setShow(true)
             }
@@ -21,7 +24,8 @@ const Admin = ({sudo}) => {
 
     return (
         <>
-           {show && <Outlet />}
+            {show && <Outlet />}
+            {show&& children}
         </>
     )
 }

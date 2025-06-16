@@ -22,7 +22,7 @@ const AdminIndex = () => {
     }, [category, apps])
 
     useEffect(() => {
-        document.title='Sprintet  - Admin'
+        document.title='Sprintet Fsdiscover  - '+hostname
         fetchSrc()
     }, [])
 

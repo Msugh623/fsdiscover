@@ -2615,3 +2615,44 @@ button.btn.active:hover{
  }#lc::after{
     content: "Left Click";
  }
+
+ .virtualKeyboard .btn{
+    font-size: .8em;
+    /* padding: 6px; */
+ }
+
+ @media (max-width: 440px) {
+    .virtualKeyboard .btn{
+        font-size: .7em;
+        padding: 5px;
+     }
+ }
+
+
+ @media (max-width: 320px) {
+    .virtualKeyboard .btn{
+        font-size: .6em;
+        padding: 4px;
+     }
+     h5{
+        font-size: .9em !important;
+     }
+ }
+
+ @media (max-width: 260px) {
+    .virtualKeyboard .btn{
+        font-size: .5em;
+        padding: 2px;
+     }
+ }
+
+ @media (max-width: 210px) {
+    .virtualKeyboard .btn{
+        padding: 2px;
+     }
+
+     .virtualKeyboard .p-1{
+        padding: 0px !important;
+        padding-block: 2px !important;
+     }
+ }
