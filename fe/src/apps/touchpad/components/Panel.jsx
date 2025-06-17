@@ -170,7 +170,7 @@ const Panel = () => {
         }}
         onClick={() => tourGuide(0)}
       >
-        <BiInfoCircle ,{autoClose:false}/>
+        <BiInfoCircle />
       </div>
       <div
         className="mt-auto w-100"
