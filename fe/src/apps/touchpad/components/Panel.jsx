@@ -105,7 +105,7 @@ const Panel = () => {
     },
     () => {
       localStorage.toastData =
-        "If you are facing difficulty connecting, check your network connection or the logs for errors, if everything looks fine and you still can't connect, Go to the admin page and eject some redundant devices to continue.";
+        "On mobile or touchscreen keyboards, Key inputs might produce unexpected behaviors, in such scenarios, use the key along with SHIFT.";
       setToaster(
         (prev) =>
           (localStorage.lastToast = toast.info(
@@ -113,6 +113,20 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(6)}
+            />
+          ))
+      );
+    },
+    () => {
+      localStorage.toastData =
+        "If you are facing difficulty connecting, check your network connection or the logs for errors, if everything looks fine and you still can't connect, Go to the admin page and eject some redundant devices to continue.";
+      setToaster(
+        (prev) =>
+          (localStorage.lastToast = toast.info(
+            <ToastModel
+              done={false}
+              prev={prev || "0"}
+              next={() => tourGuide(7)}
             />
           ))
       );
