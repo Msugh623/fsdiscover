@@ -33,7 +33,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(1)}
             />
-          ))
+          ,{autoClose:false}))
       );
     },
     () => {
@@ -47,7 +47,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(2)}
             />
-          ))
+          ,{autoClose:false}))
       );
       setTimeout(() => {
         blink("tp");
@@ -63,7 +63,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(3)}
             />
-          ))
+          ,{autoClose:false}))
       );
       setTimeout(() => {
         blink("mouseBarInner");
@@ -80,7 +80,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(4)}
             />
-          ))
+          ,{autoClose:false}))
       );
       setTimeout(() => {
         blink("scrollBar");
@@ -97,7 +97,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(5)}
             />
-          ))
+          ,{autoClose:false}))
       );
       setTimeout(() => {
         blink("start");
@@ -114,7 +114,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(6)}
             />
-          ))
+          ,{autoClose:false}))
       );
     },
     () => {
@@ -128,7 +128,7 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(7)}
             />
-          ))
+          ,{autoClose:false}))
       );
     },
     () => {
@@ -170,7 +170,7 @@ const Panel = () => {
         }}
         onClick={() => tourGuide(0)}
       >
-        <BiInfoCircle />
+        <BiInfoCircle ,{autoClose:false}/>
       </div>
       <div
         className="mt-auto w-100"

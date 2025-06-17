@@ -36,10 +36,9 @@ const KeyboardFocusable = ({ hasDivider }) => {
   const [mediaKeys, setMediaKeys] = useState(false);
 
   function handleVirtualKey(e) {
-    strokerRef.current.focus &&
-      window.innerWidth < 780 &&
-      strokerRef.current.focus();
     if (e.target.value == "toggle") {
+      strokerRef.current.focus &&
+      strokerRef.current.focus();
       return handleToggleKey(e.target.id);
     }
     socket.emit("keytype", e.target.id);
