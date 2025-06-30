@@ -11,6 +11,7 @@ import {
   FaPause,
   FaPlay,
   FaRegKeyboard,
+  FaWindows,
 } from "react-icons/fa";
 import { useEffect } from "react";
 import Menu from "../../../components/Menu";
@@ -34,6 +35,7 @@ const KeyboardFocusable = ({ hasDivider }) => {
 
   const [downKeys, setDownKeys] = useState([]);
   const [mediaKeys, setMediaKeys] = useState(false);
+  const [otherKeys, setOtherKeys] = useState(false);
 
   function handleVirtualKey(e) {
     if (e.target.value == "toggle") {
@@ -115,6 +117,14 @@ const KeyboardFocusable = ({ hasDivider }) => {
                   </h5>
                   {/* First row */}
                   <div className="d-flex col-md-12">
+                    <div className="p-1  d-flex">
+                      <button
+                        onClick={() => setOtherKeys((prev) => !prev)}
+                        className="btn border text-light w-100 text-center"
+                      >
+                        {!otherKeys ? "More" : "Less"}
+                      </button>
+                    </div>
                     <div className=" p-1 d-flex">
                       <button
                         id="Escape"
@@ -156,6 +166,17 @@ const KeyboardFocusable = ({ hasDivider }) => {
 
                   {/* Second Row */}
                   <div className="d-flex col-lg-12">
+                    <div className=" p-1 d-flex">
+                      <button
+                        id="LeftSuper"
+                        onClick={(e) => handleVirtualKey(e)}
+                        className="btn text-light border w-100"
+                      >
+                        <FaWindows
+                          style={{ fontSize: "1.6em", rotate: "180deg" }}
+                        />
+                      </button>
+                    </div>
                     <div className=" p-1 d-flex">
                       <button
                         id="LeftControl"

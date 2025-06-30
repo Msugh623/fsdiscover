@@ -50,7 +50,7 @@ const Layout = () => {
               <>
                 {location.pathname.includes("touchpad") && (
                   <Suspense fallback={<Loader animate={true} />}>
-                    <Admin >
+                    <Admin sudo={true} >
                       <TouchPad />
                     </Admin>
                   </Suspense>

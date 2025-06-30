@@ -119,19 +119,19 @@ class Mouse extends Device {
     if (event.scrollX) {
       const { scrollX } = event;
       if (scrollX >= 1) {
-        mouse.scrollRight(1);
+        mouse.scrollRight(event.scrollX);
       }
       if (scrollX <= 0) {
-        mouse.scrollRight(-1);
+        mouse.scrollRight(event.scrollX);
       }
     }
     if (event.scrollY) {
       const { scrollY } = event;
       if (scrollY >= 1) {
-        mouse.scrollUp(1);
+        mouse.scrollUp(event.scrollY);
       }
       if (scrollY <= 0) {
-        mouse.scrollUp(-1);
+        mouse.scrollUp(event.scrollY);
       }
     }
     this.parseHistory(event);

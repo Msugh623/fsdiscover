@@ -3,8 +3,8 @@ import { useStateContext } from "../state/StateContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
 import { toast } from "react-toastify";
-import { FaLock, FaTrash } from "react-icons/fa";
-import { BiLogOut, BiPencil, BiSync, BiX } from "react-icons/bi";
+import { FaLock } from "react-icons/fa";
+import { BiLogOut } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
 

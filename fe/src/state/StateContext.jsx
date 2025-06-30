@@ -227,11 +227,9 @@ const StateContext = ({ children }) => {
                 }}
               ></div>
             );
-          if (
-            err.response.status == 401 &&
-            !("" + err.response.data).startsWith("<")
-          ) {
-            toast.error("ERROR: Authoraization Error... Login to continue");
+          if (err.response.status == 401) {
+            !("" + err.response.data).startsWith("<") &&
+              toast.error("ERROR: Authoraization Error... Login to continue");
             navigate("/login");
             localStorage.access == "";
           }
@@ -243,7 +241,7 @@ const StateContext = ({ children }) => {
     api.defaults.headers.common["Authorization"] = localStorage?.access || "";
     init();
     fetchSrc();
-    fetchConfig();
+    localStorage?.access && fetchConfig();
   }, []);
 
   useEffect(() => {

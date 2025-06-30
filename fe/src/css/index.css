@@ -2620,10 +2620,13 @@ button.btn.active:hover{
     font-size: .8em;
     /* padding: 6px; */
  }
+ .virtualKeyboard .btn:active{
+   background-color: #efefef40 !important;
+ }
 
  @media (max-width: 440px) {
     .virtualKeyboard .btn{
-        font-size: .7em;
+        font-size: .6em;
         padding: 5px;
      }
  }
