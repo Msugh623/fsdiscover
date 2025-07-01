@@ -173,7 +173,7 @@ const KeyboardFocusable = ({ hasDivider }) => {
                         className="btn text-light border w-100"
                       >
                         <FaWindows
-                          style={{ fontSize: "1.6em", rotate: "180deg" }}
+                          style={{ fontSize: "1.6em", rotate: "180deg",pointerEvents:'none' }}
                         />
                       </button>
                     </div>

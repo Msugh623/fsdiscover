@@ -13,6 +13,10 @@ class Device {
     this.history = [];
     this.type = type;
     this.clientSocket = client;
+    process.on("exit", () => {
+      this.cleanUp()
+      this.authHandler.saveConfig();
+    });
   }
 
   parseDevice(clientId, reject = (error = String()) => error) {
@@ -42,7 +46,7 @@ class Device {
       scrollWheel: true,
       gestures: [],
       user: this.user,
-      date:`${new Date()}`
+      date: `${new Date()}`,
     });
     this.authHandler.saveConfig();
   }
@@ -55,7 +59,7 @@ class Device {
         (device) => device.clientId == clientId && device.type == this.type
       );
     if (!device) {
-      return "Invalid device... Your device does not exist in device index"
+      return "Invalid device... Your device does not exist in device index";
     }
   }
 
@@ -92,7 +96,9 @@ class Mouse extends Device {
         (device) => device.clientId == clientId && device.type == this.type
       );
     if (!device) {
-      return reject("Invalid device... Your device does not exist in device index");
+      return reject(
+        "Invalid device... Your device does not exist in device index"
+      );
     }
     // const lastEvent = this.history[this.history.length - 1] || {};
     const currentPos = await mouse.getPosition();
@@ -117,46 +123,34 @@ class Mouse extends Device {
     ]);
 
     if (event.scrollX) {
-      const { scrollX } = event;
-      if (scrollX >= 1) {
-        mouse.scrollRight(event.scrollX);
-      }
-      if (scrollX <= 0) {
-        mouse.scrollRight(event.scrollX);
-      }
+      mouse.scrollRight(event.scrollX);
     }
     if (event.scrollY) {
-      const { scrollY } = event;
-      if (scrollY >= 1) {
-        mouse.scrollUp(event.scrollY);
-      }
-      if (scrollY <= 0) {
-        mouse.scrollUp(event.scrollY);
-      }
+      mouse.scrollUp(event.scrollY);
     }
     this.parseHistory(event);
   }
 
   cleanUp = () => {
-    mouse.releaseButton(Button.LEFT)
-    mouse.releaseButton(Button.RIGHT)
+    mouse.releaseButton(Button.LEFT);
+    mouse.releaseButton(Button.RIGHT);
     mouse.releaseButton(Button.MIDDLE);
-  }
+  };
 
   async middleClick() {
     const v = this.validateDevice();
     if (v) {
       return reject(v);
     }
-    await mouse.click(Button.MIDDLE)
+    await mouse.click(Button.MIDDLE);
   }
 }
 
 class Keyboard extends Device {
   async keydown(event, reject = (error = String()) => error) {
-    const v = this.validateDevice()
+    const v = this.validateDevice();
     if (v) {
-      return reject(v)
+      return reject(v);
     }
     const key = Key[event];
     this.history.push(event);
@@ -165,7 +159,7 @@ class Keyboard extends Device {
     this.clientSocket.emit("downkeys", this.history);
   }
 
-  async keyup(event, reject = (error = String()) => error) {
+  async keyup(event) {
     const key = Key[event];
     this.history = this.history.filter((i) => i !== event);
     // return console.log("keyup", event, key);
@@ -190,17 +184,17 @@ class Keyboard extends Device {
     }
     const key = Key[event];
     // return console.log("keypress", key);
-    Key['Escape']
+    console.log(event,key)
     await keyboard.pressKey(key || 229);
     await keyboard.releaseKey(key || 229);
   }
 
-  cleanUp=()=>{
-    const keys = this.history.map(k => Key[k])
+  cleanUp = () => {
+    const keys = this.history.map((k) => Key[k]);
     for (const element of keys) {
-      keyboard.releaseKey(element)
+      keyboard.releaseKey(element);
     }
-  }
+  };
 }
 
 module.exports.Mouse = Mouse;
