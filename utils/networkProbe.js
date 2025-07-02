@@ -25,6 +25,7 @@ class NetworkProbe {
     this.callback = callback || (() => {});
     this.fallback = fallback || (() => {});
     this.heartbeat = true;
+    this.protocol = "http";
   }
 
   initLiveCheck = () => {
@@ -45,7 +46,7 @@ class NetworkProbe {
           if (!this.heartbeat) {
             this.verbose &&
               console.log(
-                `\nNetProbe: Network is back online @ http://${this.netface.address}:${port}`
+                `\nNetProbe: Network is back online @ ${this.protocol}://${this.netface.address}:${port}`
               );
           this.heartbeat = true;
           }
@@ -154,12 +155,12 @@ class NetworkProbe {
   ) {
     const netFace = this.netface;
     try {
-      await axios.head(`http://${netFace.address}:${port}`);
+      await axios.head(`${this.protocol}://${netFace.address}:${port}`);
       verbose &&
-        console.log(`NetProbe: http://${netFace.address}:${port} is live`);
+        console.log(`NetProbe: ${this.protocol}://${netFace.address}:${port} is live`);
       cb(null, true);
     } catch (error) {
-      const err = `NetProbeLiveCheck: !Faliure... http://${
+      const err = `NetProbeLiveCheck: !Faliure... ${this.protocol}://${
         netFace.address
       }:${port} Heartbeat failed DT: ${new Date()}`;
       cb(err, false);

@@ -41,6 +41,8 @@ const InputConext = ({ children }) => {
   const [keyConfig, setKeyConfig] = useState({
     downKeys: [],
   });
+
+  const [downKeys, setDownKeys] = useState([]);
   const [pad, setPad] = useState("");
   const [err, setErr] = useState("");
   const [status, setStatus] = useState("");
@@ -48,7 +50,8 @@ const InputConext = ({ children }) => {
   const [hasPannel, setHasPannel] = useState(undefined);
   const [keyVal, setKeyVal] = useState("");
   const [badKey, setBadKey] = useState(false);
-  const [lastPress,setLastPress]=useState(Date.now())
+  const [mouseDownHold, setMouseDownHold] = useState(false);
+  const [lastPress, setLastPress] = useState(Date.now());
   function ensinRange(val) {
     if (val < 30 && val > -30) {
       return val;
@@ -58,15 +61,19 @@ const InputConext = ({ children }) => {
   useEffect(() => {
     socket.on("error", (err) => {
       setErr("ERROR: " + err);
-      setTimeout(() => !err.includes('termina') && setErr(""), 6000);
+      setTimeout(() => !err.includes("termina") && setErr(""), 6000);
     });
-    socket.on('disconnect', () => {
-      setStatus('Invalid Heartbeat... Retrying')
-    })
-    socket.on('connect', () => {
-      setStatus("Heartbeat restored... parsing device");
+    socket.on("mouseDownHold", (data) => {
+      setMouseDownHold(data);
+    });
+
+    socket.on("disconnect", () => {
+      setStatus("Connection Lost... Retrying");
+    });
+    socket.on("connect", () => {
+      setStatus("Connected... Validating device");
       setTimeout(() => {
-        setStatus('')
+        setStatus("");
       }, 4000);
     });
     return () => {
@@ -121,18 +128,22 @@ const InputConext = ({ children }) => {
         mouseX: e.clientX || e.touches.item(0).clientX,
         mouseY: e.clientY || e.touches.item(0).clientY,
         mouseIsMoving: true,
-        mouseDown:Boolean(localStorage.mouseDown),
+        mouseDown: Boolean(localStorage.mouseDown),
         click: false,
       };
-      const msHist=JSON.parse(localStorage?.mouseHistory||'[]')
-        let first = [...msHist, { dispX: newval.dispX, dispY: newval.dispY }]
-        first.length > 10 && first.shift()
-        localStorage.mouseHistory=JSON.stringify(first)
-      return newval
+      const msHist = JSON.parse(localStorage?.mouseHistory || "[]");
+      let first = [...msHist, { dispX: newval.dispX, dispY: newval.dispY }];
+      first.length > 10 && first.shift();
+      localStorage.mouseHistory = JSON.stringify(first);
+      return newval;
     });
     setMsTimeout(
       setTimeout(() => {
-        setTouchConfig((prev) => ({ ...prev, mouseIsMoving: false }));
+        setTouchConfig((prev) => ({
+          ...prev,
+          mouseIsMoving: false,
+          click: false,
+        }));
       }, 400)
     );
   }
@@ -156,10 +167,16 @@ const InputConext = ({ children }) => {
       };
     });
     setTimeout(() => {
-      const didMove=(localStorage?.mouseHistory?JSON.parse(localStorage?.mouseHistory):[]).find(instance=>instance.dispX||instance.dispY)
+      const didMove = (
+        localStorage?.mouseHistory ? JSON.parse(localStorage?.mouseHistory) : []
+      ).find((instance) => instance.dispX || instance.dispY);
       if (localStorage.mouseDown && !Boolean(didMove)) {
-        console.log(didMove)
-        setTouchConfig((prev) => ({ ...prev, mouseDownHold: true }));
+        console.log(didMove);
+        setTouchConfig((prev) => ({
+          ...prev,
+          mouseDownHold: true,
+          click: false,
+        }));
       }
       localStorage.clickId = id;
     }, 300);
@@ -200,7 +217,7 @@ const InputConext = ({ children }) => {
       lastY: 0,
     }));
     const msHist = JSON.parse(localStorage?.mouseHistory || "[]");
-    let first = msHist.map(() => ({ dispX: 0, dispY: 0 }))
+    let first = msHist.map(() => ({ dispX: 0, dispY: 0 }));
     localStorage.mouseHistory = JSON.stringify(first);
   }
 
@@ -214,6 +231,7 @@ const InputConext = ({ children }) => {
         scrollDown: true,
         scrollPointX: e.clientX || e.touches.item(0)?.clientX,
         scrollPointY: e.clientY || e.touches.item(0)?.clientY,
+        click: false,
       };
     });
   }
@@ -231,6 +249,7 @@ const InputConext = ({ children }) => {
         scrollX: ensinRange(diffX),
         scrollY: ensinRange(diffY),
         scrollDown: true,
+        click: false,
         scrollPointX: e.clientX || e.touches.item(0)?.clientX,
         scrollPointY: e.clientY || e.touches.item(0)?.clientY,
       };
@@ -245,6 +264,7 @@ const InputConext = ({ children }) => {
         scrollX: 0,
         scrollY: 0,
         scrollDown: false,
+        click: false,
         scrollPointX: e.clientX || e.touches.item(0)?.clientX,
         scrollPointY: e.clientY || e.touches.item(0)?.clientY,
       };
@@ -266,7 +286,7 @@ const InputConext = ({ children }) => {
   }
 
   function isBad(e) {
-    e.key=='Backspace'&&setKeyVal('')
+    e.key == "Backspace" && setKeyVal("");
     return e.keyCode == 229;
   }
 
@@ -301,7 +321,7 @@ const InputConext = ({ children }) => {
         ...prev,
         downKeys: prev.downKeys.filter((k) => fingerPrint(k) !== print),
       }));
-      const key = keyMap[data.code||data.key];
+      const key = keyMap[data.code || data.key];
       socket.emit("keyup", key);
     }
   }
@@ -319,14 +339,17 @@ const InputConext = ({ children }) => {
         ...prev,
         dispX: 0,
         dispY: 0,
+        click: false,
       }));
   }, [touchConfig.mouseIsMoving]);
 
   useEffect(() => {
     if (badKey) {
       const fabKey = keyMap[`Key${keyVal.toUpperCase()}`];
-      fabKey ? socket.emit("keydown", fabKey) : socket.emit("keypress", keyVal);
-      fabKey && socket.emit("keyup", fabKey);
+      fabKey && downKeys.length
+        ? socket.emit("keydown", fabKey)
+        : socket.emit("keypress", keyVal);
+      fabKey && downKeys.length && socket.emit("keyup", fabKey);
     }
   }, [lastPress]);
 
@@ -361,7 +384,10 @@ const InputConext = ({ children }) => {
         keyVal,
         setKeyVal,
         socket,
-        setLastPress
+        setLastPress,
+        downKeys,
+        setDownKeys,
+        mouseDownHold,
       }}
     >
       {" "}

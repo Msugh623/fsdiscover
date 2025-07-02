@@ -4,3 +4,4 @@ node_modules
 packager-lock.json
 .env
 auth.config.json
+cert/**/*

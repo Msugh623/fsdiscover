@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Run "npm start" in ../../ to get host origin for use in development
 export const baseUrl = location.origin.includes("5173")
-  ? "http://192.168.67.131:3000"
+  ? "http://172.24.48.131:3000"
   : location.origin;
 export default axios.create({
   baseURL: baseUrl,

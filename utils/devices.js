@@ -5,7 +5,6 @@ const {
   keyboard,
   Key,
 } = require("@nut-tree-fork/nut-js");
-
 class Device {
   constructor(handlers, authHandler, type = String(), client) {
     this.handlers = handlers;
@@ -14,7 +13,7 @@ class Device {
     this.type = type;
     this.clientSocket = client;
     process.on("exit", () => {
-      this.cleanUp()
+      this.cleanUp();
       this.authHandler.saveConfig();
     });
   }
@@ -45,7 +44,7 @@ class Device {
       buttons: 3,
       scrollWheel: true,
       gestures: [],
-      user: this.user,
+      user: this.clientSocket?.user,
       date: `${new Date()}`,
     });
     this.authHandler.saveConfig();
@@ -106,6 +105,7 @@ class Mouse extends Device {
     if (event.click) {
       const h = Boolean(this.clickHold);
       this.clickHold && mouse.releaseButton(Button.LEFT);
+      this.clickHold && this.clientSocket.emit("mouseDownHold", false);
       this.clickHold && (this.clickHold = !this.clickHold);
       !h &&
         (await mouse.click(
@@ -115,6 +115,7 @@ class Mouse extends Device {
 
     if (event.mouseDownHold && !this.clickHold) {
       this.clickHold = true;
+      this.clientSocket.emit("mouseDownHold", true);
       await mouse.pressButton(Button.LEFT);
     }
 
@@ -123,10 +124,11 @@ class Mouse extends Device {
     ]);
 
     if (event.scrollX) {
-      mouse.scrollRight(event.scrollX);
+      (event.scrollX <= -1 || event.scrollX >= 1) &&
+        mouse.scrollRight(event.scrollX * 0.3);
     }
     if (event.scrollY) {
-      mouse.scrollUp(event.scrollY);
+      mouse.scrollUp(event.scrollY * 0.3);
     }
     this.parseHistory(event);
   }
@@ -154,7 +156,6 @@ class Keyboard extends Device {
     }
     const key = Key[event];
     this.history.push(event);
-    // return console.log("keydown", event, key);
     await keyboard.pressKey(key || 229);
     this.clientSocket.emit("downkeys", this.history);
   }
@@ -184,7 +185,6 @@ class Keyboard extends Device {
     }
     const key = Key[event];
     // return console.log("keypress", key);
-    console.log(event,key)
     await keyboard.pressKey(key || 229);
     await keyboard.releaseKey(key || 229);
   }

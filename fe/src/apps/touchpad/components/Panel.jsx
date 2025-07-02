@@ -4,7 +4,7 @@ import { BiInfoCircle } from "react-icons/bi";
 import { toast } from "react-toastify";
 
 const Panel = () => {
-  const { init, touchConfig } = useInputContext();
+  const { init, touchConfig, mouseDownHold } = useInputContext();
   const [didInit, setDidInit] = useState(false);
   const [_, setToaster] = useState(0);
 
@@ -176,7 +176,9 @@ const Panel = () => {
         className="mt-auto w-100"
         style={{
           border: "50%",
-          backgroundColor: touchConfig.mouseDown
+          backgroundColor: mouseDownHold
+            ? "green"
+            : touchConfig.mouseDown
             ? touchConfig.mouseDownHold
               ? "green"
               : "red"
@@ -213,7 +215,9 @@ const Panel = () => {
         className="p-1"
         style={{
           border: "50%",
-          backgroundColor: touchConfig.mouseDown
+          backgroundColor: mouseDownHold
+            ? "green"
+            : touchConfig.mouseDown
             ? touchConfig.mouseDownHold
               ? "green"
               : "red"

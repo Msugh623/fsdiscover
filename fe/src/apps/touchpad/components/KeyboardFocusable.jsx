@@ -31,9 +31,10 @@ const KeyboardFocusable = ({ hasDivider }) => {
     handleKeydown,
     setLastPress,
     socket,
+    downKeys,
+    setDownKeys,
   } = useInputContext();
-
-  const [downKeys, setDownKeys] = useState([]);
+  
   const [mediaKeys, setMediaKeys] = useState(false);
   const [otherKeys, setOtherKeys] = useState(false);
 

@@ -78,10 +78,24 @@ if ! [ $? -eq 0 ]; then
    exit 1
 fi
 
+# echo ""
+# echo "Generating SSL certificate... Please enter the details as prompted (Press ENTER to skip field)"
+# if ! [ -d "cert" ]; then
+#     echo "Creating cert directory..."
+#     mkdir cert
+# fi
+
+# ./gencert.sh
+
+if ! [ $? -eq 0 ]; then
+    echo '!!! Installer Exited prematurely... Failed to generate SSL certificate'
+    echo "Please, Contact sprintetmail@gmail.com with the details of this error"
+fi
+
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 
-head "$APP_DIR/auth.config.json" ||   echo "{}" > auth.config.json
+head "$APP_DIR/auth.config.json" | grep "the ungrepable" ||   echo "{}" > auth.config.json
 
 echo 'Copying files to application directory... This can take a while'
 if [ rsync ]; then
