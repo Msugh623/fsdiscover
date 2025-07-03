@@ -13,6 +13,14 @@ PARAM2=${2:-nil}
 if ! [ $PARAM2 == "nil" ]; then
     echo "Too many arguments... fsdiscover must take only 1 argument. Use --help for details"
     exit 1
+elif [ $PARAM1 == "--logs" ] || [ $PARAM1 == "-l" ]; then
+    echo "Opening logs directory... Please wait"
+    cd logs
+    open . || {
+        echo "Unable to open logs directory... Falling back to terminal view"
+        pwd && ls -l
+    }
+    exit $?
 elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
     ./uninstall.sh
     exit $?
@@ -22,6 +30,7 @@ elif [ $PARAM1 == "--version" ] || [ $PARAM1 == "-v" ]; then
 elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "Usage: fsdiscover [option...]"
     echo ""
+    echo "-l, --logs            See Fsdiscover logs"
     echo "-u, --uninstall       Uninstall (remove) fsdiscover"
     echo "-v, --version         See current version"
     echo "-h, --help            See Help"

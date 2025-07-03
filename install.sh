@@ -96,6 +96,7 @@ APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 
 head "$APP_DIR/auth.config.json" | grep "the ungrepable" ||   echo "{}" > auth.config.json
+ls logs | grep "ungrepable" || mkdir logs
 
 echo 'Copying files to application directory... This can take a while'
 if [ rsync ]; then

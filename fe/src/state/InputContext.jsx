@@ -1,18 +1,13 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import { baseUrl } from "../../axios/api";
 import { toast } from "react-toastify";
-import { io } from "socket.io-client";
 import { keyMap } from "../assets/keymap";
+import { useStateContext } from "./StateContext";
 
-// Create the socket instance outside the component
-const socket = io(baseUrl, {
-  auth: { token: localStorage.access || "" },
-  autoConnect: true,
-});
 
 const context = createContext();
 
 const InputConext = ({ children }) => {
+  const {socket}=useStateContext()
   const [touchConfig, setTouchConfig] = useState({
     dispX: 0,
     dispY: 0,

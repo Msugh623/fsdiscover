@@ -5,3 +5,4 @@ packager-lock.json
 .env
 auth.config.json
 cert/**/*
+logs/**/*

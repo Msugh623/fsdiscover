@@ -13,17 +13,27 @@ const SocketIo = require("socket.io");
 const http = require("http");
 const { Mouse } = require("./utils/devices");
 const { Keyboard } = require("./utils/devices");
+const { LogIoParser, UseLogger } = require("./utils/logger");
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
-
+const ioParser = new LogIoParser();
+ioParser.parseIo(socket);
 socket.use(authHandler.checkSocketAuth);
 socket.use(authHandler.enforceSocketAuth);
-
 socket.on("connection", (client) => {
-  console.log(`${new Date()} SOCKET connected ID ${client.id}`);
+  const { logger } = new UseLogger();
+  logger.lognet(
+    "AuthHandler: " +
+      ("" + new Date()).split("(")[0] +
+      " SOCKET connected from " +
+      client.user.addr +
+      " with " +
+      client.id,
+    client.user
+  );
   const mouse = new Mouse(handlers, authHandler, "mouse", client);
   const keyboard = new Keyboard(handlers, authHandler, "keyboard", client);
 
@@ -33,8 +43,11 @@ socket.on("connection", (client) => {
       "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
     );
     setTimeout(() => {
-      client.emit('error','Unable to parse device after 2s... Session terminated')
-      client.disconnect()
+      client.emit(
+        "error",
+        "Unable to parse device after 2s... Session terminated"
+      );
+      client.disconnect();
     }, 3000);
   });
   keyboard.parseDevice(client.id, () => {
@@ -43,8 +56,11 @@ socket.on("connection", (client) => {
       "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
     );
     setTimeout(() => {
-      client.emit('error','Unable to parse device after 2s... Session terminated')
-      client.disconnect()
+      client.emit(
+        "error",
+        "Unable to parse device after 2s... Session terminated"
+      );
+      client.disconnect();
     }, 3000);
   });
 
@@ -166,18 +182,18 @@ app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
 
 async function getNewPort(port) {
+  const { logger } = new UseLogger();
   const url = "http://" + netFace.address + ":" + port;
   try {
     const _ = await fetch(url, { method: "HEAD" });
-    console.log(
+    logger.log(
       `EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`
     );
     return getNewPort(chport(port));
   } catch (err) {
-    //  console.log(err.message)
     netProb.port = port;
     server.listen(port, netFace.address, () => {
-      console.log(
+      logger.log(
         `\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${
           netFace.address
         }:${port}\n`

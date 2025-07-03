@@ -2,9 +2,15 @@ import { useContext, createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api, { remoteApi } from "../../axios/api";
+import { io } from "socket.io-client";
+import { baseUrl } from "../../axios/api";
 
 const context = createContext();
-
+// Create the socket instance outside the component
+const socket = io(baseUrl, {
+  auth: { token: localStorage.access || "" },
+  autoConnect: Boolean(localStorage.access),
+});
 const StateContext = ({ children }) => {
   const sprintet = {
     name: "Sprintet",
@@ -242,6 +248,9 @@ const StateContext = ({ children }) => {
     init();
     fetchSrc();
     localStorage?.access && fetchConfig();
+    socket.on("netlog", (data) => {
+      toast.info(data.message);
+    });
   }, []);
 
   useEffect(() => {
@@ -304,6 +313,7 @@ const StateContext = ({ children }) => {
         forbidroute,
         devices,
         setDevices,
+        socket,
       }}
     >
       {children}
