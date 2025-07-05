@@ -147,7 +147,7 @@ else
 fi
 
 echo "Installation Finished."
-echo '>>> Default password is set to "password", please change it as soon as possible'
+echo '!>>> Default password is set to "password", please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten'
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"

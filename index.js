@@ -1,5 +1,6 @@
 const express = require("express");
-const NetworkProbe = require("./utils/networkProbe");
+// const NetworkProbe = require("./utils/networkProbe");
+const NetworkProbe = require("netprobe");
 const { handlers, authHandler, middleware } = require("./utils/handlers");
 const os = require("os");
 const path = require("path");
@@ -116,6 +117,8 @@ socket.on("connection", (client) => {
   );
 });
 
+const args = process.argv.slice(2,process.argv.length);
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "temp/");
@@ -132,6 +135,23 @@ function chport(port) {
 const upload = multer({ storage: storage });
 let port = process.env.PORT || 3000;
 const netProb = new NetworkProbe(port, null, true, null);
+if (args.includes("--prefer") || args.includes("-p")) {
+  const i =
+    args.indexOf("--prefer") > -1
+      ? args.indexOf("--prefer")
+      : args.indexOf("-p");
+  const face = args[i + 1];
+  if (!face || face.startsWith("-")) {
+    console.error(
+      "Bad network interface supplied. %s Use --prefer <face> or -p <face>",
+      '"' +
+        face +
+        '" is not a valid network interface and will be ignored by automatic detection.'
+    );
+  }
+  netProb.prefer(face);
+}
+
 const netFace = netProb.autoDetect();
 
 app.use(authHandler.checkAuth);
