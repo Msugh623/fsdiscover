@@ -1,6 +1,6 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import api, { remoteApi } from "../../axios/api";
 import { io } from "socket.io-client";
 import { baseUrl } from "../../axios/api";
@@ -52,7 +52,7 @@ const StateContext = ({ children }) => {
 
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
-
+  const location = useLocation();
   const [apps, setApps] = useState([...defaultApps]);
 
   const pinned = apps.filter((app) => app?.pinned);
@@ -67,6 +67,11 @@ const StateContext = ({ children }) => {
   const [protectedRoutes, setProtectedRoutes] = useState([]);
   const [password, setPassword] = useState("");
   const [devices, setDevices] = useState([]);
+  const [traffic, setTraffic] = useState([]);
+  const [scrollConfig, setScrollConfig] = useState({
+    top: scrollY,
+    height: document.documentElement.scrollHeight,
+  });
 
   async function init() {
     window.onresize = () => setVw(window.innerWidth);
@@ -249,9 +254,29 @@ const StateContext = ({ children }) => {
     fetchSrc();
     localStorage?.access && fetchConfig();
     socket.on("netlog", (data) => {
-      toast.info(data.message);
+      window.dispatchEvent(new CustomEvent("netlog", { detail: data }));
     });
+    window.onscroll = () => {
+      setScrollConfig({
+        top: scrollY,
+        height: document.documentElement.scrollHeight - window.innerHeight,
+      });
+    };
+    setTimeout(() => {
+      setScrollConfig({
+        top: scrollY,
+        height: document.documentElement.scrollHeight - window.innerHeight,
+      });
+    }, 400);
   }, []);
+
+  useEffect(() => {
+    setScrollConfig({
+      top: scrollY,
+      height: document.documentElement.scrollHeight - window.innerHeight,
+    });
+  }, [location])
+  
 
   useEffect(() => {
     const categories = apps.map((app) => app.category);
@@ -314,6 +339,10 @@ const StateContext = ({ children }) => {
         devices,
         setDevices,
         socket,
+        traffic,
+        setTraffic,
+        scrollConfig,
+        setScrollConfig,
       }}
     >
       {children}

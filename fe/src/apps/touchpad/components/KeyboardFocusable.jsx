@@ -6,8 +6,10 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaArrowUp,
+  FaBackspace,
   FaBackward,
   FaForward,
+  FaLevelDownAlt,
   FaPause,
   FaPlay,
   FaRegKeyboard,
@@ -34,14 +36,14 @@ const KeyboardFocusable = ({ hasDivider }) => {
     downKeys,
     setDownKeys,
   } = useInputContext();
-  
+
   const [mediaKeys, setMediaKeys] = useState(false);
   const [otherKeys, setOtherKeys] = useState(false);
+  const [inputHadFocus, setInputHadFocus] = useState(false);
 
   function handleVirtualKey(e) {
+    inputHadFocus && strokerRef.current.focus();
     if (e.target.value == "toggle") {
-      strokerRef.current.focus &&
-      strokerRef.current.focus();
       return handleToggleKey(e.target.id);
     }
     socket.emit("keytype", e.target.id);
@@ -89,7 +91,7 @@ const KeyboardFocusable = ({ hasDivider }) => {
             className={`inner ani  rounded shadow-lg p-3 text-light bg-dark text-left slideUp ${panelClassName}`}
             style={{
               // zIndex: ,
-              bottom: "10px",
+              // bottom: "10px",
               position: "relative",
             }}
           >
@@ -97,7 +99,7 @@ const KeyboardFocusable = ({ hasDivider }) => {
               className="row text-light ani"
               style={{
                 minHeight: "400px !important",
-                height: "24vh",
+                height: "20vh",
                 maxHeight: "80vh",
                 // overflowX: 'auto',
                 // overflowY:'visible'
@@ -120,49 +122,60 @@ const KeyboardFocusable = ({ hasDivider }) => {
                   <div className="d-flex col-md-12">
                     <div className="p-1  d-flex">
                       <button
-                        onClick={() => setOtherKeys((prev) => !prev)}
-                        className="btn border text-light w-100 text-center"
+                        onClick={() => {
+                          setOtherKeys((prev) => !prev);
+                          inputHadFocus && strokerRef.current.focus();
+                        }}
+                        className={`btn border text-light w-100 text-center ${
+                          otherKeys && "active"
+                        }`}
                       >
                         {!otherKeys ? "More" : "Less"}
                       </button>
                     </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="Escape"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn text-light border w-100"
-                      >
-                        Esc
-                      </button>
-                    </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="Tab"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn text-light border w-100"
-                      >
-                        Tab
-                      </button>
-                    </div>
-
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="End"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn text-light border w-100"
-                      >
-                        End
-                      </button>
-                    </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="PageUp"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn text-light border w-100"
-                      >
-                        PgUp
-                      </button>
-                    </div>
+                    <VirtualKey
+                      isAlt={otherKeys}
+                      id={"Escape"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      Esc
+                    </VirtualKey>
+                    <VirtualKey
+                      isAlt={otherKeys}
+                      id={"Tab"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      Tab
+                    </VirtualKey>
+                    <VirtualKey
+                      isAlt={otherKeys}
+                      id={"End"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      End
+                    </VirtualKey>
+                    <VirtualKey
+                      alt={
+                        <VirtualKey
+                          id={"Backspace"}
+                          onClick={(e) => handleVirtualKey(e)}
+                        >
+                          <FaBackspace
+                            style={{
+                              fontSize: "1.6em",
+                              rotate: "180deg",
+                              pointerEvents: "none",
+                              rotate: "",
+                            }}
+                          />
+                        </VirtualKey>
+                      }
+                      isAlt={otherKeys}
+                      id={"PageUp"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      PgUp
+                    </VirtualKey>
                   </div>
 
                   {/* Second Row */}
@@ -174,69 +187,79 @@ const KeyboardFocusable = ({ hasDivider }) => {
                         className="btn text-light border w-100"
                       >
                         <FaWindows
-                          style={{ fontSize: "1.6em", rotate: "180deg",pointerEvents:'none' }}
+                          style={{
+                            fontSize: "1.6em",
+                            rotate: "180deg",
+                            pointerEvents: "none",
+                          }}
                         />
                       </button>
                     </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="LeftControl"
-                        value="toggle"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className={`btn text-light border w-100 ${
-                          downKeys.includes("LeftControl") && "active"
-                        }`}
-                      >
-                        Ctrl
-                      </button>
-                    </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="LeftAlt"
-                        value="toggle"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className={`btn text-light border w-100 ${
-                          downKeys.includes("LeftAlt") && "active"
-                        }`}
-                      >
-                        Alt
-                      </button>
-                    </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="LeftShift"
-                        value="toggle"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className={`btn text-light border w-100 ${
-                          downKeys.includes("LeftShift") && "active"
-                        }`}
-                      >
-                        Shift
-                      </button>
-                    </div>
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="PageDown"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn text-light border w-100"
-                      >
-                        PgDown
-                      </button>
-                    </div>
+                    <VirtualKey
+                      isAlt={otherKeys}
+                      id={"LeftControl"}
+                      value={"toggle"}
+                      className={downKeys.includes("LeftControl") && "active"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      Ctrl
+                    </VirtualKey>
+                    <VirtualKey
+                      isAlt={otherKeys}
+                      id={"LeftAlt"}
+                      value={"toggle"}
+                      className={downKeys.includes("LeftAlt") && "active"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      Alt
+                    </VirtualKey>
+                    <VirtualKey
+                      isAlt={otherKeys}
+                      id={"LeftShift"}
+                      value={"toggle"}
+                      className={downKeys.includes("LeftShift") && "active"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      Shift
+                    </VirtualKey>
+                    <VirtualKey
+                      alt={
+                        <VirtualKey
+                          id={"Enter"}
+                          onClick={(e) => handleVirtualKey(e)}
+                        >
+                          Enter
+                        </VirtualKey>
+                      }
+                      isAlt={otherKeys}
+                      id={"PageDown"}
+                      onClick={(e) => handleVirtualKey(e)}
+                    >
+                      PgDown
+                    </VirtualKey>
                   </div>
                 </div>
                 <div className="ms-auto mt-auto">
                   <div className="d-flex">
                     <div className="col-4 p-1 d-flex">
-                      <button
-                        id="Insert"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn pe-4 text-light border w-100"
-                      >
-                        Insert
-                      </button>
+                      {otherKeys ? (
+                        <button
+                          id="Delete"
+                          onClick={(e) => handleVirtualKey(e)}
+                          className="btn pe-4 text-light border w-100"
+                        >
+                          Delete
+                        </button>
+                      ) : (
+                        <button
+                          id="Insert"
+                          onClick={(e) => handleVirtualKey(e)}
+                          className="btn pe-4 text-light border w-100"
+                        >
+                          Insert
+                        </button>
+                      )}
                     </div>
-
                     {mediaKeys ? (
                       <div className="col-4 p-1  d-flex">
                         <button
@@ -263,8 +286,13 @@ const KeyboardFocusable = ({ hasDivider }) => {
                     )}
                     <div className="col-4 p-1  d-flex">
                       <button
-                        onClick={() => setMediaKeys((prev) => !prev)}
-                        className="btn border text-light w-100 text-center"
+                        onClick={() => {
+                          setMediaKeys((prev) => !prev);
+                          inputHadFocus && strokerRef.current.focus();
+                        }}
+                        className={`btn border text-light w-100 text-center ${
+                          mediaKeys && "active"
+                        }`}
                       >
                         {!mediaKeys ? "Media" : "Arrow"}
                       </button>
@@ -349,14 +377,37 @@ const KeyboardFocusable = ({ hasDivider }) => {
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck="false"
-                  aria-multiline="true"
+                  aria-multiline="false"
+                  onFocus={() => {
+                    setTimeout(() => {
+                      setInputHadFocus(true);
+                    }, 250);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setInputHadFocus(false);
+                    }, 250);
+                  }}
                   onChange={({ target }) => {
-                    setKeyVal(
-                      target.value[target.value.length - 1] || target.value
+                    const { value } = target;
+                    setKeyVal((prev) =>
+                      value.length <= 2
+                        ? target.value[value.length - 1] || target.value
+                        : (() => {
+                            if (value.length - prev.length == 1) {
+                              return target.value[value.length - 1];
+                            }
+                            const i = value.indexOf(prev);
+                            return value
+                              .slice(i + i.length + 1, value.length)
+                              .replace(prev, "");
+                          })()
                     );
                     setLastPress(Date.now());
                   }}
-                  className="form-control bg-dark border rounded text-light"
+                  className={`form-control bg-dark border rounded text-light ${
+                    inputHadFocus && "border-primary"
+                  }`}
                   placeholder={"Write Here (Writeup will not display here)"}
                   value={keyVal}
                   autoFocus
@@ -372,7 +423,9 @@ const KeyboardFocusable = ({ hasDivider }) => {
         id="start"
         title="Keyboard Menu"
         className={`app my-auto p-2 py-1 btn fs-5 ${hasPannel && "active"}`}
-        onClick={() => setHasPannel((prev) => !prev)}
+        onClick={() => {
+          setHasPannel((prev) => !prev), setKeyVal("");
+        }}
       >
         <FaRegKeyboard
           className="text-light"
@@ -393,3 +446,20 @@ const KeyboardFocusable = ({ hasDivider }) => {
 };
 
 export default KeyboardFocusable;
+
+function VirtualKey({ children, id, onClick, className, value, isAlt, alt }) {
+  return !isAlt || !alt ? (
+    <div className=" p-1 d-flex">
+      <button
+        id={id}
+        value={value || ""}
+        onClick={(e) => onClick(e)}
+        className={`btn text-light border w-100 ${className}`}
+      >
+        {children}
+      </button>
+    </div>
+  ) : (
+    alt
+  );
+}

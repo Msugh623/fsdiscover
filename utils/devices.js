@@ -5,12 +5,14 @@ const {
   keyboard,
   Key,
 } = require("@nut-tree-fork/nut-js");
+
 class Device {
   constructor(handlers, authHandler, type = String(), client) {
     this.handlers = handlers;
     this.authHandler = authHandler;
     this.history = [];
     this.type = type;
+    type == "keyboard" && (keyboard.config.autoDelayMs = 40);
     this.clientSocket = client;
     process.on("exit", () => {
       this.cleanUp();
@@ -173,9 +175,8 @@ class Keyboard extends Device {
     if (v) {
       return reject(v);
     }
-    const key = event;
     // return console.log("keypress", key);
-    await keyboard.type(key || 229);
+    await keyboard.type(event || "");
   }
 
   async keytype(event, reject = (error = String()) => error) {

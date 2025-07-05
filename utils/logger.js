@@ -4,9 +4,15 @@ const path = require("path");
 
 class Logger {
   constructor() {
+    try {
+      
+      this.logs = fs.readdirSync(path.join(__dirname, "..", "logs"));
+    } catch (error) {
+      
+    }
     this.name =
       "fsdiscover-log-" +
-      new Date().toString().replaceAll(" ", "_").replaceAll(":", "-");
+      new Date().toString().replaceAll(" ", "_");
     this.netname = this.name.replace("log", "netlog");
     this.nethistory = [];
     this.allhistory = [];
@@ -21,7 +27,6 @@ class Logger {
       );
       const toRem = this.logs.pop();
       fs.unlinkSync(path.join(__dirname, "..", "logs", toRem));
-      this.logs = fs.readdirSync(path.join(__dirname, "..", "logs"));
     }
   }
 
@@ -34,8 +39,8 @@ class Logger {
     };
     this.nethistory.push(entry);
     this.allhistory.push(message);
-    this.io.emit("netlog", entry);
     this.saveLog();
+    this.io.emit("netlog", entry);
   }
 
   log(message, toConsole = true) {

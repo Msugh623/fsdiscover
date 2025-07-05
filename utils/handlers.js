@@ -6,7 +6,7 @@ const { exec } = require("child_process");
 // const { outputfile, tempdir } = require("../variables")
 const render = require("./render");
 const errorHandlers = require("./errorHandlers");
-const { readFileSync, existsSync } = require("fs");
+const { readFileSync, existsSync, writeFileSync } = require("fs");
 const dirname = require("../dirname");
 const archiver = require("archiver");
 const { writeFile } = require("fs/promises");
@@ -230,10 +230,17 @@ class Middleware {
   logger = (req, _, next) => {
     const date = new Date();
     req.url !== "/" &&
-      logger.log(
+      logger.lognet(
         `NetFirewall: ${("" + date).split("(")[0]} ${
           req.method
-        }  Request from ${req.socket.remoteAddress} to ${req.url} `
+        }  Request from ${req.socket.remoteAddress} to ${req.url} `,
+        {
+          agent: req.headers["user-agent"],
+          addr: req.socket.remoteAddress,
+          type: "rest",
+          date: `${new Date()}`,
+          lastAccess: `${new Date()}`,
+        }
       );
     next();
   };
@@ -267,24 +274,38 @@ class AuthHandler {
     this.hasAuth = Boolean(toJson?.password);
     process.on("SIGINT", async () => {
       logger.log(
-        ("" + new Date()).split("(")[0] + " SIGINT received, saving config... "
+        ("\n" + new Date()).split("(")[0] +
+          " SIGINT received, Fsdiscover will exit Safely"
       );
-      await this.saveConfig();
-      process.exit();
+      this.saveConfig(() => process.exit(0));
     });
     process.on("SIGTERM", async () => {
       logger.log(
-        ("" + new Date()).split("(")[0] + " SIGTERM received, saving config... "
+        ("\n" + new Date()).split("(")[0] +
+          " SIGTERM received, Fsdiscover will exit Safely"
       );
-      await this.saveConfig();
-      process.exit();
+      this.saveConfig(() => process.exit(0));
     });
-    process.on("uncaughtException", async (err) => {
+    process.on("uncaughtException", (err) => {
+      const stackArr = err.stack.split("\n");
       logger.log(
-        ("" + new Date()).split("(")[0] + " Uncaught Exception: " + err.message
+        ("\nRuntimeErrorHandler: " + new Date()).split("(")[0] +
+          "\n" +
+          stackArr
+            .map(
+              (s, i) =>
+                `${
+                  i == 0
+                    ? "×─── "
+                    : i == stackArr.length - 1
+                    ? "╰───>"
+                    : "│─── "
+                } ${s.replaceAll("   ", " ")}`
+            )
+            .join("\n") +
+          "\n"
       );
-      await this.saveConfig();
-      process.exit(1);
+      this.saveConfig();
     });
   }
 
@@ -305,7 +326,7 @@ class AuthHandler {
     );
     if (!theVisitor) {
       this.config.visitors.push(uInfo);
-      await this.saveConfig();
+      this.saveConfig();
     } else {
       this.config.visitors = this.config.visitors.map((u) =>
         u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
@@ -359,7 +380,7 @@ class AuthHandler {
     );
     if (!theVisitor) {
       this.config.visitors.push(uInfo);
-      await this.saveConfig();
+      this.saveConfig();
     } else {
       this.config.visitors = this.config.visitors.map((u) =>
         u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
@@ -381,7 +402,7 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with Forbidden_Session",
+          " with Forbidden Session",
         user
       );
       return;
@@ -406,7 +427,7 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with Invalid_Socket_Session",
+          " with Invalid Authorization - Login with credentials to get valid Authorization",
         user
       );
       return socket.emit(
@@ -422,7 +443,7 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with Old_Socket_Session",
+          " with (Old/Expired) Socket Session - Login again to renew Authorization",
         user
       );
       socket.emit("error", "Session Expired");
@@ -434,17 +455,27 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with Forbidden_Socket_Session",
+          " with Forbidden Socket Session - Login with credentials to get valid Authorization",
         user
       );
-      socket.emit("error", "Authorization compromised");
+      socket.emit(
+        "error",
+        "Authorization compromised: Login again to renew Authorization"
+      );
       return this.ejectCred(user.token);
     }
     next();
   };
 
   checkDirAuth = async (req, res, next) => {
-    const { url } = req;
+    const { url, headers, socket } = req;
+    const user = {
+      agent: headers["user-agent"],
+      addr: socket.remoteAddress,
+      type: "rest",
+      date: `${new Date()}`,
+      lastAccess: `${new Date()}`,
+    };
     const pathname = url.replace("/fs", "").replaceAll("%20", " ");
     if (
       this.config.protectedroutes.find((u) => {
@@ -456,7 +487,7 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " ACCESS Rejected from " +
           user.addr +
-          " with Forbidden_Route_Trespassed",
+          " with Forbidden Route Trespassed - This route is forbidden by Admin",
         user
       );
       return res
@@ -501,7 +532,9 @@ class AuthHandler {
           " with Old_Session",
         user
       );
-      res.status(401).send("Session Expired");
+      res
+        .status(401)
+        .send("Session Expired - Login again to renew Authorization");
       return this.ejectCred(token.token);
     }
     if (token.agent !== headers["user-agent"]) {
@@ -513,7 +546,9 @@ class AuthHandler {
           " with Bad_Session",
         user
       );
-      res.status(403).send("Authorization compromised");
+      res
+        .status(403)
+        .send("Authorization compromised: Login again to renew Authorization");
       return this.ejectCred(token.token);
     }
     next();
@@ -541,12 +576,13 @@ class AuthHandler {
     return this.config.protectedroutes;
   };
 
-  saveConfig = async () => {
-    await writeFile(
+  saveConfig = (cb = () => {}) => {
+    writeFileSync(
       path.join(dirname(), "auth.config.json"),
       JSON.stringify(this.config)
     );
     config = this.config;
+    cb();
   };
 
   login = async (req, res) => {
@@ -565,7 +601,9 @@ class AuthHandler {
           } LOGIN Rejected from ${req.user.addr} with invalid credentials`,
           req.user
         );
-      return res.status(401).send("Invalid Password");
+      return res
+        .status(401)
+        .send("Invalid Password: Check your credentials in the config");
     }
     const agent = headers["user-agent"];
     const token = crypto.randomUUID();
@@ -668,11 +706,11 @@ class AuthHandler {
   };
 
   updatePassword = (req, res) => {
-    const { body } = req;
+    const { body, user } = req;
     logger.lognet(
       "AuthHandler: " +
         ("" + new Date()).split("(")[0] +
-        " PASSWORD Change_Attempt from " +
+        " PASSWORD Change Attempt from " +
         user.addr +
         "",
       user
@@ -683,7 +721,7 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " ACCESS Rejected from " +
           user.addr +
-          " with Invalid_Old_Password",
+          " with Invalid or Old Password",
         user
       );
       return res.status(401).send("Old password is not correct");
