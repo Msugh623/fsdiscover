@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "postinstall":"mkdir logs"
+    "postinstall":"ls logs > logs.log || mkdir logs"
   },
   "author": "Msugh623",
   "license": "ISC",
