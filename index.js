@@ -216,7 +216,7 @@ async function getNewPort(port) {
       logger.log(
         `\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${
           netFace.address
-        }:${port}\n`
+        }:${port}\n\nUse: help to see options\nUse: exit or quit to stop fsdiscover`
       );
       netProb.initLiveCheck();
     });

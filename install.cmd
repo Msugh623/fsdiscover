@@ -1,83 +1,103 @@
 @echo off
-REM Check if Node.js is installed
+setlocal enabledelayedexpansion
+
+echo.
+echo Fsdiscover is a tool that allows you to access your filesystem over your local HTTP network.
+echo.
+
+REM === Check if Node.js is installed ===
 where node >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo Node.js is not installed. Please install Node.js from https://nodejs.org/en/download and try again.
-    echo FSDiscover depends on Node.js... Proceed to install fnm and Node.js? (Y/N)
-    set /p "USER_CONFIRM=Enter Y to continue or N to cancel: "
-    if /I not "%USER_CONFIRM%"=="Y" (
-        echo Installation canceled by user.
+if errorlevel 1 (
+    echo [ERROR] Node.js is not installed. Please install it from https://nodejs.org/en/download
+    exit /b 1
+)
+
+REM === Install dependencies ===
+if exist package.json (
+    echo Installing project dependencies...
+    if not exist logs mkdir logs
+    call npm install || (
+        echo [ERROR] Failed to install dependencies.
         exit /b 1
     )
-
-    REM Install fnm (Fast Node Manager)
-    winget install Schniz.fnm
-
-    REM Install Node.js version 22 using fnm
-    fnm install 22
-
-    REM Re-check Node.js installation
-    call fnm use 22
-    node -v
-    npm -v
-)
-
-REM Install project dependencies
-if exist package.json (
-    npm install
 ) else (
-    echo Failure: package.json not found... Failed to find project dependencies
+    echo [ERROR] package.json not found... Is this FsDiscover?
     exit /b 1
 )
 
-REM Define application directory
+REM === Setup installation directory ===
 set "APP_DIR=%LOCALAPPDATA%\fsdiscover"
 if not exist "%APP_DIR%" (
-    mkdir "%APP_DIR%"
+    mkdir "%APP_DIR%" || (
+        echo [ERROR] Failed to create %APP_DIR%
+        exit /b 1
+    )
 )
 
-REM Create an exclusion file for xcopy
-> exclude.txt (
-    echo .git\
-    echo fe\
-)
-
-REM Copy project files to application directory
-xcopy /E /I * "%APP_DIR%" /EXCLUDE:exclude.txt
-del exclude.txt
-
-REM Ensure fsdiscover.cmd script exists
-if not exist "%APP_DIR%\fsdiscover.cmd" (
-    echo Error: fsdiscover.cmd not found in %APP_DIR%.
+REM === Prevent running from inside the install dir ===
+if /I "%CD%"=="%APP_DIR%" (
+    echo [ERROR] Please run this installer from outside the fsdiscover installation directory.
     exit /b 1
 )
 
-REM Create Start Menu shortcut
-set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FSDiscover.lnk"
+REM === Write exclusions to temp file ===
+> exclude.txt (
+    echo .git\
+)
+
+REM === Copy files ===
+echo Copying files to %APP_DIR%...
+xcopy /E /I /Y * "%APP_DIR%" /EXCLUDE:exclude.txt >nul
+del exclude.txt
+if errorlevel 1 (
+    echo [ERROR] Failed to copy files.
+    exit /b 1
+)
+
+REM === Create Start Menu shortcut ===
+set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FsDiscover"
 set "TARGET_PATH=%APP_DIR%\fsdiscover.cmd"
-set "ICON_PATH=%APP_DIR%\public\icon.png"
+set "ICON_PATH=%APP_DIR%\public\icon.ICO"
+dir "%SHORTCUT_PATH%" > "logs.log" || mkdir "%SHORTCUT_PATH%"
+node utils/makeico.js "%TARGET_PATH%" "%SHORTCUT_PATH%" "%ICON_PATH%"
 
-REM Create the shortcut using PowerShell
-powershell -NoProfile -Command ^
-  "$ws = New-Object -ComObject WScript.Shell; ^
-   $s = $ws.CreateShortcut('%SHORTCUT_PATH%'); ^
-   $s.TargetPath = '%TARGET_PATH%'; ^
-   if (Test-Path '%ICON_PATH%') { $s.IconLocation = '%ICON_PATH%' }; ^
-   $s.Save()"
+if not exist "%SHORTCUT_PATH%" (
+  echo [WARNING] Failed to create Start Menu shortcut.
+)
 
-REM Create CLI symlink
+REM === Create CLI shortcut ===
 set "BIN_DIR=%USERPROFILE%\bin"
 if not exist "%BIN_DIR%" (
-    mkdir "%BIN_DIR%"
+    mkdir "%BIN_DIR%" || (
+        echo [ERROR] Failed to create %BIN_DIR%
+        exit /b 1
+    )
 )
-mklink "%BIN_DIR%\fsdiscover.cmd" "%APP_DIR%\fsdiscover.cmd"
 
-REM Ensure %USERPROFILE%\bin is in the PATH
-setx PATH "%PATH%;%USERPROFILE%\bin" /M
+REM Overwrite any previous link
+if exist "%BIN_DIR%\fsdiscover.cmd" del "%BIN_DIR%\fsdiscover.cmd"
+copy /Y "%APP_DIR%\fsdiscover.cmd" "%BIN_DIR%\fsdiscover.cmd"
 
-REM Final messages
-echo Installation Finished.
-echo Shortcut created at %SHORTCUT_PATH%
-echo Bin name set to 'fsdiscover'
-echo Run 'fsdiscover' on the CLI to start the application.
-echo Use 'fsdiscover --help' for more information.
+if errorlevel 1 (
+    echo [ERROR] Failed to create CLI shortcut in %BIN_DIR%
+    exit /b 1
+)
+
+REM === Add to PATH if missing ===
+echo %PATH% | find /I "%USERPROFILE%\bin" >nul
+if errorlevel 1 (
+    echo Adding fsdiscover to your PATH...
+    setx PATH "%PATH%;%USERPROFILE%\bin" >nul
+) else (
+    echo PATH already includes fsdiscover.
+)
+
+echo.
+echo Installation complete
+echo Shortcut created at:  %SHORTCUT_PATH%
+echo.
+echo You can now launch FSDiscover from the Start Menu or by running: fsdiscover
+echo Use: fsdiscover --help
+echo for options.
+
+exit /b 0

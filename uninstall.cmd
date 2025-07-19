@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 echo This will uninstall FSDiscover from your system.
 set /p "CONFIRM=Are you sure you want to continue? (Y/N): "
 if /I not "%CONFIRM%"=="Y" (
@@ -6,54 +8,58 @@ if /I not "%CONFIRM%"=="Y" (
     exit /b 0
 )
 
-REM Define directories and paths
+REM === Define paths ===
 set "APP_DIR=%LOCALAPPDATA%\fsdiscover"
-set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FSDiscover.lnk"
+set "PARENT_DIR=%LOCALAPPDATA%"
+set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FsDiscover\FSDiscover.lnk"
+set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\FSDiscover.lnk"
 set "BIN_DIR=%USERPROFILE%\bin"
 set "SYMLINK_PATH=%BIN_DIR%\fsdiscover.cmd"
 
-REM Remove application directory
+REM === Remove Start Menu shortcut ===
+if exist "%SHORTCUT_PATH%" (
+    echo Removing Start Menu shortcut...
+    del "%SHORTCUT_PATH%" >nul
+)
+
+REM === Remove Desktop shortcut ===
+if exist "%DESKTOP_SHORTCUT%" (
+    echo Removing Desktop shortcut...
+    del "%DESKTOP_SHORTCUT%" >nul
+)
+
+REM === Remove CLI shortcut ===
+if exist "%SYMLINK_PATH%" (
+    echo Removing CLI shortcut...
+    del "%SYMLINK_PATH%" >nul
+)
+
+REM === Remove app directory ===
 if exist "%APP_DIR%" (
     echo Removing application directory: %APP_DIR%
     rmdir /S /Q "%APP_DIR%"
 )
 
-REM Remove shortcut
-if exist "%SHORTCUT_PATH%" (
-    echo Removing Start Menu shortcut: %SHORTCUT_PATH%
-    del "%SHORTCUT_PATH%"
+REM === Try to remove parent if empty ===
+pushd "%PARENT_DIR%" >nul
+if not exist "%APP_DIR%" (
+    rd fsdiscover >nul 2>&1
 )
+popd >nul
 
-REM Remove CLI symlink
-if exist "%SYMLINK_PATH%" (
-    echo Removing CLI symlink: %SYMLINK_PATH%
-    del "%SYMLINK_PATH%"
-)
-
-REM Ask user if they want to remove fsdiscover's bin dir from PATH
+REM === Ask to remove bin from PATH ===
 echo.
 echo FSDiscover may have added %USERPROFILE%\bin to your PATH.
 set /p "REMOVE_BIN_PATH=Do you want to remove %USERPROFILE%\bin from your PATH? (Y/N): "
 if /I "%REMOVE_BIN_PATH%"=="Y" (
-    for /f "tokens=1,* delims==" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v PATH 2^>nul') do (
-        set "CUR_PATH=%%b"
+    for /f "tokens=2*" %%A in ('reg query HKCU\Environment /v PATH 2^>nul') do (
+        set "CUR_PATH=%%B"
     )
     call set "NEW_PATH=%%CUR_PATH:%USERPROFILE%\bin;=%%"
-    setx PATH "%NEW_PATH%" /M
-    echo Removed %USERPROFILE%\bin from system PATH.
-)
-
-REM Ask if user wants to uninstall fnm
-echo.
-where fnm >nul 2>&1
-if not errorlevel 1 (
-    set /p "REMOVE_FNM=Do you want to uninstall fnm as well? (Y/N): "
-    if /I "%REMOVE_FNM%"=="Y" (
-        winget uninstall Schniz.fnm
-    )
+    setx PATH "!NEW_PATH!" >nul
+    echo Removed %USERPROFILE%\bin from user PATH.
 )
 
 echo.
-echo FSDiscover has been uninstalled.
+echo FSDiscover has been fully uninstalled.
 exit /b 0
-

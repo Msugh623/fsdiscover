@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "postinstall":"ls logs > logs.log || mkdir logs"
+    "postinstall": "ls logs > logs.log || dir logs > logs.log || mkdir logs"
   },
   "author": "Msugh623",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "axios": "^1.8.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "create-desktop-shortcuts": "^1.11.1",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "multer": "^1.4.5-lts.2",

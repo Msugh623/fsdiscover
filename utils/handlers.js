@@ -231,8 +231,7 @@ class Middleware {
     const date = new Date();
     req.url !== "/" &&
       logger.lognet(
-        `NetFirewall: ${("" + date).split("(")[0]} ${
-          req.method
+        `NetFirewall: ${("" + date).split("(")[0]} ${req.method
         }  Request from ${req.socket.remoteAddress} to ${req.url} `,
         {
           agent: req.headers["user-agent"],
@@ -272,17 +271,40 @@ class AuthHandler {
     this.config = toJson;
     config = toJson;
     this.hasAuth = Boolean(toJson?.password);
+    process.stdin.on("data", (buffer) => {
+      const data = buffer.toString().trim()
+      if (data == 'exit' || data == "quit") {
+        process.stdin.write('\x1b[2A')
+        process.stdin.write('\x1b[2k')
+        console.log("Process has been asked to exit from stdin. user input \"%s\"", data)
+        process.exit(0)
+      }
+      if (data == 'help' || data == "h") {
+        console.log(`\nUse: quit or exit to stop fsdiscover\nUse: uninstall to remove fsdiscover\nUse: help to see
+          `)
+      }
+      if (data == 'uninstall') {
+        console.log(`\nRun fsdiscover /u to uninstall fsdiscover`)
+      }
+    })
     process.on("SIGINT", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGINT received, Fsdiscover will exit Safely"
+        " SIGINT received, Fsdiscover will exit Safely"
       );
       this.saveConfig(() => process.exit(0));
     });
     process.on("SIGTERM", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGTERM received, Fsdiscover will exit Safely"
+        " SIGTERM received, Fsdiscover will exit Safely"
+      );
+      this.saveConfig(() => process.exit(0));
+    });
+    process.on("SIGBREAK", async () => {
+      logger.log(
+        ("\n" + new Date()).split("(")[0] +
+        " SIGTERM received, Fsdiscover will exit Safely"
       );
       this.saveConfig(() => process.exit(0));
     });
@@ -290,20 +312,19 @@ class AuthHandler {
       const stackArr = err.stack.split("\n");
       logger.log(
         ("\nRuntimeErrorHandler: " + new Date()).split("(")[0] +
-          "\n" +
-          stackArr
-            .map(
-              (s, i) =>
-                `${
-                  i == 0
-                    ? "×─── "
-                    : i == stackArr.length - 1
-                    ? "╰───>"
-                    : "│─── "
-                } ${s.replaceAll("   ", " ")}`
-            )
-            .join("\n") +
-          "\n"
+        "\n" +
+        stackArr
+          .map(
+            (s, i) =>
+              `${i == 0
+                ? "×─── "
+                : i == stackArr.length - 1
+                  ? "╰───>"
+                  : "│─── "
+              } ${s.replaceAll("   ", " ")}`
+          )
+          .join("\n") +
+        "\n"
       );
       this.saveConfig();
     });
@@ -367,10 +388,10 @@ class AuthHandler {
     const auth = socket.handshake.auth.token;
     logger.lognet(
       "NetFirewall: " +
-        ("" + new Date()).split("(")[0] +
-        " SOCKET Attempt from " +
-        uInfo.addr +
-        "",
+      ("" + new Date()).split("(")[0] +
+      " SOCKET Attempt from " +
+      uInfo.addr +
+      "",
       uInfo
     );
 
@@ -399,10 +420,10 @@ class AuthHandler {
     ) {
       logger.lognet(
         "NetFirewall: " +
-          ("" + new Date()).split("(")[0] +
-          " SOCKET Rejected from " +
-          user.addr +
-          " with Forbidden Session",
+        ("" + new Date()).split("(")[0] +
+        " SOCKET Rejected from " +
+        user.addr +
+        " with Forbidden Session",
         user
       );
       return;
@@ -424,10 +445,10 @@ class AuthHandler {
     if (!user.token) {
       logger.lognet(
         "AuthHandler: " +
-          ("" + new Date()).split("(")[0] +
-          " SOCKET Rejected from " +
-          user.addr +
-          " with Invalid Authorization - Login with credentials to get valid Authorization",
+        ("" + new Date()).split("(")[0] +
+        " SOCKET Rejected from " +
+        user.addr +
+        " with Invalid Authorization - Login with credentials to get valid Authorization",
         user
       );
       return socket.emit(
@@ -440,10 +461,10 @@ class AuthHandler {
     if (!this.tokenIsYoung(user)) {
       logger.lognet(
         "AuthHandler: " +
-          ("" + new Date()).split("(")[0] +
-          " SOCKET Rejected from " +
-          user.addr +
-          " with (Old/Expired) Socket Session - Login again to renew Authorization",
+        ("" + new Date()).split("(")[0] +
+        " SOCKET Rejected from " +
+        user.addr +
+        " with (Old/Expired) Socket Session - Login again to renew Authorization",
         user
       );
       socket.emit("error", "Session Expired");
@@ -452,10 +473,10 @@ class AuthHandler {
     if (user.agent !== headers["user-agent"]) {
       logger.lognet(
         "NetFirewall: " +
-          ("" + new Date()).split("(")[0] +
-          " SOCKET Rejected from " +
-          user.addr +
-          " with Forbidden Socket Session - Login with credentials to get valid Authorization",
+        ("" + new Date()).split("(")[0] +
+        " SOCKET Rejected from " +
+        user.addr +
+        " with Forbidden Socket Session - Login with credentials to get valid Authorization",
         user
       );
       socket.emit(
@@ -484,10 +505,10 @@ class AuthHandler {
     ) {
       logger.lognet(
         "NetFirewall: " +
-          ("" + new Date()).split("(")[0] +
-          " ACCESS Rejected from " +
-          user.addr +
-          " with Forbidden Route Trespassed - This route is forbidden by Admin",
+        ("" + new Date()).split("(")[0] +
+        " ACCESS Rejected from " +
+        user.addr +
+        " with Forbidden Route Trespassed - This route is forbidden by Admin",
         user
       );
       return res
@@ -508,28 +529,27 @@ class AuthHandler {
     if (!token?.token) {
       logger.lognet(
         "NetFirewall: " +
-          ("" + new Date()).split("(")[0] +
-          " ACCESS Rejected from " +
-          user.addr +
-          " with Invalid Authorization",
+        ("" + new Date()).split("(")[0] +
+        " ACCESS Rejected from " +
+        user.addr +
+        " with Invalid Authorization",
         user
       );
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n ${!haslogin ? "401 Unauthorized" : ""}\n 
-          ${
-            haslogin
-              ? 'Entering fsdiscover from admin page or reloading the admin page is forbidden. Return to the <a href="/">homepage</a> and click the button on the top right corner to enter admin page'
-              : ""
-          }
+          ${haslogin
+          ? 'Entering fsdiscover from admin page or reloading the admin page is forbidden. Return to the <a href="/">homepage</a> and click the button on the top right corner to enter admin page'
+          : ""
+        }
           </center>`);
     }
     if (!this.tokenIsYoung(token)) {
       logger.lognet(
         "AuthHandler: " +
-          ("" + new Date()).split("(")[0] +
-          " ACCESS Rejected from " +
-          user.addr +
-          " with Old_Session",
+        ("" + new Date()).split("(")[0] +
+        " ACCESS Rejected from " +
+        user.addr +
+        " with Old_Session",
         user
       );
       res
@@ -540,10 +560,10 @@ class AuthHandler {
     if (token.agent !== headers["user-agent"]) {
       logger.lognet(
         "NetFirewall: " +
-          ("" + new Date()).split("(")[0] +
-          " ACCESS Rejected from " +
-          user.addr +
-          " with Bad_Session",
+        ("" + new Date()).split("(")[0] +
+        " ACCESS Rejected from " +
+        user.addr +
+        " with Bad_Session",
         user
       );
       res
@@ -576,7 +596,7 @@ class AuthHandler {
     return this.config.protectedroutes;
   };
 
-  saveConfig = (cb = () => {}) => {
+  saveConfig = (cb = () => { }) => {
     writeFileSync(
       path.join(dirname(), "auth.config.json"),
       JSON.stringify(this.config)
@@ -588,16 +608,14 @@ class AuthHandler {
   login = async (req, res) => {
     (this.config.verbose || true) &&
       logger.log(
-        `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Attempt from ${
-          req.user.addr
+        `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Attempt from ${req.user.addr
         } with ${req.user.agent.split("Apple")[0]}`
       );
     const { body, headers, socket } = req;
     if (body.password !== this.config.password) {
       (this.config.verbose || true) &&
         logger.lognet(
-          `AuthHandler: ${
-            ("" + new Date()).split("(")[0]
+          `AuthHandler: ${("" + new Date()).split("(")[0]
           } LOGIN Rejected from ${req.user.addr} with invalid credentials`,
           req.user
         );
@@ -617,8 +635,7 @@ class AuthHandler {
     };
     await this.injectCred(cred);
     logger.lognet(
-      `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Succes from ${
-        req.user.addr
+      `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Succes from ${req.user.addr
       } with ${req.user.agent.split("Apple")[0]}`,
       req.user
     );
@@ -709,19 +726,19 @@ class AuthHandler {
     const { body, user } = req;
     logger.lognet(
       "AuthHandler: " +
-        ("" + new Date()).split("(")[0] +
-        " PASSWORD Change Attempt from " +
-        user.addr +
-        "",
+      ("" + new Date()).split("(")[0] +
+      " PASSWORD Change Attempt from " +
+      user.addr +
+      "",
       user
     );
     if (body.oldpassword !== this.config.password) {
       logger.lognet(
         "AuthHandler: " +
-          ("" + new Date()).split("(")[0] +
-          " ACCESS Rejected from " +
-          user.addr +
-          " with Invalid or Old Password",
+        ("" + new Date()).split("(")[0] +
+        " ACCESS Rejected from " +
+        user.addr +
+        " with Invalid or Old Password",
         user
       );
       return res.status(401).send("Old password is not correct");
@@ -732,11 +749,11 @@ class AuthHandler {
     this.saveConfig();
     logger.lognet(
       "AuthHandler: " +
-        ("" + new Date()).split("(")[0] +
-        " PASSWORD Change_Success from " +
-        user.addr +
-        "with New_Password " +
-        newPassword,
+      ("" + new Date()).split("(")[0] +
+      " PASSWORD Change_Success from " +
+      user.addr +
+      "with New_Password " +
+      newPassword,
       user
     );
     res.status(200).json({

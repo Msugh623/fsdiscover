@@ -5,7 +5,7 @@ const {
   keyboard,
   Key,
 } = require("@nut-tree-fork/nut-js");
-
+const os = require("os")
 class Device {
   constructor(handlers, authHandler, type = String(), client) {
     this.handlers = handlers;
@@ -14,7 +14,9 @@ class Device {
     this.type = type;
     type == "keyboard" && (keyboard.config.autoDelayMs = 40);
     this.clientSocket = client;
-    process.on("exit", () => {
+    this.platform = os.platform()
+    this.accelerator = Number(this.platform=='win32' ? 5 : 0.3)
+    process.on("beforeExit", () => {
       this.cleanUp();
       this.authHandler.saveConfig();
     });
@@ -127,10 +129,10 @@ class Mouse extends Device {
 
     if (event.scrollX) {
       (event.scrollX <= -1 || event.scrollX >= 1) &&
-        mouse.scrollRight(event.scrollX * 0.3);
+        mouse.scrollRight(event.scrollX * this.accelerator);
     }
     if (event.scrollY) {
-      mouse.scrollUp(event.scrollY * 0.3);
+      mouse.scrollUp(event.scrollY * this.accelerator);
     }
     this.parseHistory(event);
   }
