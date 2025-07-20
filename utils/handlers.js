@@ -48,6 +48,7 @@ class Handlers {
         .replace("/fs", "")
         .replaceAll("%20", " ")
         .split("/")
+        .filter(u => Boolean(u))
         .map((u) => `"${u}"`)
         .join("/");
 
@@ -138,7 +139,7 @@ class Handlers {
   fswin32 = (pathname, useData) => {
     // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
     exec(
-      `dir /B ${path.join(homedir(), pathname.replaceAll("/", "\\"))}`,
+      `dir /B ${path.join(homedir(), pathname.replaceAll("/", "\\")).split("\\").map(p=>'"'+p+'"').join("\\")}`,
       (error, stdout, stderr) => {
         if (error) {
           useData(`$ERR${error}`);
