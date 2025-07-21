@@ -117,7 +117,7 @@ socket.on("connection", (client) => {
   );
 });
 
-const args = process.argv.slice(2,process.argv.length);
+const args = process.argv.slice(2, process.argv.length);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -182,7 +182,16 @@ app.post("/fs/upload", upload.array("files", 10), (req, res) => {
   const dir = req.body.dir == "/" ? "/Downloads" : req.body.dir;
   const absoluteDir = os.homedir() + (dir || "/Downloads");
   const placeDir = dir || "/Downloads";
-  exec(`mv temp/* ${absoluteDir}`);
+  exec(
+    `mv temp/* ${absoluteDir
+      .split("/")
+      .map((d) => (d.includes(" ") ? `"${d}"` : d))
+      .join("/")} || move temp\\* ${absoluteDir
+      .replaceAll("/", "\\")
+      .split("\\")
+      .map((d) => (d.includes(" ") ? `"${d}"` : d))
+      .join("\\")}`
+  );
   res
     .status(201)
     .send(

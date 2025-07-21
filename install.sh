@@ -99,7 +99,7 @@ head "$APP_DIR/auth.config.json" | grep "the ungrepable" ||   echo "{}" > auth.c
 ls logs | grep "ungrepable" || mkdir logs
 
 echo 'Copying files to application directory... This can take a while'
-if [ $(rsync  -v > logs.log) ]; then
+if [ $(rsync  --version > logs.log) ]; then
     rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
 else
     echo "rsync failed... falling back to cp (This should take a bit longer)"
@@ -108,8 +108,8 @@ else
 fi
 
 if ! [ $? -eq 0 ]; then
-echo""
-   echo '!!! Installer Exited prematurely...  Installer failed to copy neccesary files'
+   echo ""
+   echo "!!! Installer Exited prematurely...  Installer failed to copy neccesary files"
    echo "Please, Contact sprintetmail@gmail.com with the details of this error "
    exit 1
 fi

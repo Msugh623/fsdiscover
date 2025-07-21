@@ -161,8 +161,8 @@ const StateContext = ({ children }) => {
     try {
       const hn = await api.get("/hostname");
       setHostname(hn.data);
-      const appsRes = (await remoteApi.get("/rq/apps")).data;
-      const psr = [...defaultApps, ...appsRes];
+      // const appsRes = (await remoteApi.get("/rq/apps")).data;
+      const psr = [...defaultApps];
       setApps(psr);
       const appName = searchParams.get("a") || "";
       const theApp = psr.find(

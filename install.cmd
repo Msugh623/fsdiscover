@@ -8,7 +8,16 @@ echo.
 REM === Check if Node.js is installed ===
 where node >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Node.js is not installed. Please install it from https://nodejs.org/en/download
+    echo [WARNING] Node.js is not installed. Fsdiscover depends on the NodeJs runtime to function properly. Downloading and Installing NodeJs...
+    node.msi || curl https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi > node.msi
+    node.msi
+    pause
+)
+
+where node >nul 2>&1
+if errorlevel 1 (
+    echo "NodeJs not found. Fsdiscover depends on the NodeJs runtime to function properly. visit https://nodejs.org/en/download to download it..."
+    pause
     exit /b 1
 )
 

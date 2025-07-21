@@ -2,11 +2,13 @@ import React from "react";
 import Delay from "../../../components/Delay";
 import { useInputContext } from "../../../state/InputContext";
 import KeyboardFocusable from "./KeyboardFocusable";
+import { useState } from "react";
 // import { toast } from "react-toastify";
 
 const Controller = () => {
   const { click, altClick, scrollStart, scrollMove, scrollEnd, socket } =
     useInputContext();
+  const [inflate,setInflate]=useState(false)
   return (
     <div>
       <Delay delay={800}>
@@ -41,19 +43,41 @@ const Controller = () => {
             </button>
             <div className="m-auto px-1 d-flex h-100 w-100">
               <div
-                onClick={() => socket.emit("middleclick")}
+                onClick={() => {
+                  !inflate && socket.emit("middleclick")
+                  inflate && setInflate(false);
+                }}
                 id="scrollBar"
-                onTouchStart={scrollStart}
+                onTouchStart={(e) => {
+                  scrollStart(e)
+                  setInflate(true);
+                  e.target.focus()
+                }}
                 onTouchMove={scrollMove}
-                onTouchEnd={scrollEnd}
-                onTouchCancel={scrollEnd}
+                onTouchEnd={(e)=>{
+                  scrollEnd(e)
+                }}
+                onTouchCancel={(e)=>{
+                  scrollEnd(e)
+                }}
                 onMouseDown={scrollStart}
                 onMouseMove={scrollMove}
                 onMouseUp={scrollEnd}
-                className="active rounded d-flex w-100 h-100 text-center my-auto"
+                onFocus={() => {
+                  setInflate(true);
+                }}
+                onBlur={() => {
+                  setInflate(false);
+                }}
+                className={`active rounded d-flex w-100 ${
+                  !inflate && "h-100"
+                } text-center my-auto`}
                 style={{
                   minWidth: "40px",
                   fontSize: ".7em",
+                  position: "relative",
+                  bottom: inflate && "34px",
+                  height: "80px",
                 }}
               >
                 <small className="m-auto" id="noPoint" style={{}}></small>

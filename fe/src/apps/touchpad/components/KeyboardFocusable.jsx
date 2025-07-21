@@ -8,8 +8,8 @@ import {
   FaArrowUp,
   FaBackspace,
   FaBackward,
+  FaExpandArrowsAlt,
   FaForward,
-  FaLevelDownAlt,
   FaPause,
   FaPlay,
   FaRegKeyboard,
@@ -17,7 +17,7 @@ import {
 } from "react-icons/fa";
 import { useEffect } from "react";
 import Menu from "../../../components/Menu";
-import { toast } from "react-toastify";
+import { BiX } from "react-icons/bi";
 
 const KeyboardFocusable = ({ hasDivider }) => {
   const [panelClassName, setPanelClassName] = useState("d-none");
@@ -40,9 +40,10 @@ const KeyboardFocusable = ({ hasDivider }) => {
   const [mediaKeys, setMediaKeys] = useState(false);
   const [otherKeys, setOtherKeys] = useState(false);
   const [inputHadFocus, setInputHadFocus] = useState(false);
+  const [controller, setController] = useState(false);
 
-  function handleVirtualKey(e) {
-    inputHadFocus && strokerRef.current.focus();
+  function handleVirtualKey(e, killfocus) {
+    killfocus && inputHadFocus && strokerRef.current.focus();
     if (e.target.value == "toggle") {
       return handleToggleKey(e.target.id);
     }
@@ -85,6 +86,12 @@ const KeyboardFocusable = ({ hasDivider }) => {
 
   return (
     <>
+      {controller && (
+        <VirtualNavigator
+          handleVirtualKey={handleVirtualKey}
+          closeController={() => setController(false)}
+        />
+      )}
       <div className="menu-panel">
         <div className="mx-auto col-12 col-sm-10 col-md-8 col-xl-9">
           <div
@@ -253,10 +260,15 @@ const KeyboardFocusable = ({ hasDivider }) => {
                       ) : (
                         <button
                           id="Insert"
-                          onClick={(e) => handleVirtualKey(e)}
-                          className="btn pe-4 text-light border w-100"
+                          onClick={() => {
+                            setController(true);
+                          }}
+                          className="btn pe-4 text-center text-light border w-100"
                         >
-                          Insert
+                          {/* <FaExpandArrowsAlt className=""
+                            style={{ rotate: "45deg", pointerEvents: "none" }}
+                          /> */}
+                          <small className="small">Present</small>
                         </button>
                       )}
                     </div>
@@ -461,5 +473,113 @@ function VirtualKey({ children, id, onClick, className, value, isAlt, alt }) {
     </div>
   ) : (
     alt
+  );
+}
+
+function VirtualNavigator({ handleVirtualKey, closeController }) {
+  return (
+    <>
+      <div
+        className="d-flex fadeIn pb-5"
+        style={{
+          position: "fixed",
+          left: "0",
+          right: "0",
+          top: "0",
+          bottom: "0",
+          backgroundColor: "#061e2cfa",
+          zIndex: 10,
+          backdropFilter:'blur(20px)'
+        }}
+      >
+        <div
+          className="m-auto slideUp shadow border text-light active p-3"
+          style={{
+            borderRadius: "25px",
+          }}
+        >
+          <h4 className="text-light d-flex">
+            Presentation Controller{" "}
+            <button
+              className="ms-auto active rounded my-auto me-1 border"
+              onClick={closeController}
+            >
+              <BiX />
+            </button>
+          </h4>
+          <div className="d-flex">
+            {/* Left Key */}
+            <div className=" p-1  d-flex">
+              <button
+                id="Left"
+                onClick={(e) => handleVirtualKey(e, true)}
+                className="btn border my-auto text-light h-100 w-100 text-center"
+                style={{
+                  width: "25vw",
+                  minWidth: "25vw",
+                  maxWwidth: "25vw",
+                  minHeight: "25vw",
+                }}
+              >
+                <FaArrowLeft style={{ pointerEvents: "none" }} />
+              </button>
+            </div>
+
+            {/* Up Key */}
+            <div className="">
+              <div className=" p-1  d-flex">
+                <button
+                  id="Up"
+                  style={{
+                    width: "25vw",
+                    minWidth: "25vw",
+                    maxWwidth: "25vw",
+                    minHeight: "20vh",
+                  }}
+                  onClick={(e) => handleVirtualKey(e)}
+                  className="btn text-light border w-100 text-center"
+                >
+                  <FaArrowUp style={{ pointerEvents: "none" }} />
+                </button>
+              </div>
+
+              {/* Down Key */}
+              <div className=" p-1  d-flex">
+                <button
+                  id="Down"
+                  style={{
+                    width: "25vw",
+                    minWidth: "25vw",
+                    maxWwidth: "25vw",
+                    minHeight: "20vh",
+                  }}
+                  onClick={(e) => handleVirtualKey(e, true)}
+                  className="btn border text-light w-100 text-center"
+                >
+                  <FaArrowDown style={{ pointerEvents: "none" }} />
+                </button>
+              </div>
+            </div>
+
+            {/* Right Key */}
+            <div className=" p-1  d-flex">
+              <button
+                id="Right"
+                onClick={(e) => handleVirtualKey(e, true)}
+                className="btn border my-auto text-light w-100 h-100 text-center"
+                style={{
+                  width: "25vw",
+                  minWidth: "25vw",
+                  maxWwidth: "25vw",
+                  minHeight: "25vw",
+                }}
+              >
+                <FaArrowRight style={{ pointerEvents: "none" }} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

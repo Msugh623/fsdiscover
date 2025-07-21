@@ -17,13 +17,23 @@ class Logger {
     this.allhistory = [];
     this.logPath = path.join(__dirname, "..", "logs", this.name + ".log");
     this.logs = fs.readdirSync(path.join(__dirname, "..", "logs"));
-    exec('echo. > ' + '"' + this.logPath + '"', (err) => {
-      if (!err) {
-        this.useLog = true
-      } else {
-        console.log(err)
+    exec(
+      "echo. > " +
+        '"' +
+        this.logPath +
+        '"' +
+        " || echo > " +
+        '"' +
+        this.logPath +
+        '"',
+      (err) => {
+        if (!err) {
+          this.useLog = true;
+        } else {
+          console.log(err);
+        }
       }
-    })
+    );
     if (this.logs.length >= 20) {
       this.allhistory.push(
         "Logger: " +
