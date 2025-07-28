@@ -86,6 +86,25 @@ if /I "%PARAM1%"=="/h" goto :show_help
 
 REM If no known argument, assume default run
 
+if exist update\fsdiscover-main (
+  echo "Initiator: Implementing Updates..."
+  if exist update\fsdiscover-main\package.json (
+    xcopy /E /H /Y update\fsdiscover-main\ .\
+    rmdir -r update
+    del sysnet.zip
+    echo "Initiator: Installing Updates..."
+    call npm install
+    echo "Initiator: Updates Installed Succesfully... fsdiscover shall proceed"
+  ) else (
+    echo "Initiator: Updates not Implemented... failed to locate package.json in update directory... fsdiscover shall proceed"
+    rm -r update
+  )
+) else (
+    echo Failure: node_modules not found.
+    echo Run 'install.cmd' or 'npm install' to install dependencies.
+    exit /b 1
+)
+
 REM Check for node_modules before starting
 if exist node_modules (
     node index.js

@@ -15,6 +15,8 @@ const http = require("http");
 const { Mouse } = require("./utils/devices");
 const { Keyboard } = require("./utils/devices");
 const { LogIoParser, UseLogger } = require("./utils/logger");
+const { default: axios } = require("axios");
+const update = require("./update");
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
@@ -211,10 +213,6 @@ app.delete("/fs*", handlers.deletePath);
 app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
 
-function checkForUpdates() { 
-  
-}
-
 async function getNewPort(port) {
   const { logger } = new UseLogger();
   const url = "http://" + netFace.address + ":" + port;
@@ -233,6 +231,7 @@ async function getNewPort(port) {
         }:${port}\n\nUse: help to see options\nUse: exit or quit to stop fsdiscover`
       );
       netProb.initLiveCheck();
+      update()
     });
   }
 }

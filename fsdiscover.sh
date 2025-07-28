@@ -53,10 +53,26 @@ if [ $PARAM1 == "--prefer" ] || [ $PARAM1 == "-p" ] && [ $PARAM2 ]; then
     PARAMS="--prefer $PARAM2"
 fi
 
+if [ -d ../update/fsdiscover-main ]; then
+  echo "Initiator: Implementing Updates..."
+  if [ -f ../update/fsdiscover-main/package.json ]; then
+    cd ../update/fsdiscover-main
+    chmod +x ./install.sh
+    ./install.sh --auto; cd ../../ ; rm -r update/fsdiscover-main; rm sysnet.zip; 
+    exec fsdiscover
+  else
+    echo "Initiator: Updates not Implemented... failed to locate package.json in update directory... fsdiscover shall proceed"
+    rm -r update
+  fi
+fi
+
 # Check for node_modules and start the application
 if [ -d node_modules ]; then
   node index.js $PARAMS 
 else
-  echo "Failure: node_modules not found... Run 'install.sh' or 'npm install' on CLI to install dependencies"
+  echo "Failure: node_modules not found... Run './install.sh' or 'npm install' on CLI to install dependencies"
 fi
 
+if [ -d node_modules ]; then
+  node index.js $PARAMS 
+fi
