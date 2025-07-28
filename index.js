@@ -182,14 +182,15 @@ app.post("/fs/upload", upload.array("files", 10), (req, res) => {
   const dir = req.body.dir == "/" ? "/Downloads" : req.body.dir;
   const absoluteDir = os.homedir() + (dir || "/Downloads");
   const placeDir = dir || "/Downloads";
+  
   exec(
     `mv temp/* ${absoluteDir
       .split("/")
-      .map((d) => (d.includes(" ") ? `"${d}"` : d))
+      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
       .join("/")} || move temp\\* ${absoluteDir
       .replaceAll("/", "\\")
       .split("\\")
-      .map((d) => (d.includes(" ") ? `"${d}"` : d))
+      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
       .join("\\")}`
   );
   res
