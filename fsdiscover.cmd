@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 REM Define application directory and version file path
 set "APP_DIR=%LOCALAPPDATA%\fsdiscover"
-set "VERSION_FILE=%APP_DIR%\.version"
+set "VERSION_FILE=%APP_DIR%\version"
 
 REM Ensure version file exists
 if not exist "%VERSION_FILE%" (

@@ -3,7 +3,7 @@ APP_DIR="$HOME/.local/share/fsdiscover"
 DESKTOP_DIR="$HOME/.local/share/applications/fsdiscover.desktop"
 BIN_DIR="/usr/bin/fsdiscover"
 UNAME=$(id -u)
-V=$(cat "$APP_DIR/.version")
+V=$(cat "$APP_DIR/version")
 
 echo "-----------------------------------------"
 echo ""

@@ -1,6 +1,6 @@
 #!/bin/bash
 APP_DIR="$HOME/.local/share/fsdiscover"
-V=$(cat "$APP_DIR/.version")
+V=$(cat "$APP_DIR/version")
 
 cd "$APP_DIR" || {
   echo "Failure: Unable to change to application directory $APP_DIR"

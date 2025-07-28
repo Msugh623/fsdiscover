@@ -182,7 +182,7 @@ app.post("/fs/upload", upload.array("files", 10), (req, res) => {
   const dir = req.body.dir == "/" ? "/Downloads" : req.body.dir;
   const absoluteDir = os.homedir() + (dir || "/Downloads");
   const placeDir = dir || "/Downloads";
-  
+
   exec(
     `mv temp/* ${absoluteDir
       .split("/")
@@ -210,6 +210,10 @@ app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
 app.delete("/fs*", handlers.deletePath);
 app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
+
+function checkForUpdates() { 
+  
+}
 
 async function getNewPort(port) {
   const { logger } = new UseLogger();

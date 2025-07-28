@@ -1,5 +1,5 @@
 #!/bin/bash
-V=$(cat .version)
+V=$(cat version)
 PARAM=${1:-null}
 
 echo "-----------------------------------------"
