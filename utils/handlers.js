@@ -143,7 +143,7 @@ class Handlers {
   fswin32 = (pathname, useData) => {
     // const outputFilePath = path.join(dirname(), tempdir,  outputfile)
     exec(
-      `dir /B ${path
+      `dir /O-D /B ${path
         .join(homedir(), pathname.replaceAll("/", "\\"))
         .split("\\")
         .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
@@ -170,7 +170,7 @@ class Handlers {
   };
   fsdarwin = (pathname, useData) => {
     exec(
-      `ls ${path
+      `ls -t ${path
         .join(homedir(), pathname)
         .split("/")
         .map((p) => (p.includes(" ") ? `"${p}"` : p))
@@ -228,7 +228,7 @@ class Handlers {
   fslinux = (pathname, useData) => {
     // const outputFilePath = path.join(dirname(), tempdir, 'paths.txt')
     exec(
-      `ls ${path
+      `ls -t ${path
         .join(homedir(), pathname)
         .split("/")
         .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))

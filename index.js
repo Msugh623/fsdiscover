@@ -30,11 +30,11 @@ socket.on("connection", (client) => {
   const { logger } = new UseLogger();
   logger.lognet(
     "AuthHandler: " +
-    ("" + new Date()).split("(")[0] +
-    " SOCKET connected from " +
-    client.user.addr +
-    " with " +
-    client.id,
+      ("" + new Date()).split("(")[0] +
+      " SOCKET connected from " +
+      client.user.addr +
+      " with " +
+      client.id,
     client.user
   );
   const mouse = new Mouse(handlers, authHandler, "mouse", client);
@@ -147,8 +147,8 @@ if (args.includes("--prefer") || args.includes("-p")) {
     console.error(
       "Bad network interface supplied. %s Use --prefer <face> or -p <face>",
       '"' +
-      face +
-      '" is not a valid network interface and will be ignored by automatic detection.'
+        face +
+        '" is not a valid network interface and will be ignored by automatic detection.'
     );
   }
   netProb.prefer(face);
@@ -182,31 +182,22 @@ app.use(express.static(path.join(dirname(), "public", "client")));
 
 app.post("/fs/upload", upload.array("files", 10), (req, res) => {
   const dir = req.body.dir == "/" ? "/Downloads" : req.body.dir;
-  const absoluteDir = os.homedir() + (dir || "/Downloads");
+  const absoluteDir = os.homedir() + (dir || "/Downloads")+'/';
   const placeDir = dir || "/Downloads";
-  const altDir = ""
-
-  exec(
-    `mv temp/* ${absoluteDir
-      .split("/")
-      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-      .join("/")} || move temp\\* ${absoluteDir
-        .replaceAll("/", "\\")
-        .split("\\")
-        .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-        .join("\\")} || mv temp/* ${(os.homedir() + altDir)
-          .split("/")
-          .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-          .join("/")} || move temp\\* ${(os.homedir() + altDir)
-            .replaceAll("/", "\\")
-            .split("\\")
-            .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-            .join("\\")}`
-  );
+  const mv = `mv temp/* ${absoluteDir
+    .split("/")
+    .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
+    .join("/")} || move temp\\* ${absoluteDir
+    .replaceAll("/", "\\")
+    .split("\\")
+    .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
+    .join("\\")}`;
+  exec(`${mv} || mkdir ${absoluteDir} && ${mv}`.replaceAll('//','/').replaceAll('\\\\','\\'));
   res
     .status(201)
     .send(
-      `${req.files.length
+      `${
+        req.files.length
       } file Uploaded to ${os.hostname()} placed at ${placeDir} succesfully`
     );
 });
@@ -233,11 +224,12 @@ async function getNewPort(port) {
     netProb.port = port;
     server.listen(port, netFace.address, () => {
       logger.log(
-        `\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${netFace.address
+        `\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${
+          netFace.address
         }:${port}\n\nUse: help to see options\nUse: exit or quit to stop fsdiscover`
       );
       netProb.initLiveCheck();
-      update()
+      update();
     });
   }
 }
