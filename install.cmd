@@ -106,7 +106,7 @@ echo Installation complete
 echo Shortcut created at:  %SHORTCUT_PATH%
 echo.
 echo You can now launch FSDiscover from the Start Menu or by running: fsdiscover
-echo Use: fsdiscover --help
+echo Use: fsdiscover /help
 echo for options.
 
 exit /b 0

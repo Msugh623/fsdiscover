@@ -511,7 +511,7 @@ A.useSyncExternalStore = function (e, t, n) {
 A.useTransition = function () {
   return Ve.current.useTransition();
 };
-Aversion = "18.3.1";
+A.version = "18.3.1";
 Ds.exports = A;
 var gt = Ds.exports;
 const Ot = lf(gt),
@@ -8948,7 +8948,7 @@ var jp = { usingClientEntryPoint: !1, Events: [Rr, En, Wl, ua, sa, au] },
   },
   Lp = {
     bundleType: bn.bundleType,
-    version: bnversion,
+    version: bn.version,
     rendererPackageName: bn.rendererPackageName,
     rendererConfig: bn.rendererConfig,
     overrideHookState: null,
@@ -9064,7 +9064,7 @@ Je.unstable_renderSubtreeIntoContainer = function (e, t, n, r) {
   if (e == null || e._reactInternals === void 0) throw Error(P(38));
   return eo(e, t, n, !1, r);
 };
-Jeversion = "18.3.1-next-f1338f8080-20240426";
+Je.version = "18.3.1-next-f1338f8080-20240426";
 function Kc() {
   if (
     !(
