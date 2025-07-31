@@ -197,7 +197,7 @@ app.post("/fs/upload", upload.array("files", 10), (req, res) => {
         .join("\\")} || mv temp/* ${(os.homedir() + altDir)
           .split("/")
           .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-          .join("/")} || move temp\\* ${absoluteDir
+          .join("/")} || move temp\\* ${(os.homedir() + altDir)
             .replaceAll("/", "\\")
             .split("\\")
             .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
