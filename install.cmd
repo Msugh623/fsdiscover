@@ -57,7 +57,7 @@ REM === Write exclusions to temp file ===
 REM === Copy files ===
 echo Copying files to %APP_DIR%...
 xcopy /E /I /Y * "%APP_DIR%" /EXCLUDE:exclude.txt >nul
-mkdir "%APP_DIR%/temp"
+mkdir "%APP_DIR%\temp"
 del exclude.txt
 if errorlevel 1 (
     echo [ERROR] Failed to copy files.
