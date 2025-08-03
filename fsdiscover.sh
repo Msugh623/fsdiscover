@@ -72,7 +72,3 @@ if [ -d node_modules ]; then
 else
   echo "Failure: node_modules not found... Run './install.sh' or 'npm install' on CLI to install dependencies"
 fi
-
-if [ -d node_modules ]; then
-  node index.js $PARAMS 
-fi
