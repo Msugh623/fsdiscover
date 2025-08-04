@@ -26,7 +26,7 @@ module.exports = async function () {
   } catch (err) {
     err.message="Updater Failed to update"
     // process.emit("uncaughtException", err);
-    logger.log("NetUpdater: Failed to get updates..." + err?.message, true);
+    logger.log("NetUpdater: Could not connect to github... " + err?.message, true);
   } finally {
     if (!isUpTodate && checkDidFinishCleanly) {
       logger.log(
