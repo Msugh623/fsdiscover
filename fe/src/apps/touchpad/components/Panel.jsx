@@ -4,7 +4,7 @@ import { BiInfoCircle } from "react-icons/bi";
 import { toast } from "react-toastify";
 
 const Panel = () => {
-  const { init, touchConfig, mouseDownHold } = useInputContext();
+  const { init, touchConfig, mouseDownHold, socket } = useInputContext();
   const [didInit, setDidInit] = useState(false);
   const [_, setToaster] = useState(0);
 
@@ -32,8 +32,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(1)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
     },
     () => {
@@ -46,8 +47,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(2)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
       setTimeout(() => {
         blink("tp");
@@ -62,8 +64,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(3)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
       setTimeout(() => {
         blink("mouseBarInner");
@@ -79,8 +82,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(4)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
       setTimeout(() => {
         blink("scrollBar");
@@ -96,8 +100,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(5)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
       setTimeout(() => {
         blink("start");
@@ -113,8 +118,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(6)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
     },
     () => {
@@ -127,8 +133,9 @@ const Panel = () => {
               done={false}
               prev={prev || "0"}
               next={() => tourGuide(7)}
-            />
-          ,{autoClose:false}))
+            />,
+            { autoClose: false }
+          ))
       );
     },
     () => {
@@ -161,16 +168,35 @@ const Panel = () => {
       }}
     >
       <div
-        className="active rounded btn p-1 px-2"
+        className={`active rounded btn p-1 px-2`}
         style={{
           position: "fixed",
           top: "1.2rem",
           left: "1.2rem",
-          zIndex: 20,
+          zIndex: socket.connected ? 10 : 10000,
         }}
-        onClick={() => tourGuide(0)}
+        onClick={({ target }) => {
+          socket.connected
+            ? tourGuide(0)
+            : toast(`
+              Socket Might not be connect due to poor internet or an authorization issue, please refresh the browser, if error persists, check network devices, if it still persists try to log in again or go to admin>devices and eject some redundant devices and refresh or lastly, check if the FSdiscover session is still running or restart FSdiscover on the host computer all over again.
+            `)
+          if (!socket.connected) {
+            target.classList.add('d-none')
+            setTimeout(() => {
+              target.classList.remove('d-none')
+            }, 7000);
+          }
+        }}
       >
-        <BiInfoCircle />
+        <BiInfoCircle className="icon" />{" "}
+        {socket.connected ? (
+          ""
+        ) : (
+          <small className="bg-warning text-dark" style={{ zIndex: 10 }}>
+            Not Connected
+          </small>
+        )}
       </div>
       <div
         className="mt-auto w-100"

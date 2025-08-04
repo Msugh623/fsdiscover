@@ -3,9 +3,12 @@ const { handlers, authHandler } = require("./handlers");
 const adminRouter = express.Router({});
 
 adminRouter.route("/rq/config").get(authHandler.getSafeConfig);
+adminRouter
+  .route("/rq/runtime")
+  .get(authHandler.runtimeConfig.getSafeRuntimeConfig)
+  .put(authHandler.runtimeConfig.updateConfig);
 
-adminRouter.route("/rq/devices/rem")
-  .post(authHandler.remDevice)
+adminRouter.route("/rq/devices/rem").post(authHandler.remDevice);
 
 adminRouter
   .route("/rq/forbidden")

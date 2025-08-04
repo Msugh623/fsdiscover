@@ -10,7 +10,7 @@ import { useStateContext } from "../../../state/StateContext";
 
 const Header = () => {
   const { setIsHidden, getFs, isHidden, key, setKey } = useFsContext();
-  const { hostname } = useStateContext();
+  const { hostname, runtimeConfig } = useStateContext();
   const navigate = useNavigate();
   const [uProgres, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -115,58 +115,75 @@ const Header = () => {
             >
               <BiLeftArrowCircle className="icon" />
             </a>
-            <a
-              className="nav-link my-auto ms-2 p-2"
-              style={{
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                if (!files.length) {
-                  document.getElementById("filer").click();
-                } else {
-                  confirm(
-                    `Press "Okay" to upload ${files.length} files to ${hostname}'s computer!`
-                  )
-                    ? uploadFiles()
-                    : toast(
-                        "Operation requires user permission which has been denied"
-                      );
-                }
-              }}
-            >
-              <FaUpload className="icon" />{" "}
-              {window.innerWidth > 600 || !files.length ? "Upload" : ""}{" "}
-              {files.length ? files.length + " files" : ""}
-              {files?.length ? (
-                <span
-                  title="Change selection"
-                  onClick={(e) => {
-                    e.stopPropagation();
+            {localStorage.access || runtimeConfig?.noAuthFsWrite ? (
+              <a
+                className="nav-link my-auto ms-2 p-2"
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  if (!files.length) {
                     document.getElementById("filer").click();
-                  }}
-                  className="rounded ms-2"
+                  } else {
+                    confirm(
+                      `Press "Okay" to upload ${files.length} files to ${hostname}'s computer!`
+                    )
+                      ? uploadFiles()
+                      : toast(
+                          "Operation requires user permission which has been denied"
+                        );
+                  }
+                }}
+              >
+                <FaUpload className="icon" />{" "}
+                {window.innerWidth > 600 || !files.length ? (
+                  <span style={{ pointerEvents: "none", zIndex: -1 }}>
+                    Upload
+                  </span>
+                ) : (
+                  ""
+                )}{" "}
+                {files.length ? files.length + " files" : ""}
+                {files?.length ? (
+                  <span
+                    title="Change selection"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      document.getElementById("filer").click();
+                    }}
+                    className="rounded ms-2"
+                  >
+                    <BiSelectMultiple className="icon fs-4" />
+                  </span>
+                ) : (
+                  ""
+                )}
+                {files?.length ? (
+                  <span
+                    title="Cancel Selection"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      confirm("Do you want to Unselect all selected Files?") &&
+                        setFiles([]);
+                    }}
+                    className=" rounded fs-5 ms-2"
+                  >
+                    <FaTimes className="icon" />
+                  </span>
+                ) : (
+                  ""
+                )}
+              </a>
+            ) : (
+              <>
+                <Link
+                  to={!localStorage.access ? `/login` : "/admin"}
+                  className="rounded shadow-lg p-3 ms-3 py-2 border border-dashed readmore custom-navmenu text-light"
                 >
-                  <BiSelectMultiple className="icon fs-4" />
-                </span>
-              ) : (
-                ""
-              )}
-              {files?.length ? (
-                <span
-                  title="Cancel Selection"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    confirm("Do you want to Unselect all selected Files?") &&
-                      setFiles([]);
-                  }}
-                  className=" rounded fs-5 ms-2"
-                >
-                  <FaTimes className="icon" />
-                </span>
-              ) : (
-                ""
-              )}
-            </a>
+                  authorize to upload
+                </Link>
+              </>
+            )}
             <input
               type="file"
               name="files"

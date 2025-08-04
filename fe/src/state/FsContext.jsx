@@ -23,13 +23,7 @@ const FsContext = ({ children }) => {
       const res = await api.get("/fs" + path);
       setLocChildren(res.data);
     } catch (err) {
-      toast.error(
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `${err?.response?.data || err.message || "" + err}`,
-          }}
-        ></div>
-      );
+      toast.error("Something Went Wrong");
       setErr(
         "" + err?.status == "404"
           ? "No such file or directory"

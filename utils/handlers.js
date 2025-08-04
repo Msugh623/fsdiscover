@@ -9,11 +9,14 @@ const errorHandlers = require("./errorHandlers");
 const { readFileSync, existsSync, writeFileSync } = require("fs");
 const dirname = require("../dirname");
 const archiver = require("archiver");
-const { writeFile } = require("fs/promises");
 const { UseLogger } = require("./logger");
+const { UseRuntimeConfig } = require("./useRuntimeConfig");
 const { logger } = new UseLogger();
 
-const { homedir, platform } = os;
+const { platform } = os;
+function homedir() {
+  return runtimeConfig.config.publicDir;
+}
 let config = {
   password: "password",
   verbose: Boolean(),
@@ -39,10 +42,20 @@ class Handlers {
         encoding: "utf-8",
       }
     );
-    const psr = boilerplate.replace("$title", os.hostname() + " - Fs Discover");
+    const psr = boilerplate.replace(
+      "$title",
+      os.hostname() + "SprintET FSdiscover"
+    );
     res.send(psr);
   };
   getPath = (req, res) => {
+    const token = req?.token;
+    if (!token?.token && !runtimeConfig.config.noAuthFsRead) {
+      return res.status(401).send(`<center>
+          <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
+          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/auth/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+      </center>`);
+    }
     try {
       const pathname = req.url
         .replace("/fs", "")
@@ -81,6 +94,13 @@ class Handlers {
     }
   };
   zipDir = (req, res) => {
+    const token = req?.token;
+    if (!token?.token && !runtimeConfig.config.noAuthFsRead) {
+      return res.status(401).send(`<center>
+          <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
+          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/auth/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+      </center>`);
+    }
     try {
       const pathname = req.url.replace("/zipper", "").replaceAll("%20", " ");
       const zipper = archiver("zip", {
@@ -272,6 +292,8 @@ class Middleware {
   };
 }
 
+const { runtimeConfig } = new UseRuntimeConfig();
+
 class AuthHandler {
   constructor() {
     if (!existsSync(path.join(dirname(), "auth.config.json"))) {
@@ -298,6 +320,7 @@ class AuthHandler {
     this.config = toJson;
     config = toJson;
     this.hasAuth = Boolean(toJson?.password);
+    this.runtimeConfig = runtimeConfig;
     process.stdin.on("data", (buffer) => {
       const data = buffer.toString().trim();
       if (data == "exit" || data == "quit") {
@@ -787,8 +810,7 @@ class AuthHandler {
         ("" + new Date()).split("(")[0] +
         " PASSWORD Change_Success from " +
         user.addr +
-        "with New_Password " +
-        newPassword,
+        "with <Check auth.config.json>",
       user
     );
     res.status(200).json({

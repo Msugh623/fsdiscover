@@ -99,8 +99,8 @@ head "$APP_DIR/auth.config.json" | grep "the ungrepable" ||   echo "{}" > auth.c
 ls logs | grep "ungrepable" || mkdir logs
 
 echo 'Copying files to application directory... This can take a while'
-if [ $(rsync  --version > logs.log) ]; then
-    rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"
+if command  rsync --version &> /dev/null ; then
+    rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"||tar --exclude=".git" -cf - ./ | tar -xf - -C "$APP_DIR"
 else
     echo "rsync failed... falling back to cp (This should take a bit longer)"
     # cp -r ./ "$APP_DIR"

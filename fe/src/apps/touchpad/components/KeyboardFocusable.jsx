@@ -82,6 +82,9 @@ const KeyboardFocusable = ({ hasDivider }) => {
     socket.on("downkeys", (data) => {
       setDownKeys(data || []);
     });
+    if(!socket.connected){
+      socket.connect()
+    }
   }, []);
 
   return (
@@ -526,15 +529,15 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
             </div>
 
             {/* Up Key */}
-            <div className="">
-              <div className=" p-1  d-flex">
+            <div className="d-flex flex-column">
+              <div className=" p-1 mb-auto d-flex">
                 <button
                   id="Up"
                   style={{
                     width: "25vw",
                     minWidth: "25vw",
-                    maxWwidth: "25vw",
-                    minHeight: "20vh",
+                    maxWidth: "25vw",
+                    minHeight: "25vh",
                   }}
                   onClick={(e) => handleVirtualKey(e)}
                   className="btn text-light border w-100 text-center"
@@ -544,14 +547,14 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               </div>
 
               {/* Down Key */}
-              <div className=" p-1  d-flex">
+              <div className=" p-1 mt-auto d-flex">
                 <button
                   id="Down"
                   style={{
                     width: "25vw",
                     minWidth: "25vw",
                     maxWwidth: "25vw",
-                    minHeight: "20vh",
+                    minHeight: "25vh",
                   }}
                   onClick={(e) => handleVirtualKey(e, true)}
                   className="btn border text-light w-100 text-center"

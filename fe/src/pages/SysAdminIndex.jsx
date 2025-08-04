@@ -22,8 +22,9 @@ const SysAdminIndex = () => {
     setDevices,
     traffic,
     setTraffic,
-    scrollConfig,
     setScrollConfig,
+    runtimeConfig,
+    setRuntimeConfig,
   } = useStateContext();
   const navigate = useNavigate();
   const [category, setCategory] = useState("Visitors");
@@ -84,6 +85,43 @@ const SysAdminIndex = () => {
           }}
         ></div>
       );
+    }
+  }
+
+  async function updateRuntimeConfig() {
+    const tst = toast.loading("Updating");
+    try {
+      const res = await api.put("/admin/rq/runtime", runtimeConfig);
+      setRuntimeConfig(res.data);
+    } catch (err) {
+      toast.error(
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `${err?.response?.data || err.message || "" + err}`,
+          }}
+        ></div>
+      );
+    } finally {
+      toast.dismiss(tst);
+    }
+  }
+
+  async function getRuntimeConfig() {
+    const tst = toast.loading("Gathering resources");
+    try {
+      const res = await api.get("/admin/rq/runtime");
+      setRuntimeConfig(res.data);
+    } catch (err) {
+      toast.error(
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `${err?.response?.data || err.message || "" + err}`,
+          }}
+        ></div>
+      );
+      toast.dismiss(tst);
+    } finally {
+      toast.dismiss(tst);
     }
   }
 
@@ -270,6 +308,18 @@ const SysAdminIndex = () => {
                   onClick={() => setCategory("Network Traffic")}
                 >
                   Network_Traffic{" "}
+                </a>
+                <a
+                  href="#RuntimeConfiguration"
+                  data-category="*"
+                  className={
+                    "p-1 mx-1 shadow rounded" +
+                    (category == "RuntimeConfiguration" &&
+                      "active rounded border")
+                  }
+                  onClick={() => setCategory("RuntimeConfiguration")}
+                >
+                  Runtime_Configuration{" "}
                 </a>
               </div>
             </div>
@@ -473,6 +523,15 @@ const SysAdminIndex = () => {
             />
           )}
 
+          {(category == "All" || category == "RuntimeConfiguration") && (
+            <RuntimeConfig
+              runtimeConfig={runtimeConfig}
+              setRuntimeConfig={setRuntimeConfig}
+              updateRuntimeConfig={updateRuntimeConfig}
+              getRuntimeConfig={getRuntimeConfig}
+            />
+          )}
+
           <div
             className="mt-5"
             style={{
@@ -579,6 +638,197 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function RuntimeConfig({
+  runtimeConfig,
+  setRuntimeConfig,
+  getRuntimeConfig,
+  updateRuntimeConfig,
+}) {
+  const { apps } = useStateContext();
+  function handleChange({ target }) {
+    setRuntimeConfig((prev) => ({
+      ...prev,
+      [target.name]: target.value,
+    }));
+  }
+
+  useEffect(() => {
+    getRuntimeConfig();
+  }, []);
+  return (
+    <>
+      {" "}
+      <div className="paper p-4 shadow mt-5">
+        <h3 className="fw-bold d-flex">
+          Runtime Config
+          <div className="ms-auto">
+            <button
+              className="btn-primary btn fs-6 mb-auto"
+              onClick={() => {
+                updateRuntimeConfig();
+              }}
+            >
+              Save Config
+            </button>
+          </div>
+        </h3>
+        <div className="small mb-3">
+          These are setting for FSdiscover, Modifying any of these will effect
+          on the behaviour of FSdiscover installed on your system
+          <hr />
+        </div>
+        {/* Settings Begin */}
+
+        {/* Publicly available Directory */}
+        <div className="form-group">
+          <h6 className="h6">Public Directory</h6>
+          <div className="small text-muted ">
+            Public Directory is the directory FSdiscover's File explorer is
+            allowed to access, The public directory is available in the Files
+            Section. Endure the directory exists on the host computer otherwise it will produce unexpected behaviour.
+            <div className="">
+              <input
+                type="text"
+                value={runtimeConfig.publicDir}
+                name="publicDir"
+                className="form-control"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <hr />
+        </div>
+
+        {/* Behaviour file explorer for unauthorized people */}
+        <div className="form-group">
+          <h6 className="h6">Upload Files without Authorization</h6>
+          <div className="small text-muted ">
+            Controls wether Users that are not logged in can upload files
+            through FSdiscover to your computer
+            <div className="">
+              <select
+                type="text"
+                value={runtimeConfig.noAuthFsWrite}
+                name="noAuthFsWrite"
+                className="form-control"
+                onChange={(e) => {
+                  handleChange(e);
+                }}
+              >
+                <option value={false}>Don't Allow</option>
+                <option value={true}>Allow</option>
+              </select>
+            </div>
+          </div>
+          <hr />
+        </div>
+
+        <div className="form-group">
+          <h6 className="h6">Access Files without Authorization</h6>
+          <div className="small text-muted ">
+            Controls wether Users that are not logged in can Access file
+            through FSdiscover
+            <div className="">
+              <select
+                type="text"
+                value={runtimeConfig.noAuthFsRead}
+                name="noAuthFsRead"
+                className="form-control"
+                onChange={(e) => {
+                  handleChange(e);
+                }}
+              >
+                <option value={false}>Don't Allow</option>
+                <option value={true}>Allow</option>
+              </select>
+            </div>
+          </div>
+          <hr />
+        </div>
+
+        {/* Publicly available Directory */}
+        <div className="form-group">
+          <h6 className="h6">Session Max Age</h6>
+          <div className="small text-muted ">
+            This controls how long untill a user's authorization expires, then
+            they will have to log in again. The default is 1 hour. This value is
+            in milliseconds. (1000 milliseconds make one second, 1 hour is
+            60*60*1000*1)
+            <div className="">
+              <input
+                type="number"
+                value={runtimeConfig.sessionMaxAge}
+                name="sessionMaxAge"
+                className="form-control"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <hr />
+        </div>
+
+        {/* Allowed Modules */}
+        <div className="form-group">
+          <h6 className="h6">Allowed Services</h6>
+          <div className="small text-muted ">
+            Allowed Services display on the home screen of FSdiscover, if you
+            unselect a service, it will not be displayed on the home screen and
+            fsdiscover will not start the service on next launch.
+            <div className="mt-2 mb-1">
+              {runtimeConfig?.apps?.length} Services Selected
+            </div>
+            <div
+              className="d-flex"
+              key={"$appBar" + runtimeConfig?.apps?.length}
+            >
+              {apps.map((app, i) => {
+                const isAllowed = (runtimeConfig?.apps || []).includes(
+                  app?.location
+                );
+                return (
+                  <div
+                    key={"app_index=" + i}
+                    style={{
+                      width: "fit-content",
+                      maxWidth: "65px",
+                      cursor: "pointer",
+                      outline: isAllowed && "3px solid steelblue",
+                    }}
+                    className={`active p-1 shadow rounded cursor-pointer me-3`}
+                    onClick={() => {
+                      if (isAllowed) {
+                        setRuntimeConfig((prev) => ({
+                          ...prev,
+                          apps: prev.apps.filter((a) => a !== app?.location),
+                        }));
+                      } else {
+                        setRuntimeConfig((prev) => ({
+                          ...prev,
+                          apps: [...prev?.apps, app?.location],
+                        }));
+                      }
+                    }}
+                  >
+                    <div className="">
+                      <img
+                        src={app?.icon}
+                        style={{ width: "55px" }}
+                        className="img-fluid rounded"
+                      />
+                    </div>
+                    <div className="small text-truncate">{app?.name}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <hr />
         </div>
       </div>
     </>

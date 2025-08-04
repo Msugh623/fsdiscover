@@ -17,15 +17,17 @@ const { Keyboard } = require("./utils/devices");
 const { LogIoParser, UseLogger } = require("./utils/logger");
 const { default: axios } = require("axios");
 const update = require("./update");
+const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
 const ioParser = new LogIoParser();
+const { runtimeConfig } = new UseRuntimeConfig();
 ioParser.parseIo(socket);
 socket.use(authHandler.checkSocketAuth);
-socket.use(authHandler.enforceSocketAuth);
+// socket.use(authHandler.enforceSocketAuth);
 socket.on("connection", (client) => {
   const { logger } = new UseLogger();
   logger.lognet(
@@ -37,35 +39,35 @@ socket.on("connection", (client) => {
       client.id,
     client.user
   );
-  const mouse = new Mouse(handlers, authHandler, "mouse", client);
-  const keyboard = new Keyboard(handlers, authHandler, "keyboard", client);
+  const mouse = new Mouse(handlers, authHandler, "mouse", client,socket);
+  const keyboard = new Keyboard(handlers, authHandler, "keyboard", client,socket);
 
-  mouse.parseDevice(client.id, () => {
-    client.emit(
-      "error",
-      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
-    );
-    setTimeout(() => {
+    mouse.parseDevice(client.id, () => {
       client.emit(
         "error",
-        "Unable to parse device after 2s... Session terminated"
+        "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
       );
-      client.disconnect();
-    }, 3000);
-  });
-  keyboard.parseDevice(client.id, () => {
-    client.emit(
-      "error",
-      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
-    );
-    setTimeout(() => {
+      setTimeout(() => {
+        client.emit(
+          "error",
+          "Unable to parse device after 2s... Session terminated"
+        );
+        client.disconnect();
+      }, 3000);
+    });
+    keyboard.parseDevice(client.id, () => {
       client.emit(
         "error",
-        "Unable to parse device after 2s... Session terminated"
+        "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
       );
-      client.disconnect();
-    }, 3000);
-  });
+      setTimeout(() => {
+        client.emit(
+          "error",
+          "Unable to parse device after 2s... Session terminated"
+        );
+        client.disconnect();
+      }, 3000);
+    });
 
   client.on("disconnect", () => {
     mouse.remDevice((err) => {
@@ -169,8 +171,20 @@ app.use(
 app.use(middleware.logger);
 app.use(
   "/fsexplorer",
+  (req, res, next) => {
+    const { noAuthFsRead } = runtimeConfig.config;
+    const token = req?.token;
+    if (!token?.token && !noAuthFsRead) {
+      return res
+        .status(401)
+        .send(
+          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/auth/login'>Login</a> to read files</h1>"
+        );
+    }
+    next();
+  },
   authHandler.checkDirAuth,
-  express.static(os.homedir(), {
+  express.static(runtimeConfig.config.publicDir, {
     index: false,
   })
 );
@@ -180,34 +194,54 @@ app.use(express.urlencoded({ extended: true, limit: "1000000mb" }));
 app.use(express.static(path.join(dirname(), "public")));
 app.use(express.static(path.join(dirname(), "public", "client")));
 
-app.post("/fs/upload", upload.array("files", 10), (req, res) => {
-  const dir = req.body.dir == "/" ? "/Downloads" : req.body.dir;
-  const absoluteDir = os.homedir() + (dir || "/Downloads")+'/';
-  const placeDir = dir || "/Downloads";
-  const mv = `mv temp/* ${absoluteDir
-    .split("/")
-    .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-    .join("/")} || move temp\\* ${absoluteDir
-    .replaceAll("/", "\\")
-    .split("\\")
-    .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
-    .join("\\")}`;
-  exec(`${mv} || mkdir ${absoluteDir} && ${mv}`.replaceAll('//','/').replaceAll('\\\\','\\'));
-  res
-    .status(201)
-    .send(
-      `${
-        req.files.length
-      } file Uploaded to ${os.hostname()} placed at ${placeDir} succesfully`
+app.post(
+  "/fs/upload",
+  (req, res, next) => {
+    const { noAuthFsWrite } = runtimeConfig.config;
+    const token = req?.token;
+    if (!token?.token && !noAuthFsWrite) {
+      return res
+        .status(401)
+        .send("You Are not logged in, Login to upload files");
+    }
+    next();
+  },
+  upload.array("files", 10),
+  (req, res) => {
+    const dir = req.body.dir == "/" ? "/" : req.body.dir;
+    const absoluteDir = runtimeConfig.config.publicDir + (dir || "/") + "/";
+    const placeDir = dir || "/";
+    const mv = `mv temp/* ${absoluteDir
+      .split("/")
+      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
+      .join("/")} || move temp\\* ${absoluteDir
+      .replaceAll("/", "\\")
+      .split("\\")
+      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
+      .join("\\")}`;
+    exec(
+      `${mv} || mkdir ${absoluteDir} && ${mv}`
+        .replaceAll("//", "/")
+        .replaceAll("\\\\", "\\")
     );
-});
+    res
+      .status(201)
+      .send(
+        `${
+          req.files.length
+        } file Uploaded to ${os.hostname()} placed at ${placeDir} succesfully`
+      );
+  }
+);
 app.use("/admin", authHandler.enforceAuth, adminRouter);
+
+app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
 app.post("/rq/login", authHandler.login);
 app.get("/fsexplorer*", handlers.sendUi);
 app.get("/hostname", handlers.getHost);
 app.get("/zipper*", handlers.zipDir);
 app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
-app.delete("/fs*", handlers.deletePath);
+// app.delete("/fs*", handlers.deletePath);
 app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
 

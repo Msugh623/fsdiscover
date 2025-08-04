@@ -7,7 +7,7 @@ const {
 } = require("@nut-tree-fork/nut-js");
 const os = require("os")
 class Device {
-  constructor(handlers, authHandler, type = String(), client) {
+  constructor(handlers, authHandler, type = String(), client,socket) {
     this.handlers = handlers;
     this.authHandler = authHandler;
     this.history = [];
@@ -20,6 +20,8 @@ class Device {
       this.cleanUp();
       this.authHandler.saveConfig();
     });
+    this.hasAuth = Boolean(client?.token?.token)
+    this.socket=socket
   }
 
   parseDevice(clientId, reject = (error = String()) => error) {
@@ -55,6 +57,9 @@ class Device {
   }
 
   validateDevice() {
+    if (!this.hasAuth) {
+      return "UnAuthorized. Login to use Remote Input";
+    }
     const clientId = this.clientId;
     const device = this.authHandler
       .getConfig()
@@ -143,7 +148,7 @@ class Mouse extends Device {
     mouse.releaseButton(Button.MIDDLE);
   };
 
-  async middleClick() {
+  async middleClick(reject=()=>{}) {
     const v = this.validateDevice();
     if (v) {
       return reject(v);
@@ -161,7 +166,7 @@ class Keyboard extends Device {
     const key = Key[event];
     this.history.push(event);
     await keyboard.pressKey(key || 229);
-    this.clientSocket.emit("downkeys", this.history);
+    this.socket.emit("downkeys", this.history);
   }
 
   async keyup(event) {

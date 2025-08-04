@@ -4,6 +4,7 @@ node_modules
 packager-lock.json
 .env
 auth.config.json
+runtime.config.json
 cert/**/*
 logs/**/*
 update

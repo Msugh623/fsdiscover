@@ -13,11 +13,11 @@ const socket = io(baseUrl, {
 });
 const StateContext = ({ children }) => {
   const sprintet = {
-    name: "Sprintet",
-    location: "/about",
-    icon: "/sprintetS.png",
+    name: "App Info",
+    location: "https://sprintet.onrender.com/fsdiscover",
+    icon: "/info.png",
     pinned: true,
-    about: "About Sprintet",
+    about: "About Fsdiscover",
     category: "default",
   };
 
@@ -48,7 +48,7 @@ const StateContext = ({ children }) => {
     category: "default",
   };
 
-  const defaultApps = [sprintet, fsdiscover, sprintos, touchpad];
+  const defaultApps = [sprintet, sprintos, fsdiscover, touchpad];
 
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
@@ -68,6 +68,7 @@ const StateContext = ({ children }) => {
   const [password, setPassword] = useState("");
   const [devices, setDevices] = useState([]);
   const [traffic, setTraffic] = useState([]);
+  const [runtimeConfig, setRuntimeConfig] = useState({});
   const [scrollConfig, setScrollConfig] = useState({
     top: scrollY,
     height: document.documentElement.scrollHeight,
@@ -161,8 +162,12 @@ const StateContext = ({ children }) => {
     try {
       const hn = await api.get("/hostname");
       setHostname(hn.data);
+      const resConf = await api.get("/runtime");
+      setRuntimeConfig(resConf.data);
       // const appsRes = (await remoteApi.get("/rq/apps")).data;
-      const psr = [...defaultApps];
+      const psr = [
+        ...defaultApps,
+      ];
       setApps(psr);
       const appName = searchParams.get("a") || "";
       const theApp = psr.find(
@@ -275,8 +280,7 @@ const StateContext = ({ children }) => {
       top: scrollY,
       height: document.documentElement.scrollHeight - window.innerHeight,
     });
-  }, [location])
-  
+  }, [location]);
 
   useEffect(() => {
     const categories = apps.map((app) => app.category);
@@ -343,6 +347,8 @@ const StateContext = ({ children }) => {
         setTraffic,
         scrollConfig,
         setScrollConfig,
+        runtimeConfig,
+        setRuntimeConfig,
       }}
     >
       {children}
