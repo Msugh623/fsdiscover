@@ -39,35 +39,41 @@ socket.on("connection", (client) => {
       client.id,
     client.user
   );
-  const mouse = new Mouse(handlers, authHandler, "mouse", client,socket);
-  const keyboard = new Keyboard(handlers, authHandler, "keyboard", client,socket);
+  const mouse = new Mouse(handlers, authHandler, "mouse", client, socket);
+  const keyboard = new Keyboard(
+    handlers,
+    authHandler,
+    "keyboard",
+    client,
+    socket
+  );
 
-    mouse.parseDevice(client.id, () => {
+  mouse.parseDevice(client.id, () => {
+    client.emit(
+      "error",
+      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
+    );
+    setTimeout(() => {
       client.emit(
         "error",
-        "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
+        "Unable to parse device after 2s... Session terminated"
       );
-      setTimeout(() => {
-        client.emit(
-          "error",
-          "Unable to parse device after 2s... Session terminated"
-        );
-        client.disconnect();
-      }, 3000);
-    });
-    keyboard.parseDevice(client.id, () => {
+      client.disconnect();
+    }, 3000);
+  });
+  keyboard.parseDevice(client.id, () => {
+    client.emit(
+      "error",
+      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
+    );
+    setTimeout(() => {
       client.emit(
         "error",
-        "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
+        "Unable to parse device after 2s... Session terminated"
       );
-      setTimeout(() => {
-        client.emit(
-          "error",
-          "Unable to parse device after 2s... Session terminated"
-        );
-        client.disconnect();
-      }, 3000);
-    });
+      client.disconnect();
+    }, 3000);
+  });
 
   client.on("disconnect", () => {
     mouse.remDevice((err) => {

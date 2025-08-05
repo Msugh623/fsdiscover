@@ -5,23 +5,24 @@ const {
   keyboard,
   Key,
 } = require("@nut-tree-fork/nut-js");
-const os = require("os")
+const os = require("os");
 class Device {
-  constructor(handlers, authHandler, type = String(), client,socket) {
+  constructor(handlers, authHandler, type = String(), client, socket) {
     this.handlers = handlers;
     this.authHandler = authHandler;
     this.history = [];
     this.type = type;
     type == "keyboard" && (keyboard.config.autoDelayMs = 40);
     this.clientSocket = client;
-    this.platform = os.platform()
-    this.accelerator = Number(this.platform=='win32' ? 5 : 0.3)
+    this.platform = os.platform();
+    this.accelerator = Number(this.platform == "win32" ? 5 : 0.3);
     process.on("beforeExit", () => {
       this.cleanUp();
       this.authHandler.saveConfig();
     });
-    this.hasAuth = Boolean(client?.token?.token)
-    this.socket=socket
+    this.hasAuth = Boolean(client?.token?.token);
+    console.log(client.token.token);
+    this.socket = socket;
   }
 
   parseDevice(clientId, reject = (error = String()) => error) {
@@ -98,6 +99,10 @@ class Device {
 class Mouse extends Device {
   async mouseEvent(event, reject = (error = String()) => error) {
     const clientId = this.clientId;
+    const v = this.validateDevice();
+    if (v) {
+      return reject(v);
+    }
     const device = this.authHandler
       .getConfig()
       .devices.find(
@@ -148,7 +153,7 @@ class Mouse extends Device {
     mouse.releaseButton(Button.MIDDLE);
   };
 
-  async middleClick(reject=()=>{}) {
+  async middleClick(reject = () => {}) {
     const v = this.validateDevice();
     if (v) {
       return reject(v);
