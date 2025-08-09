@@ -8,7 +8,6 @@ import {
   FaArrowUp,
   FaBackspace,
   FaBackward,
-  FaExpandArrowsAlt,
   FaForward,
   FaPause,
   FaPlay,
@@ -42,8 +41,8 @@ const KeyboardFocusable = ({ hasDivider }) => {
   const [inputHadFocus, setInputHadFocus] = useState(false);
   const [controller, setController] = useState(false);
 
-  function handleVirtualKey(e, killfocus) {
-    killfocus && inputHadFocus && strokerRef.current.focus();
+  function handleVirtualKey(e) {
+    inputHadFocus && strokerRef.current.focus();
     if (e.target.value == "toggle") {
       return handleToggleKey(e.target.id);
     }
@@ -82,8 +81,8 @@ const KeyboardFocusable = ({ hasDivider }) => {
     socket.on("downkeys", (data) => {
       setDownKeys(data || []);
     });
-    if(!socket.connected){
-      socket.connect()
+    if (!socket.connected) {
+      socket.connect();
     }
   }, []);
 
@@ -480,6 +479,17 @@ function VirtualKey({ children, id, onClick, className, value, isAlt, alt }) {
 }
 
 function VirtualNavigator({ handleVirtualKey, closeController }) {
+  useEffect(() => {
+    const killCtr = (e) => {
+      e.code == "Escape" && closeController();
+    };
+    window.addEventListener("keydown", killCtr);
+
+    return () => {
+      window.removeEventListener("keydown", killCtr);
+    };
+  }, []);
+
   return (
     <>
       <div
@@ -492,11 +502,11 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
           bottom: "0",
           backgroundColor: "#061e2cfa",
           zIndex: 10,
-          backdropFilter:'blur(20px)'
+          backdropFilter: "blur(20px)",
         }}
       >
         <div
-          className="m-auto slideUp shadow border text-light active p-3"
+          className="m-auto slideUp shadow border text-light active p-3 virtualKeyboard"
           style={{
             borderRadius: "25px",
           }}
@@ -507,7 +517,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               className="ms-auto active rounded my-auto me-1 border"
               onClick={closeController}
             >
-              <BiX />
+              <BiX className="icon" />
             </button>
           </h4>
           <div className="d-flex">
@@ -516,7 +526,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               <button
                 id="Left"
                 onClick={(e) => handleVirtualKey(e, true)}
-                className="btn border my-auto text-light h-100 w-100 text-center"
+                className="btn border my-auto text-light h-100 w-100 fs-5 text-center"
                 style={{
                   width: "25vw",
                   minWidth: "25vw",
@@ -540,7 +550,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
                     minHeight: "25vh",
                   }}
                   onClick={(e) => handleVirtualKey(e)}
-                  className="btn text-light border w-100 text-center"
+                  className="btn text-light border w-100 text-center fs-5"
                 >
                   <FaArrowUp style={{ pointerEvents: "none" }} />
                 </button>
@@ -557,7 +567,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
                     minHeight: "25vh",
                   }}
                   onClick={(e) => handleVirtualKey(e, true)}
-                  className="btn border text-light w-100 text-center"
+                  className="btn border text-light w-100 text-center fs-5"
                 >
                   <FaArrowDown style={{ pointerEvents: "none" }} />
                 </button>
@@ -569,7 +579,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               <button
                 id="Right"
                 onClick={(e) => handleVirtualKey(e, true)}
-                className="btn border my-auto text-light w-100 h-100 text-center"
+                className="btn border my-auto text-light w-100 h-100 text-center fs-5"
                 style={{
                   width: "25vw",
                   minWidth: "25vw",

@@ -30,6 +30,7 @@ else
     echo "Uninstaller Needs Root access to remove files"
     sudo rm -r $APP_DIR
     sudo rm $DESKTOP_DIR
+    rm "$HOME/Desktop/FSDiscover.*"
     sudo rm $BIN_DIR
 fi
 

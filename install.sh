@@ -18,7 +18,7 @@ else
     echo "Do you want to proceed installation (y/n)"
     echo "Use --auto to prevent this prompt"
     read -r ACCEPT
-    if ! [ $ACCEPT == "y" ]; then
+    if [ "$ACCEPT" != "y" ]; then
         echo "Exiting...Installer Aborted by User, $ACCEPT is not y"
         exit 2
     fi
@@ -137,20 +137,33 @@ DESKTOP_DIR="$HOME/.local/share/applications"
 mkdir -p "$DESKTOP_DIR"
 echo "$DESKTOP_FILE" > "$DESKTOP_DIR/fsdiscover.desktop"
 
+node utils/makeico.js "$APP_DIR/fsdiscover.sh" "$DESKTOP_DIR/" "$APP_DIR/public/icon.png"
 update-desktop-database "$HOME/.local/share/applications"
 
 UNAME=$(id -u)
+OS=$(uname -s)
 
 if [ $UNAME -eq 0 ]; then
-    ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
+    echo "Creating Global Executable... Might require sudo access"
+    ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" 
 else
     echo "Installer needs root access to create Global executable"
     sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
 fi
 
+if [ $OS == "Darwin" ]; then
+    xcode-select --install
+    echo "!>>> Fsdiscover remote input relies on Iterm's accesibility setting. To use the remote input service, Go to your 'System Settings -> Security & Privacy -> Privacy tab -> Accessibility' and make sure Iterm.app and Intellij IDEA.app are enabled"
+fi
+echo ""
 echo "Installation Finished."
-echo '!>>> Default password is set to "password", please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten'
+echo
+echo "********************************"
+echo 'Default password is set to "password", please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten'
+echo "********************************"
+echo
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"
-echo 'Use "fsdiscover --help" for details'
+echo 'Use "fsdiscover --help" for details';
+sleep "7"

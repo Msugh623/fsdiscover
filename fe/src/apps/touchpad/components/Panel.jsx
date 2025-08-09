@@ -140,6 +140,21 @@ const Panel = () => {
     },
     () => {
       localStorage.toastData =
+        "<div>On MacOS, Remote input relies on Native tools such as Iterm.app for accesibility access, If remote input is not working, go to <code>System Settings -> Security & Privacy -> Privacy tab -> Accessibility </code> and ensure <code>Iterm.app</code> and <code>Intellij IDEA.app</code> are <code>Enabled</code> <div><a href='/macos-guide.png' target='_blank'><img src='/macos-guide.png' style='width: 100%;' class='rounded mt-2 shadow mb-2'> </a></div><small>Click Image to exapnd it</small></div>";
+      setToaster(
+        (prev) =>
+          (localStorage.lastToast = toast.info(
+            <ToastModel
+              done={false}
+              prev={prev || "0"}
+              next={() => tourGuide(8)}
+            />,
+            { autoClose: false }
+          ))
+      );
+    },
+    () => {
+      localStorage.toastData =
         "Hurray! You have reached the end of this guide. Good luck";
       setToaster(
         (localStorage.lastToast = toast.info((prev) => (
@@ -176,15 +191,15 @@ const Panel = () => {
           zIndex: socket.connected ? 10 : 10000,
         }}
         onClick={({ target }) => {
-          socket.connected
+          socket.connected || !String(target.innerHTML).includes("Conn")
             ? tourGuide(0)
             : toast(`
               Socket Might not be connect due to poor internet or an authorization issue, please refresh the browser, if error persists, check network devices, if it still persists try to log in again or go to admin>devices and eject some redundant devices and refresh or lastly, check if the FSdiscover session is still running or restart FSdiscover on the host computer all over again.
-            `)
-          if (!socket.connected) {
-            target.classList.add('d-none')
+            `);
+          if (!socket.connected || String(target.innerHTML).includes("Conn")) {
+            target.classList.add("d-none");
             setTimeout(() => {
-              target.classList.remove('d-none')
+              target.classList.remove("d-none");
             }, 7000);
           }
         }}
@@ -263,7 +278,9 @@ export default Panel;
 function ToastModel({ data, next, done }) {
   return (
     <>
-      <div>{data || localStorage.toastData}</div>
+      <div
+        dangerouslySetInnerHTML={{ __html: data || localStorage.toastData }}
+      ></div>
       <div className="d-flex mt-1">
         <div className="me-auto">
           <button

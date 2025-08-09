@@ -4,6 +4,7 @@ const {
   Button,
   keyboard,
   Key,
+  Window,
 } = require("@nut-tree-fork/nut-js");
 const os = require("os");
 class Device {
@@ -23,6 +24,7 @@ class Device {
     this.hasAuth = Boolean(client?.token?.token);
     console.log(client.token.token);
     this.socket = socket;
+    
   }
 
   parseDevice(clientId, reject = (error = String()) => error) {

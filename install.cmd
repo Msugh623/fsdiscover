@@ -109,5 +109,5 @@ echo.
 echo You can now launch FSDiscover from the Start Menu or by running: fsdiscover
 echo Use: fsdiscover /help
 echo for options.
-
+pause
 exit /b 0
