@@ -4,10 +4,15 @@ const path = require("path");
 const dirname = require("./dirname");
 const { UseLogger } = require("./utils/logger");
 const unzipper = require("unzipper");
+const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 
 const { logger } = new UseLogger();
 
 module.exports = async function () {
+  const { runtimeConfig } = new UseRuntimeConfig();
+  if (!runtimeConfig.config.autoUpdate) {
+    return null;
+  }
   let remoteVersion = "";
   let currentVersion = "";
   let checkDidFinishCleanly = false;
@@ -24,9 +29,12 @@ module.exports = async function () {
     isUpTodate = currentVersion >= remoteVersion;
     checkDidFinishCleanly = true;
   } catch (err) {
-    err.message="Updater Failed to update"
+    err.message = "Updater Failed to update";
     // process.emit("uncaughtException", err);
-    logger.log("NetUpdater: Could not connect to github... " + err?.message, true);
+    logger.log(
+      "NetUpdater: Could not connect to github... " + err?.message,
+      true
+    );
   } finally {
     if (!isUpTodate && checkDidFinishCleanly) {
       logger.log(
@@ -44,7 +52,7 @@ module.exports = async function () {
       fs.writeFileSync(path.join(dirname(), "../", "sysnet.zip"), updateData);
       fs.createReadStream(path.join(dirname(), "../", "sysnet.zip")).pipe(
         unzipper.Extract({
-          path: path.join(dirname(),"../", "update"),
+          path: path.join(dirname(), "../", "update"),
         })
       );
       logger.log(

@@ -57,6 +57,8 @@ class RuntimeConfig {
         ...newConf,
         noAuthFsRead: this.strbool[newConf.noAuthFsRead],
         noAuthFsWrite: this.strbool[newConf.noAuthFsWrite],
+        autoUpdate: this.strbool[newConf.autoUpdate],
+        sessionMaxAge: Number(newConf.sessionMaxAge),
       };
       this.config = {
         ...this.config,

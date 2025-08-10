@@ -691,7 +691,8 @@ function RuntimeConfig({
           <div className="small text-muted ">
             Public Directory is the directory FSdiscover's File explorer is
             allowed to access, The public directory is available in the Files
-            Section. Endure the directory exists on the host computer otherwise it will produce unexpected behaviour.
+            Section. Endure the directory exists on the host computer otherwise
+            it will produce unexpected behaviour.
             <div className="">
               <input
                 type="text"
@@ -732,13 +733,35 @@ function RuntimeConfig({
         <div className="form-group">
           <h6 className="h6">Access Files without Authorization</h6>
           <div className="small text-muted ">
-            Controls wether Users that are not logged in can Access file
-            through FSdiscover
+            Controls wether Users that are not logged in can Access file through
+            FSdiscover
             <div className="">
               <select
                 type="text"
                 value={runtimeConfig.noAuthFsRead}
                 name="noAuthFsRead"
+                className="form-control"
+                onChange={(e) => {
+                  handleChange(e);
+                }}
+              >
+                <option value={false}>Don't Allow</option>
+                <option value={true}>Allow</option>
+              </select>
+            </div>
+          </div>
+          <hr />
+        </div>
+
+        <div className="form-group">
+          <h6 className="h6">Automatic Updates</h6>
+          <div className="small text-muted ">
+            Controls wether FSdiscover automatically checks for updates and stacks them for implementation during the next session
+            <div className="">
+              <select
+                type="text"
+                value={runtimeConfig.autoUpdate}
+                name="autoUpdate"
                 className="form-control"
                 onChange={(e) => {
                   handleChange(e);
