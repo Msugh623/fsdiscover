@@ -15,7 +15,6 @@ const http = require("http");
 const { Mouse } = require("./utils/devices");
 const { Keyboard } = require("./utils/devices");
 const { LogIoParser, UseLogger } = require("./utils/logger");
-const { default: axios } = require("axios");
 const update = require("./update");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 
@@ -190,7 +189,7 @@ app.use(
     next();
   },
   authHandler.checkDirAuth,
-  express.static(runtimeConfig.config.publicDir, {
+  express.static(path.join(runtimeConfig.config.publicDir), {
     index: false,
   })
 );

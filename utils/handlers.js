@@ -26,7 +26,29 @@ let config = {
   protectedroutes: [],
   devices: [],
 };
-
+const forbiddenChars = [
+    ";",
+    ":",
+    "}",
+    "{",
+    ">",
+    "<",
+    "|",
+    "*",
+    "$",
+    "!",
+    "\0",
+    "\n",
+    "?",
+    "\b",
+    "\t",
+    "\f",
+    "\\",
+    ".",
+    "&",
+    '"',
+    "'",
+  ];
 class Handlers {
   header = (_, res) => {
     res.send("Heartbeat Live");
@@ -55,6 +77,16 @@ class Handlers {
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
           "${os.hostname()}" Requires you log in to access File Explorer. <a href="/auth/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
       </center>`);
+    }
+    const badChar = req.url
+      .split("/")
+      .find((char) =>
+        forbiddenChars.find((fchar) => char.includes(fchar))
+      );
+    if (badChar) {
+      return res
+        .status(403)
+        .send(`Request pathname includes a forbidden character \"${badChar}\"`);
     }
     try {
       const pathname = req.url
@@ -193,9 +225,9 @@ class Handlers {
       `ls -t ${path
         .join(homedir(), pathname)
         .split("/")
-        .map((p) => (p.includes(" ") ? `"${p}"` : p))
+        .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
         .join("/")
-        .replaceAll('""', "")}`,
+        .replaceAll('""', "")} `,
       (error, stdout, stderr) => {
         if (error) {
           console.error(`exec error: ${error}`);
@@ -425,6 +457,16 @@ class AuthHandler {
       const theToken = this.config.authorizations.find((a) => a.token == token);
       req.token = theToken;
       return next();
+    }
+    const badChar = req.url
+      .split("/")
+      .find((char) =>
+        forbiddenChars.find((fchar) => char.includes(fchar))
+      );
+    if (badChar) {
+      return res
+        .status(403)
+        .send(`Request pathname includes a forbidden character \"${badChar}\"`);
     }
     req.token = uInfo;
     next();
