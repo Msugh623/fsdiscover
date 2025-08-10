@@ -22,7 +22,6 @@ class Device {
       this.authHandler.saveConfig();
     });
     this.hasAuth = Boolean(client?.token?.token);
-    console.log(client.token.token);
     this.socket = socket;
     
   }
