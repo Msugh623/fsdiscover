@@ -1,6 +1,7 @@
 const os = require("os");
 const conf = {
   publicDir: os.homedir(),
+  defaultUploadDir: "",
   noAuthFsRead: true,
   noAuthFsWrite: true,
   autoUpdate: true,

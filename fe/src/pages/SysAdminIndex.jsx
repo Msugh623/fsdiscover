@@ -691,13 +691,36 @@ function RuntimeConfig({
           <div className="small text-muted ">
             Public Directory is the directory FSdiscover's File explorer is
             allowed to access, The public directory is available in the Files
-            Section. Endure the directory exists on the host computer otherwise
+            Section. Ensure the directory exists on the host computer and is absolute otherwise
             it will produce unexpected behaviour.
             <div className="">
               <input
                 type="text"
                 value={runtimeConfig.publicDir}
                 name="publicDir"
+                className="form-control"
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <hr />
+        </div>
+
+        {/* Default Upload  Directory */}
+        <div className="form-group">
+          <h6 className="h6">Default Upload Directory</h6>
+          <div className="small text-muted ">
+            Default Upload Directory is the directory FSdiscover will upload
+            files to by default. If empty, FSdiscover will upload to the current
+            directory of the user when the user is uploading. (e.g If you are in
+            Downloads, FSdiscover will place your upload file in
+            $defaultUploadDirectory || $publicDirectory/Downloads). Please
+            ensure the path exists locally and is absolute
+            <div className="">
+              <input
+                type="text"
+                value={runtimeConfig.defaultUploadDir}
+                name="defaultUploadDir"
                 className="form-control"
                 onChange={handleChange}
               />
@@ -756,7 +779,8 @@ function RuntimeConfig({
         <div className="form-group">
           <h6 className="h6">Automatic Updates</h6>
           <div className="small text-muted ">
-            Controls wether FSdiscover automatically checks for updates and stacks them for implementation during the next session
+            Controls wether FSdiscover automatically checks for updates and
+            stacks them for implementation during the next session
             <div className="">
               <select
                 type="text"

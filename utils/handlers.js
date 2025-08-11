@@ -27,27 +27,27 @@ let config = {
   devices: [],
 };
 const forbiddenChars = [
-    ";",
-    ":",
-    "}",
-    "{",
-    ">",
-    "<",
-    "|",
-    "*",
-    "$",
-    "!",
-    "\0",
-    "\n",
-    "?",
-    "\b",
-    "\t",
-    "\f",
-    "\\",
-    "&",
-    '"',
-    "'",
-  ];
+  ";",
+  ":",
+  "}",
+  "{",
+  ">",
+  "<",
+  "|",
+  "*",
+  "$",
+  "!",
+  "\0",
+  "\n",
+  "?",
+  "\b",
+  "\t",
+  "\f",
+  "\\",
+  "&",
+  '"',
+  "'",
+];
 class Handlers {
   header = (_, res) => {
     res.send("Heartbeat Live");
@@ -70,18 +70,19 @@ class Handlers {
     res.send(psr);
   };
   getPath = (req, res) => {
-    const token = req?.token;
-    if (!token?.token && !runtimeConfig.config.noAuthFsRead) {
+    const theToken = useNativeAuthHandler().config.authorizations.find(
+      (auth) => auth.token == req?.cookies?.uuid
+    );
+    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+      req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
-          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/auth/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
       </center>`);
     }
     const badChar = req.url
       .split("/")
-      .find((char) =>
-        forbiddenChars.find((fchar) => char.includes(fchar))
-      );
+      .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
     if (badChar) {
       return res
         .status(403)
@@ -459,9 +460,7 @@ class AuthHandler {
     }
     const badChar = req.url
       .split("/")
-      .find((char) =>
-        forbiddenChars.find((fchar) => char.includes(fchar))
-      );
+      .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
     if (badChar) {
       return res
         .status(403)
@@ -702,6 +701,7 @@ class AuthHandler {
   };
 
   login = async (req, res) => {
+    const { runtimeConfig } = new UseRuntimeConfig();
     (this.config.verbose || true) &&
       logger.log(
         `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Attempt from ${
@@ -729,7 +729,7 @@ class AuthHandler {
       agent,
       token,
       addr,
-      oldAge: Date.now() + 1000 * 60 * 60,
+      oldAge: Date.now() + Number(runtimeConfig.config.sessionMaxAge),
     };
     await this.injectCred(cred);
     logger.lognet(
@@ -738,6 +738,10 @@ class AuthHandler {
       } with ${req.user.agent.split("Apple")[0]}`,
       req.user
     );
+    res.cookie("uuid", cred.token, {
+      httpOnly: true,
+      maxAge: Number(runtimeConfig.config.sessionMaxAge),
+    });
     res.status(200).send({ token: cred.token });
   };
 
@@ -879,3 +883,7 @@ class AuthHandler {
 module.exports.handlers = new Handlers();
 module.exports.middleware = new Middleware();
 module.exports.authHandler = new AuthHandler();
+
+function useNativeAuthHandler() {
+  return module.exports.authHandler;
+}

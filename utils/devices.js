@@ -16,11 +16,7 @@ class Device {
     type == "keyboard" && (keyboard.config.autoDelayMs = 40);
     this.clientSocket = client;
     this.platform = os.platform();
-    this.accelerator = Number(this.platform == "win32" ? 5 : 0.3);
-    process.on("beforeExit", () => {
-      this.cleanUp();
-      this.authHandler.saveConfig();
-    });
+    this.accelerator = Number(this.platform == "win32" ? 5 : 0.2);
     this.hasAuth = Boolean(client?.token?.token);
     this.socket = socket;
     

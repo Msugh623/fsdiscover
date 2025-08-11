@@ -31,7 +31,7 @@ const Login = () => {
       api.defaults.headers.common["Authorization"] = cred.token;
       const state = localStorage.go;
       localStorage.go = "";
-      state ? navigate(state) : location.replace("/");
+      state ? location.replace(state) : location.replace("/");
     } catch (err) {
       toast.error(
         <div

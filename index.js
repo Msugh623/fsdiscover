@@ -17,9 +17,11 @@ const { Keyboard } = require("./utils/devices");
 const { LogIoParser, UseLogger } = require("./utils/logger");
 const update = require("./update");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
+const cookieParser = require("cookie-parser");
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
+app.use(cookieParser());
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
 const ioParser = new LogIoParser();
@@ -177,13 +179,17 @@ app.use(middleware.logger);
 app.use(
   "/fsexplorer",
   (req, res, next) => {
+    const cookies = req.cookies;
     const { noAuthFsRead } = runtimeConfig.config;
-    const token = req?.token;
-    if (!token?.token && !noAuthFsRead) {
+    const theToken = authHandler.config.authorizations.find(
+      (auth) => auth.token == cookies?.uuid
+    );
+    if (!noAuthFsRead && !theToken) {
+      req?.cookies?.uuid && res.clearCookie("uuid");
       return res
         .status(401)
         .send(
-          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/auth/login'>Login</a> to read files</h1>"
+          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/login'>Login</a> to read files</h1>"
         );
     }
     next();
@@ -214,7 +220,9 @@ app.post(
   upload.array("files", 10),
   (req, res) => {
     const dir = req.body.dir == "/" ? "/" : req.body.dir;
-    const absoluteDir = runtimeConfig.config.publicDir + (dir || "/") + "/";
+    const absoluteDir =
+      runtimeConfig.config.defaultUploadDir ||
+      runtimeConfig.config.publicDir + (dir || "/") + "/";
     const placeDir = dir || "/";
     const mv = `mv temp/* ${absoluteDir
       .split("/")
@@ -229,12 +237,18 @@ app.post(
         .replaceAll("//", "/")
         .replaceAll("\\\\", "\\")
     );
+    const rConfPathSplit = runtimeConfig.config.defaultUploadDir.split(
+      os.platform() == "win32" ? "\\" : "/"
+    );
     res
       .status(201)
       .send(
-        `${
-          req.files.length
-        } file Uploaded to ${os.hostname()} placed at ${placeDir} succesfully`
+        `${req.files.length} file Uploaded to ${os.hostname()} placed at ${
+          runtimeConfig.config.defaultUploadDir
+            ? "Default Upload Directory @/" +
+              rConfPathSplit[rConfPathSplit.length - 1]
+            : "@"+placeDir
+        } succesfully`
       );
   }
 );

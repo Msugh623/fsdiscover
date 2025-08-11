@@ -160,6 +160,7 @@ echo "Installation Finished."
 echo
 echo "********************************"
 echo 'Default password is set to "password", please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten'
+echo "The email requested at login is not tested against any value, use your own email as it doesn't matter which email you use to login"
 echo "********************************"
 echo
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
