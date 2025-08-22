@@ -1,6 +1,6 @@
 {
   "name": "fsdiscover",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "@nut-tree-fork/nut-js": "^4.2.6",
-    "1.0.3": "^1.0.3",
     "archiver": "^7.0.1",
     "axios": "^1.8.2",
     "bcrypt": "^6.0.0",

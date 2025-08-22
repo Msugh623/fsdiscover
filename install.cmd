@@ -91,6 +91,7 @@ copy /Y "%APP_DIR%\fsdiscover.cmd" "%BIN_DIR%\fsdiscover.cmd"
 if errorlevel 1 (
     echo [ERROR] Failed to create CLI shortcut in %BIN_DIR%
     exit /b 1
+    pause
 )
 
 REM === Add to PATH if missing ===
@@ -105,6 +106,11 @@ if errorlevel 1 (
 echo.
 echo Installation complete
 echo Shortcut created at:  %SHORTCUT_PATH%
+echo.
+echo "********************************"
+echo "Default password is set to ```password```, please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten"
+echo "The email requested at login is not tested against any value, use your own email as it doesn't matter which email you use to login"
+echo "********************************"
 echo.
 echo You can now launch FSDiscover from the Start Menu or by running: fsdiscover
 echo Use: fsdiscover /help

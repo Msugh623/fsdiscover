@@ -9,6 +9,7 @@ const File = ({ data }) => {
       className="text-light"
       style={{ maxWidth: "100%" }}
       href={location.pathname + "/" + data?.name}
+      target='_blank'
     >
       <BiFile />{" "}
       <span className="text-truncate">
