@@ -12,6 +12,7 @@ const archiver = require("archiver");
 const { UseLogger } = require("./logger");
 const { UseRuntimeConfig } = require("./useRuntimeConfig");
 const { logger } = new UseLogger();
+const crypto = require("crypto");
 
 const { platform } = os;
 function homedir() {
