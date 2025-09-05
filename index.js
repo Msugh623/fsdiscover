@@ -93,7 +93,7 @@ socket.on("connection", (client) => {
     keyboard.remDevice((err) => {
       client.emit("error", err);
     });
-    runtimeConfig.disconnectSessiadminon(client.user)
+    runtimeConfig.disconnectSession(client.user)
   });
 
   client.on("pointerEvent", async (data) => {
