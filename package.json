@@ -24,6 +24,7 @@
     "multer": "^2.0.2",
     "netprobe": "^1.1.1",
     "nodemon": "^3.1.10",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.1",
     "socket.io-cookie": "^0.0.1",
     "unzipper": "^0.12.3"

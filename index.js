@@ -277,6 +277,8 @@ app.get("*", handlers.sendUi);
 
 async function getNewPort(port) {
   const { logger } = new UseLogger();
+  authHandler.netFace = netFace
+  authHandler.port=port
   const url = "http://" + netFace.address + ":" + port;
   try {
     const _ = await fetch(url, { method: "HEAD" });
@@ -288,10 +290,19 @@ async function getNewPort(port) {
     netProb.port = port;
     server.listen(port, netFace.address, () => {
       logger.log(
-        `\nSprint FS Explorer is serving ${os.hostname()} home directory @ http://${
+        `\nSprint FS Explorer is serving ${os.hostname()} home directory @\x1b[32mhttp://${
           netFace.address
-        }:${port}\n\nUse: help to see options\nUse: exit or quit to stop fsdiscover`
+        }:${port}\n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
       );
+      const qr = require("qrcode")
+      qr.toString(url, { type: "terminal" }, (err, code) => {
+        if (!err) {
+          logger.log("\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n")
+          logger.log(code)
+          return;
+        }
+        console.log("Initiator: Unable to generate qrcode")
+      })
       netProb.initLiveCheck();
       update();
     });
