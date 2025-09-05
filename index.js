@@ -18,14 +18,18 @@ const { LogIoParser, UseLogger } = require("./utils/logger");
 const update = require("./update");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 const cookieParser = require("cookie-parser");
+const socketCookie= require("socket.io-cookie")
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 app.use(cookieParser());
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
+socket.use(socketCookie)
 const ioParser = new LogIoParser();
-const { runtimeConfig } = new UseRuntimeConfig();
+const runtime = new UseRuntimeConfig();
+const { runtimeConfig } = runtime;
+runtime.attatchSocket(socket);
 ioParser.parseIo(socket);
 socket.use(authHandler.checkSocketAuth);
 // socket.use(authHandler.enforceSocketAuth);
@@ -40,6 +44,7 @@ socket.on("connection", (client) => {
       client.id,
     client.user
   );
+  runtimeConfig.connectSession(client.user)
   const mouse = new Mouse(handlers, authHandler, "mouse", client, socket);
   const keyboard = new Keyboard(
     handlers,
@@ -75,7 +80,12 @@ socket.on("connection", (client) => {
       client.disconnect();
     }, 3000);
   });
-
+  client.on("reconnect", () => {
+    runtimeConfig.connectSession(client.user);
+  })
+  // client.on("reconnect", () => {
+  //   runtimeConfig.connectSession(client.user);
+  // });
   client.on("disconnect", () => {
     mouse.remDevice((err) => {
       client.emit("error", err);
@@ -83,6 +93,7 @@ socket.on("connection", (client) => {
     keyboard.remDevice((err) => {
       client.emit("error", err);
     });
+    runtimeConfig.disconnectSessiadminon(client.user)
   });
 
   client.on("pointerEvent", async (data) => {
@@ -247,7 +258,7 @@ app.post(
           runtimeConfig.config.defaultUploadDir
             ? "Default Upload Directory @/" +
               rConfPathSplit[rConfPathSplit.length - 1]
-            : "@"+placeDir
+            : "@" + placeDir
         } succesfully`
       );
   }

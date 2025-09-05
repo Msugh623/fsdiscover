@@ -427,8 +427,8 @@ class AuthHandler {
       type: "rest",
       date: `${new Date()}`,
       lastAccess: `${new Date()}`,
+      uuid: req?.cookies?.uuid,
     };
-    req.user = uInfo;
     const theVisitor = this.config.visitors.find(
       (v) => v.agent == uInfo.agent && v.addr == uInfo.addr
     );
@@ -442,9 +442,16 @@ class AuthHandler {
           : u
       );
     }
+    req.user = this.config.visitors.find(
+      (v) =>
+        (req?.cookies?.uuid && Boolean(req?.cookies?.uuid == v?.uuid)) ||
+        (v.agent == uInfo.agent && v.addr == uInfo.addr)
+    );
     if (
       this.config.forbidden.find(
-        (u) => u.agent == uInfo.agent && u.addr == uInfo.addr
+        (v) =>
+          (req?.cookies?.uuid && Boolean(req?.cookies?.uuid == v?.uuid)) ||
+          (v.agent == uInfo.agent && v.addr == uInfo.addr)
       )
     ) {
       return res
@@ -479,6 +486,8 @@ class AuthHandler {
       type: "socket",
       date: `${new Date()}`,
       lastAccess: `${new Date()}`,
+      socketid: socket.id,
+      uuid: socket.handshake.headers.cookie?.uuid
     };
     const auth = socket.handshake.auth.token;
     logger.lognet(
@@ -500,7 +509,7 @@ class AuthHandler {
     } else {
       this.config.visitors = this.config.visitors.map((u) =>
         u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
-          ? { ...u, lastAccess: `${new Date()}` }
+          ? { ...u, lastAccess: `${new Date()}`, uuid: socket.id }
           : u
       );
     }

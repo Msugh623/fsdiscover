@@ -4,8 +4,7 @@ const fs = require("fs");
 const dirname = require("../dirname");
 const { UseLogger } = require("./logger");
 const { logger } = new UseLogger();
-const crypto = require("crypto")
-
+const crypto = require("crypto");
 
 class RuntimeConfig {
   constructor() {
@@ -14,6 +13,7 @@ class RuntimeConfig {
       false: false,
       true: true,
     };
+    this.sessions = [];
     try {
       const persistConf = fs.readFileSync(
         path.join(dirname(), "runtime.config.json"),
@@ -32,6 +32,33 @@ class RuntimeConfig {
       this.config.sessionUID = crypto.randomUUID();
     }
   }
+
+  // SESSION MANAGEMENT
+  connectSession = (user) => {
+    const theUser = this.sessions.find((u) =>u.addr+u.agent+u?.uuid== user.addr+u.agent+user?.uuid);
+    if (theUser) {
+      const keys = Object.keys(user);
+      for (const key of keys) {
+        theUser[key] = user[key];
+      }
+    } else {
+      this.sessions.unshift(user);
+    }
+    this.socket.emit("sessionEvent",this.sessions)
+  };
+
+  disconnectSession = (user) => {
+    this.sessions = this.sessions.filter(
+      (u) => u.addr + u.agent +u?.uuid!== user.addr + user.agent+user?.uuid
+    );
+    this.socket.emit("sessionEvent", this.sessions);
+  };
+
+  getSessions = (_, res) => {
+    res.status(200).json([...this.sessions]);
+  };
+
+  // RUNTIME CONFIG MANAGEMENT
 
   getSafeRuntimeConfig = (_, res) => {
     res.status(200).json(this.config);
@@ -86,6 +113,11 @@ class RuntimeConfig {
       encoding: "utf-8",
     });
   };
+
+  cleanUp = () => {
+    this.sessions = [];
+    this.saveConfig();
+  };
 }
 
 const rtc = new RuntimeConfig();
@@ -94,6 +126,14 @@ class UseRuntimeConfig {
   constructor() {
     this.runtimeConfig = rtc;
   }
+
+  attatchSocket = (socket) => {
+    this.runtimeConfig.socket = socket;
+    socket.on("getSessions", (data) => {
+      console.log(data)
+      this.socket.emit("sessionEvent", this.sessions);
+    });
+  };
 }
 
 module.exports = {

@@ -21,7 +21,7 @@ const AdminIndex = () => {
             .filter((cr) => cr.category == category)
             .filter((a) => runtimeConfig?.apps?.includes(a?.location))
         );
-  }, [category, apps]);
+  }, [category, apps, runtimeConfig?.apps]);
 
   useEffect(() => {
     document.title = "Sprintet Fsdiscover  - " + hostname;

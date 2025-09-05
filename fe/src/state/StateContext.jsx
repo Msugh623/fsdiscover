@@ -73,7 +73,7 @@ const StateContext = ({ children }) => {
     top: scrollY,
     height: document.documentElement.scrollHeight,
   });
-
+const [sessions,setSessions]=useState([])
   async function init() {
     window.onresize = () => setVw(window.innerWidth);
   }
@@ -349,6 +349,8 @@ const StateContext = ({ children }) => {
         setScrollConfig,
         runtimeConfig,
         setRuntimeConfig,
+        sessions,
+        setSessions,
       }}
     >
       {children}

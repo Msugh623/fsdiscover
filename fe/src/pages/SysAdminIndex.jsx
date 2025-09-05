@@ -3,7 +3,7 @@ import { useStateContext } from "../state/StateContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
 import { toast } from "react-toastify";
-import { FaCompress, FaExpandArrowsAlt, FaLock } from "react-icons/fa";
+import { FaCompress, FaDesktop, FaExpandArrowsAlt, FaLock, FaMobile } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
@@ -310,6 +310,17 @@ const SysAdminIndex = () => {
                   Network_Traffic{" "}
                 </a>
                 <a
+                  href="#NetworkTraffick"
+                  data-category="*"
+                  className={
+                    "p-1 mx-1 shadow rounded" +
+                    (category == "Active Sessions" && "active rounded border")
+                  }
+                  onClick={() => setCategory("Active Sessions")}
+                >
+                  Active_Sessions{" "}
+                </a>
+                <a
                   href="#RuntimeConfiguration"
                   data-category="*"
                   className={
@@ -353,6 +364,13 @@ const SysAdminIndex = () => {
                   data-aos-delay="200"
                 >
                   <div className="py-2 col-lg-3">
+                    <div className="pe-2 my-auto icon" style={{ zIndex: 0 }}>
+                      {getDeviceType(u.agent) == "mobile" ? (
+                        <FaMobile />
+                      ) : (
+                        <FaDesktop />
+                      )}
+                    </div>
                     {u.type} {u?.addr}
                   </div>
                   <div className="py-2 col-lg-3">{u?.agent}</div>
@@ -399,6 +417,13 @@ const SysAdminIndex = () => {
                   data-aos-delay="200"
                 >
                   <div className="py-2 col-lg-3">
+                    <div className="pe-2 my-auto icon" style={{ zIndex: 0 }}>
+                      {getDeviceType(u.agent) == "mobile" ? (
+                        <FaMobile />
+                      ) : (
+                        <FaDesktop />
+                      )}
+                    </div>
                     {u.type} {u?.addr}
                   </div>
                   <div className="py-2 col-lg-3">{u?.agent}</div>
@@ -479,7 +504,16 @@ const SysAdminIndex = () => {
                   data-aos="fade-up"
                   data-aos-delay="200"
                 >
-                  <div className="py-2 col-lg-3">{device?.clientId}</div>
+                  <div className="py-2 col-lg-3">
+                    <div className="pe-2 my-auto icon" style={{ zIndex: 0 }}>
+                      {getDeviceType(device?.user?.agent) == "mobile" ? (
+                        <FaMobile />
+                      ) : (
+                        <FaDesktop />
+                      )}
+                    </div>
+                    {device?.clientId}
+                  </div>
                   <div className="py-2 col-lg-2">{device?.user?.addr}</div>
                   <div className="py-2 col-lg-2">{device?.user?.agent}</div>
                   <div className="py-2 col-lg-2">{device?.type}</div>
@@ -521,6 +555,10 @@ const SysAdminIndex = () => {
               data={traffic}
               forbidden={forbidden}
             />
+          )}
+
+          {(category == "All" || category == "Active Sessions") && (
+            <ActiveSessions />
           )}
 
           {(category == "All" || category == "RuntimeConfiguration") && (
@@ -621,7 +659,16 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <div className="py-1 col-md-10">{message}</div>
+              <div className="py-1 col-md-10 d-flex">
+                <div className="pe-2 my-auto icon" style={{zIndex:0}}>
+                  {getDeviceType(user.agent) == "mobile" ? (
+                    <FaMobile />
+                  ) : (
+                    <FaDesktop />
+                  )}
+                </div>
+                <span className="my-auto">{message}</span>
+              </div>
               <div className="py-1 col-md-2 d-flex">
                 <button
                   style={{ fontSize: "0.8em" }}
@@ -691,8 +738,8 @@ function RuntimeConfig({
           <div className="small text-muted ">
             Public Directory is the directory FSdiscover's File explorer is
             allowed to access, The public directory is available in the Files
-            Section. Ensure the directory exists on the host computer and is absolute otherwise
-            it will produce unexpected behaviour.
+            Section. Ensure the directory exists on the host computer and is
+            absolute otherwise it will produce unexpected behaviour.
             <div className="">
               <input
                 type="text"
@@ -880,4 +927,102 @@ function RuntimeConfig({
       </div>
     </>
   );
+}
+
+function ActiveSessions({}) {
+  const { sessions, setSessions, socket, setForbidden, forbidden } = useStateContext();
+
+  async function forbid(visitor) {
+    try {
+      const res = await api.put("/admin/rq/forbidden", visitor);
+      setForbidden(res.data);
+    } catch (err) {
+      toast.error(
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `${err?.response?.data || err.message || "" + err}`,
+          }}
+        ></div>
+      );
+    }
+  }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/admin/rq/sessions");
+        console.log(res.data)
+        setSessions(res.data||[]);
+      } catch { }
+    })();
+    const parseSession = (data) => {
+      setSessions(data);
+    };
+    socket.on("sessionEvent", parseSession);
+    socket.emit("getSessions");
+    return () => {
+      socket.off("sessionEvent", parseSession);
+    };
+  }, []);
+  return (
+    <>
+      <div className="paper p-4 shadow">
+        <h3 className="fw-bold">Active Connections</h3>
+        <div
+          id=""
+          className="row active p-3 fw-bold"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          <div className="py-2 col-lg-3">Type/IP_Address</div>
+          <div className="py-2 col-lg-3">User_Agent</div>
+          <div className="py-2 col-lg-2">Last_Access</div>
+          <div className="py-2 col-lg-2">First_Access</div>
+          <div className="py-2 col-lg-2">Action</div>
+        </div>
+        {sessions.map((u, i) => (
+          <div
+            id=""
+            key={"v" + u?.addr + u?.agent}
+            className={`row ${
+              forbidden.find((v) => u?.addr == v.addr && u.agent == v.agent) &&
+              "d-none"
+            } ${i % 2 !== 0 && "active"} p-3 fw-bold`}
+            data-aos="fade-up"
+            data-aos-delay="200"
+          >
+            <div className="py-2 col-lg-3">
+              <div>
+                {getDeviceType(u.agent) == "mobile" ? (
+                  <FaMobile />
+                ) : (
+                  <FaDesktop />
+                )}
+              </div>
+              {u?.addr}
+            </div>
+            <div className="py-2 col-lg-3">{u?.agent} </div>
+            <div className="py-2 col-lg-2">{u?.lastAccess.split("(")[0]}</div>
+            <div className="py-2 col-lg-2">{u?.date.split("(")[0]}</div>
+            <div className="py-2 col-lg-2">
+              <button
+                className="btn btn-danger"
+                onClick={() => {
+                  forbid(u);
+                }}
+              >
+                Forbid
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function getDeviceType(userAgent) {
+  const mobileRegex =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  return mobileRegex.test(userAgent) ? "mobile" : "desktop";
 }
