@@ -60,7 +60,7 @@ const DirItem = ({ item }) => {
             style={{ cursor: "pointer" }}
             onClick={() => {
               const a = document.createElement("a");
-              a.href = location.href.replace("/fsexplorer", "/zipper");
+              a.href = location.pathname.replace("/fsexplorer", "/zipper")+"/"+psr?.name;
               a.download = psr.name;
               a.click();
             }}
