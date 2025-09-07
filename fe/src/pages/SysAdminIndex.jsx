@@ -951,7 +951,6 @@ function ActiveSessions({}) {
     (async () => {
       try {
         const res = await api.get("/admin/rq/sessions");
-        console.log(res.data)
         setSessions(res.data||[]);
       } catch { }
     })();
@@ -999,7 +998,7 @@ function ActiveSessions({}) {
                   <FaDesktop />
                 )}
               </div>
-              {u?.addr}
+            { u.socketid} / {u?.addr}
             </div>
             <div className="py-2 col-lg-3">{u?.agent} </div>
             <div className="py-2 col-lg-2">{u?.lastAccess.split("(")[0]}</div>

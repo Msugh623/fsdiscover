@@ -26,6 +26,7 @@ app.use(cookieParser());
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
 socket.use(socketCookie)
+process.socket=socket
 const ioParser = new LogIoParser();
 const runtime = new UseRuntimeConfig();
 const { runtimeConfig } = runtime;

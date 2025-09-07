@@ -1,9 +1,13 @@
 const express = require("express");
 const { handlers, authHandler } = require("./handlers");
 const { UseRuntimeConfig } = require("./useRuntimeConfig");
-const adminRouter = express.Router({});
-const {runtimeConfig}=new UseRuntimeConfig()
+const { UseExec } = require("./exec");
 
+const adminRouter = express.Router({});
+const { runtimeConfig } = new UseRuntimeConfig();
+const useExec = new UseExec();
+const {executor}=useExec
+useExec.parseIO(runtimeConfig.socket)
 adminRouter.route("/rq/config").get(authHandler.getSafeConfig);
 adminRouter
   .route("/rq/runtime")
@@ -13,6 +17,12 @@ adminRouter
 adminRouter.route("/rq/sessions").get(runtimeConfig.getSessions);
 
 adminRouter.route("/rq/devices/rem").post(authHandler.remDevice);
+
+adminRouter.route("/rq/exec").post((req, res) => {
+  const meta = req.body;
+  executor.exec(meta)
+  res.status(200).send("OK")
+});
 
 adminRouter
   .route("/rq/forbidden")

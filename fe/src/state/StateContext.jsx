@@ -4,6 +4,8 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import api, { remoteApi } from "../../axios/api";
 import { io } from "socket.io-client";
 import { baseUrl } from "../../axios/api";
+import { FaTimes } from "react-icons/fa";
+import actions from "../assets/actions";
 
 const context = createContext();
 // Create the socket instance outside the component
@@ -11,6 +13,7 @@ const socket = io(baseUrl, {
   auth: { token: localStorage.access || "" },
   autoConnect: Boolean(localStorage.access),
 });
+
 const StateContext = ({ children }) => {
   const sprintet = {
     name: "App Info",
@@ -54,7 +57,8 @@ const StateContext = ({ children }) => {
   const [searchParams, _] = useSearchParams();
   const location = useLocation();
   const [apps, setApps] = useState([...defaultApps]);
-
+  const [modal, setModal] = useState("");
+  const [modalTitle, setModalTitle] = useState("");
   const pinned = apps.filter((app) => app?.pinned);
   const [opened, setOpened] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -73,7 +77,7 @@ const StateContext = ({ children }) => {
     top: scrollY,
     height: document.documentElement.scrollHeight,
   });
-const [sessions,setSessions]=useState([])
+  const [sessions, setSessions] = useState([]);
   async function init() {
     window.onresize = () => setVw(window.innerWidth);
   }
@@ -165,9 +169,7 @@ const [sessions,setSessions]=useState([])
       const resConf = await api.get("/runtime");
       setRuntimeConfig(resConf.data);
       // const appsRes = (await remoteApi.get("/rq/apps")).data;
-      const psr = [
-        ...defaultApps,
-      ];
+      const psr = [...defaultApps];
       setApps(psr);
       const appName = searchParams.get("a") || "";
       const theApp = psr.find(
@@ -235,7 +237,7 @@ const [sessions,setSessions]=useState([])
     } catch (err) {
       localStorage.access &&
         (() => {
-          !("" + err.response.data).startsWith("<") &&
+          !("" + err?.response?.data).startsWith("<") &&
             toast.error(
               <div
                 dangerouslySetInnerHTML={{
@@ -261,6 +263,18 @@ const [sessions,setSessions]=useState([])
     socket.on("netlog", (data) => {
       window.dispatchEvent(new CustomEvent("netlog", { detail: data }));
     });
+    localStorage?.access &&
+      (async () => {
+        try {
+          const res = await api.get("/admin/rq/sessions");
+          setSessions(res.data || []);
+        } catch {}
+      })();
+    const parseSession = (data) => {
+      setSessions(data);
+    };
+    localStorage?.access && socket.on("sessionEvent", parseSession);
+    localStorage?.access && socket.emit("getSessions");
     window.onscroll = () => {
       setScrollConfig({
         top: scrollY,
@@ -273,8 +287,20 @@ const [sessions,setSessions]=useState([])
         height: document.documentElement.scrollHeight - window.innerHeight,
       });
     }, 400);
+    return () => {
+      socket.off("sessionEvent", parseSession);
+    };
   }, []);
 
+  useEffect(() => {
+    function parseAction(data) {
+      actions[data.action](data);
+    }
+    socket.id && socket.on("exec-" + socket.id, parseAction);
+    return () => {
+      socket.off("exec-" + socket.id, parseAction);
+    };
+  }, [socket.id]);
   useEffect(() => {
     setScrollConfig({
       top: scrollY,
@@ -351,9 +377,57 @@ const [sessions,setSessions]=useState([])
         setRuntimeConfig,
         sessions,
         setSessions,
+        setModal,
+        setModalTitle,
       }}
     >
       {children}
+      <>
+        <a id="url-mounter" href=""></a>
+        {modal && (
+          <div
+            className="d-flex"
+            style={{
+              position: "fixed",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: "#00000020",
+              zIndex: 1
+            }}
+            onClick={() => setModal("")}
+          >
+            <div
+              className="rounded m-auto p-2 d-flex slideUp flex-column"
+              style={{
+                backgroundColor: "#283344ff",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="d-flex pb-2">
+                <div className=" text-light">{modalTitle}</div>
+                <button
+                  className="active ms-auto fs-6 p-0 px-2 my-auto rounded"
+                  onClick={() => setModal("")}
+                >
+                  <FaTimes className="icon" />
+                </button>
+              </div>
+              <div
+                className="rounded"
+                style={{
+                  minWidth: "25vw",
+                  minHeight: "30vh",
+                  backgroundColor: "#121b27ff",
+                }}
+              >
+                {modal}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     </context.Provider>
   );
 };

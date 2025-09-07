@@ -122,6 +122,9 @@ const Header = () => {
                   cursor: "pointer",
                 }}
                 onClick={() => {
+                  if(isUploading){
+                    return;
+                  }
                   if (!files.length) {
                     document.getElementById("filer").click();
                   } else {
@@ -241,7 +244,7 @@ const Header = () => {
       </nav>
       {isUploading && (
         <progress
-          className="w-100 mt-0"
+          className="w-100 mt-0 sticky-top"
           style={{
             position: "relative",
             bottom: "5px",

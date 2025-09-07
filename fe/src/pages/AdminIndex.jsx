@@ -90,6 +90,7 @@ const AdminIndex = () => {
                 </a>
                 {categories.map((flt) => (
                   <a
+                    key={flt}
                     href={`#${flt}`}
                     data-category="*"
                     className={
@@ -110,8 +111,8 @@ const AdminIndex = () => {
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            {prs.map((app) => {
-              return <AppCard key={app.id} app={app} />;
+            {prs.map((app,i) => {
+              return <AppCard key={""+app.id+i} app={app} />;
             })}
           </div>
         </div>
