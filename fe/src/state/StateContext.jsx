@@ -11,7 +11,7 @@ const context = createContext();
 // Create the socket instance outside the component
 const socket = io(baseUrl, {
   auth: { token: localStorage.access || "" },
-  autoConnect: Boolean(localStorage.access),
+  autoConnect: Boolean(true),
 });
 
 const StateContext = ({ children }) => {
@@ -77,6 +77,10 @@ const StateContext = ({ children }) => {
     top: scrollY,
     height: document.documentElement.scrollHeight,
   });
+  const [menuPos, setMenuPos] = useState({
+    x: 40,
+    y: window.innerHeight - 80,
+  });
   const [sessions, setSessions] = useState([]);
   async function init() {
     window.onresize = () => setVw(window.innerWidth);
@@ -116,13 +120,13 @@ const StateContext = ({ children }) => {
   const defaults = () => {
     const defBig = {
       width: 400,
-      height: window.innerHeight - 90,
+      height: 500,
       x: window.innerWidth / 4,
       y: 10,
     };
     const defSmall = {
-      width: window.innerWidth - 10,
-      height: window.innerHeight - 60,
+      width: 400,
+      height: 400,
       x: 5,
       y: 5,
     };
@@ -379,6 +383,8 @@ const StateContext = ({ children }) => {
         setSessions,
         setModal,
         setModalTitle,
+        menuPos,
+        setMenuPos,
       }}
     >
       {children}
@@ -394,7 +400,7 @@ const StateContext = ({ children }) => {
               left: 0,
               right: 0,
               backgroundColor: "#00000020",
-              zIndex: 1
+              zIndex: 1,
             }}
             onClick={() => setModal("")}
           >

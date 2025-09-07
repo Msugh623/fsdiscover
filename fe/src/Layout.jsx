@@ -16,6 +16,7 @@ import FsContext from "./state/FsContext";
 import MainSection from "./apps/fsmanager/MainSection";
 import SysAdminIndex from "./pages/SysAdminIndex";
 import Loader from "./components/Loader";
+import Menu from "./components/Menu";
 const TouchPad = lazy(() => import("./apps/touchpad/Index"));
 
 const Layout = () => {
@@ -24,68 +25,68 @@ const Layout = () => {
 
   return (
     <>
-        <ToastContainer progressStyle={{ opacity: "0" }} />
-        <Routes>
-          <Route path="/login" element={<Login />} />
+      <Opened/>
+      <ToastContainer progressStyle={{ opacity: "0" }} />
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
 
-          {/* File Explorer */}
-          <Route
-            path="fsexplorer"
-            element={
-              <FsContext>
-                <FileManager />
-              </FsContext>
-            }
-          >
-            <Route index element={<MainSection />} />
-            <Route path="*" element={<MainSection />} />
-          </Route>
+        {/* File Explorer */}
+        <Route
+          path="fsexplorer"
+          element={
+            <FsContext>
+              <FileManager />
+            </FsContext>
+          }
+        >
+          <Route index element={<MainSection />} />
+          <Route path="*" element={<MainSection />} />
+        </Route>
 
-          <Route
-            path="/touchpad"
-            element={
-              <>
-                {location.pathname.includes("touchpad") && (
-                  <Suspense fallback={<Loader animate={true} />}>
-                    <Admin sudo={true} >
-                      <TouchPad />
-                    </Admin>
-                  </Suspense>
-                )}
-              </>
-            }
-          />
+        <Route
+          path="/touchpad"
+          element={
+            <>
+              {location.pathname.includes("touchpad") && (
+                <Suspense fallback={<Loader animate={true} />}>
+                  <Admin sudo={true}>
+                    <TouchPad />
+                  </Admin>
+                </Suspense>
+              )}
+            </>
+          }
+        />
 
-          {/* Home */}
-          <Route path="/admin" element={<Admin sudo={true} />}>
-            <Route index element={<SysAdminIndex />} />
-            <Route path="app" element={<AddApp />} />
-          </Route>
+        {/* Home */}
+        <Route path="/admin" element={<Admin sudo={true} />}>
+          <Route index element={<SysAdminIndex />} />
+          <Route path="app" element={<AddApp />} />
+        </Route>
 
-          {/* Home */}
-          <Route path="/" element={<Admin />}>
-            <Route index element={<AdminIndex />} />
-            <Route path="app/add" element={<AddApp />} />
-          </Route>
+        {/* Home */}
+        <Route path="/" element={<Admin />}>
+          <Route index element={<AdminIndex />} />
+          <Route path="app/add" element={<AddApp />} />
+        </Route>
 
-          {/* Desktop UI Replical */}
-          <Route
-            path="/os"
-            element={
-              <>
-                <Background />
-                <Opened />
-                <Outlet />
-              </>
-            }
-          >
-            <Route index element={<TaskBar />} />
-            <Route path="/os:page" element={<TaskBar />} />
-          </Route>
-        </Routes>
+        {/* Desktop UI Replical */}
+        <Route
+          path="/os"
+          element={
+            <>
+              <Background />
+              <Outlet />
+            </>
+          }
+        >
+          <Route index element={<TaskBar />} />
+          <Route path="/os:page" element={<TaskBar />} />
+        </Route>
+      </Routes>
       {pop && (
         <div
           className="d-flex w-100"
@@ -102,6 +103,7 @@ const Layout = () => {
           {pop}
         </div>
       )}
+      <Menu/>
     </>
   );
 };

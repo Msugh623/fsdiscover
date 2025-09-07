@@ -2409,11 +2409,12 @@ path {
 }
 
 .window-header {
-  height: 50px;
+  height: 25px;
   width: 100%;
-  background-color: #c0c0c0;
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
+  background-color: #292929;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  padding:8px
 }
 
 .h-ico {
@@ -2511,10 +2512,10 @@ path {
 }
 
 .resizeHr {
-  border: 1px solid rgba(0, 0, 0, 0) !important;
-  border-color: transparent !important;
+  border: 1px solid #b4b4b400 !important;
   background-color: transparent !important;
   opacity: 1;
+  padding-top: 0px;
 }
 
 .resizeHr:active {

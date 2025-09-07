@@ -4,7 +4,7 @@ const {
   Button,
   keyboard,
   Key,
-  Window,
+  
 } = require("@nut-tree-fork/nut-js");
 const os = require("os");
 class Device {
@@ -209,3 +209,4 @@ class Keyboard extends Device {
 
 module.exports.Mouse = Mouse;
 module.exports.Keyboard = Keyboard;
+

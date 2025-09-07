@@ -214,7 +214,7 @@ const Panel = () => {
         )}
       </div>
       <div
-        className="mt-auto w-100"
+        className="mt-auto mx-auto"
         style={{
           border: "50%",
           backgroundColor: mouseDownHold
@@ -227,24 +227,23 @@ const Panel = () => {
             ? "yellow"
             : "#efefef",
           pointerEvents: "none",
-          height: "20px",
-          position: "relative",
-          top: "19px",
+          height: "2px",
+          position: "fixed",
+          top: "0px",
+          left: "0px",
+          right: "0px",
           zIndex: 1,
-          marginLeft: "1.2rem",
-          marginRight: ".96rem",
+          marginLeft: "0px",
+          minWidth: "110vw",
         }}
       ></div>
       <canvas
         id="tp"
         className="border"
         style={{
-          height: "85vh",
+          height: "100vh",
           position: "fixed",
-          top: "1.2rem",
-          left: "1.2rem",
-          right: "1.2rem",
-          width: "calc( 100vw - 2.4rem )",
+          width: "99.99vw",
         }}
       ></canvas>
       {!didInit &&

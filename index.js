@@ -291,12 +291,12 @@ async function getNewPort(port) {
     netProb.port = port;
     server.listen(port, netFace.address, () => {
       logger.log(
-        `\nSprint FS Explorer is serving ${os.hostname()} home directory @\x1b[32mhttp://${
+        `\nSprint FS Explorer is serving ${os.hostname()} home directory @ \x1b[32mhttp://${
           netFace.address
         }:${port}\n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
       );
       const qr = require("qrcode")
-      qr.toString(url, { type: "terminal" }, (err, code) => {
+      qr.toString(url, { type: "terminal" ,margin:100,small:true}, (err, code) => {
         if (!err) {
           logger.log("\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n")
           logger.log(code)

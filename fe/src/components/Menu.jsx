@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { useStateContext } from '../state/StateContext'
-import PinnedIcons from './PinnedIcons'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
-import { LazyLoadImage } from 'react-lazy-load-image-component'
-import PlaceHolder from './PlaceHolder'
+import React, { useEffect, useState } from "react";
+import { useStateContext } from "../state/StateContext";
+import PinnedIcons from "./PinnedIcons";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import PlaceHolder from "./PlaceHolder";
 
 const Menu = ({ hasDivider }) => {
   const { page } = useParams();
@@ -12,7 +12,7 @@ const Menu = ({ hasDivider }) => {
   const [panelClassName, setPanelClassName] = useState("d-none");
   const [href, setHref] = useState(location.href);
   const [hasPannel, setHasPannel] = useState(page);
-  const { apps, vw, handleIconClick } = useStateContext();
+  const { apps, vw, handleIconClick, menuPos, setMenuPos } = useStateContext();
 
   useEffect(() => {
     location.href !== href && setHref(location.href);
@@ -31,10 +31,19 @@ const Menu = ({ hasDivider }) => {
       setPanelClassName("d-block");
     }
   }, [hasPannel]);
+  useEffect(() => {
+    const killCtr = (e) => {
+      e.code == "Escape" && setHasPannel(false);
+    };
+    window.addEventListener("keydown", killCtr);
 
+    return () => {
+      window.removeEventListener("keydown", killCtr);
+    };
+  }, []);
   return (
     <>
-      <div className="menu-panel">
+      <div className="menu-panel small">
         <div className="mx-auto col-12 col-sm-10 col-md-8 col-xl-9">
           {hasPannel && (
             <div
@@ -52,63 +61,55 @@ const Menu = ({ hasDivider }) => {
           <div
             className={`inner rounded shadow-lg p-3 text-light bg-dark text-left slideUp ${panelClassName}`}
             style={{
-              zIndex: 5,
+              zIndex: 5000,
             }}
           >
             <div
               className="row ani"
               style={{
-                minHeight: "400px !important",
-                height: "60vh",
+                minHeight: "140px",
+                height: "20vh",
                 maxHeight: "800vh",
               }}
             >
-              {page !== "apps" && (
+              {
                 <div
-                  className={`col-md-7 scrollbs ani ${
-                    page == "apps" && "d-none"
-                  }`}
+                  className={`scrollbs ani ${page == "apps" && "d-none"}`}
                   style={{
                     height: "100%",
                     overflowY: "auto",
                   }}
                 >
                   <div className="d-flex ">
-                    <div className="">
-                      <LazyLoadImage
-                        effect="opacity"
-                        src="/sprintetName.png"
-                        placeholder={<PlaceHolder />}
-                        className="menuimg"
-                        alt="Sprintet S logo"
-                        height={"100px"}
-                        onClick={()=>navigate('/')}
-                      />
-                    </div>
-                    {vw < 768 && page !== "apps" && (
-                      <div className="my-auto ms-auto">
+                    {
+                      <div
+                        className="my-auto "
+                        onClick={() => navigate("/") || setHasPannel(false)}
+                      >
                         <div
-                          className="p-2 active "
+                          className="p-1 active "
                           style={{ borderRadius: "3px" }}
-                          onClick={() => {
-                            navigate("/os/apps");
-                            setHref("");
-                          }}
                         >
-                          {page == "apps" ? (
-                            <span className="slideLeft aniFast">
+                          {true ? (
+                            <span className="slideLeft aniFast pe-2 small">
                               <BiChevronLeft className="fs-5 icon" />
-                              Menu
+                              <span className="">All Services</span>
                             </span>
                           ) : (
-                            <div className="slideRight aniFast">
-                              All Apps
-                              <BiChevronRight className="fs-5 icon" />
-                            </div>
+                            ""
                           )}
                         </div>
                       </div>
-                    )}
+                    }
+                  </div>
+                  <div className="mt-3 mb-3">
+                    {apps.map((app) => (
+                      <PinnedIcons
+                        key={app?.location}
+                        app={app}
+                        handleClick={() => setHasPannel(false)}
+                      />
+                    ))}
                   </div>
                   <div className="d-flex flex-column h-auto">
                     Sprintet is a dynamic programming startup dedicated to
@@ -118,11 +119,10 @@ const Menu = ({ hasDivider }) => {
                     high-quality results, and continuous improvement.
                     <div className="mt-3">
                       <Link
-                        to={"/os?a=/about"}
+                        to={"/about"}
                         title="Learn more"
                         aria-label="About Us - Learn more about Sprintet"
                         onClick={() => {
-                          handleIconClick("/about");
                           setHasPannel(false);
                         }}
                         className="p-2 active d-inline btn"
@@ -133,75 +133,88 @@ const Menu = ({ hasDivider }) => {
                     </div>
                   </div>
                 </div>
-              )}
-              <div
-                className={`${
-                  page == "apps" ? "col-12" : "col-md-5 ps-0"
-                } scrollbs ${vw < 768 && page !== "apps" && "d-none"}`}
-                style={{
-                  height: "90%",
-                  maxHeight: "100%",
-                  overflowY: "auto",
-                }}
-              >
-                <div
-                  id="pinned"
-                  className={`${page !== "apps" && "ps-3"} w-100`}
-                  style={{
-                    borderLeft: page !== "apps" && "1px solid #efefef40",
-                    minHeight: "95%",
-                  }}
-                >
-                  <div className="my-2">
-                    <div
-                      className="p-2 active d-inline"
-                      style={{ borderRadius: "3px" }}
-                      onClick={() => {
-                        navigate(page == "apps" ? "/os" : "/os/apps");
-                        setHref("");
-                      }}
-                    >
-                      {page == "apps" ? (
-                        <span className="slideLeft aniFast">
-                          <BiChevronLeft className="fs-5 icon" />
-                          Menu
-                        </span>
-                      ) : (
-                        <span className="slideRight aniFast">
-                          All Apps
-                          <BiChevronRight className="fs-5 icon" />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    {apps.map((app) => (
-                      <PinnedIcons
-                        key={app?.location}
-                        app={app}
-                        handleClick={() => setHasPannel(false)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+              }
             </div>
           </div>
         </div>
       </div>
       <div
         id="start"
+        draggable
         title="Sprintet Menu"
         className={`app my-auto p-1 btn fs-5 ${hasPannel && "active"}`}
         onClick={() => setHasPannel((prev) => !prev)}
+        style={{
+          position: "fixed",
+          left: menuPos.x + "px",
+          top: menuPos.y + "px",
+          zIndex: 5000,
+          background: "#a5cde441",
+          backdropFilter: "blur(10px)",
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+        }}
+        onDragStart={() => {
+          setMenuPos((prev) => ({
+            ...prev,
+            x: prev.x,
+            y: prev.y,
+          }));
+        }}
+        onTouchStart={() => {
+          setMenuPos((prev) => ({
+            ...prev,
+            x: prev.x,
+            y: prev.y,
+          }));
+        }}
+        onDrag={(e) => {
+          setMenuPos((prev) => ({
+            x: e.clientX ? e.clientX : prev.x,
+            y: e.clientY ? e.clientY : prev.y,
+          }));
+        }}
+        onTouchMove={(e) => {
+          e.preventDefault();
+          setMenuPos((prev) => ({
+            x: e.touches[0].clientX ? e.touches[0].clientX : prev.x,
+            y: e.touches[0].clientY ? e.touches[0].clientY : prev.y,
+          }));
+        }}
+        onDragEnd={() => {
+          setMenuPos((prev) => ({
+            ...prev,
+            x: prev.x,
+            y: prev.y,
+          }));
+        }}
+        onTouchEnd={() => {
+          setMenuPos((prev) => ({
+            ...prev,
+            x: prev.x,
+            y: prev.y,
+          }));
+        }}
+        onTouchCancel={() => {
+          setMenuPos((prev) => ({
+            ...prev,
+            x: prev.x,
+            y: prev.y,
+          }));
+        }}
       >
         <LazyLoadImage
           effect="opacity"
           src="/sprintetS.png"
+          draggable={false}
           placeholder={<PlaceHolder />}
           height={40}
           alt="Sprintet Logo"
           about="Sprintet Logo Image"
+          onContextMenu={(e) => {
+            e.preventDefault();
+          }}
           style={{}}
         />
       </div>
@@ -215,4 +228,4 @@ const Menu = ({ hasDivider }) => {
   );
 };
 
-export default Menu
+export default Menu;
