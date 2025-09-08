@@ -4,12 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
 import { toast } from "react-toastify";
 import { FaTrash } from "react-icons/fa";
-import {  BiPencil, BiSync, BiX } from "react-icons/bi";
+import { BiPencil, BiSync, BiX } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
 
 const AdminIndex = () => {
-  const { apps, fetchSrc, categories, hostname,runtimeConfig } = useStateContext();
+  const { apps, fetchSrc, categories, hostname, runtimeConfig, profile } =
+    useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, setCategory] = useState("All");
 
@@ -54,14 +55,13 @@ const AdminIndex = () => {
                     to={!localStorage.access ? `/login` : "/admin"}
                     className="rounded shadow-lg p-3 ms-auto py-2 border border-dashed readmore custom-navmenu text-light"
                   >
-                    {!localStorage.access ? (
-                      "authorize"
-                    ) : (
-                      "Admin"
-                    )}
+                    {!localStorage.access ? "authorize" : "Admin"}
                   </Link>
                 </div>
-                {"Device Hostname: " + hostname}
+                <span className="text-primary">Host:</span> {hostname} <br />
+                <span className="text-primary">Profile: </span>
+                {profile.addr} <br />
+                <span className="text-primary">UUID: </span> {profile.uuid}
               </div>
             </div>
             <div
@@ -111,8 +111,8 @@ const AdminIndex = () => {
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            {prs.map((app,i) => {
-              return <AppCard key={""+app.id+i} app={app} />;
+            {prs.map((app, i) => {
+              return <AppCard key={"" + app.id + i} app={app} />;
             })}
           </div>
         </div>

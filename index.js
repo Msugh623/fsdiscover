@@ -265,7 +265,7 @@ app.post(
   }
 );
 app.use("/admin", authHandler.enforceAuth, adminRouter);
-
+app.get("/profile",authHandler.getProfile)
 app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
 app.post("/rq/login", authHandler.login);
 app.get("/fsexplorer*", handlers.sendUi);

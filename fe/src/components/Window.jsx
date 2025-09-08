@@ -239,7 +239,7 @@ const AppWindow = ({ app }) => {
         height: app.height,
         top: app.y + "px",
         left: window.innerWidth > 640 ? app.x : 0 + "px",
-        zIndex: 10,
+        zIndex: 10+app.zIndex,
         transition: "all, .1s",
       }}
     >

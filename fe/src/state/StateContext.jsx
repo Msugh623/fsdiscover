@@ -73,6 +73,7 @@ const StateContext = ({ children }) => {
   const [devices, setDevices] = useState([]);
   const [traffic, setTraffic] = useState([]);
   const [runtimeConfig, setRuntimeConfig] = useState({});
+  const [profile, setProfile] = useState({});
   const [scrollConfig, setScrollConfig] = useState({
     top: scrollY,
     height: document.documentElement.scrollHeight,
@@ -170,6 +171,8 @@ const StateContext = ({ children }) => {
     try {
       const hn = await api.get("/hostname");
       setHostname(hn.data);
+      const resProfile=await api.get("/profile")
+      setProfile(resProfile.data)
       const resConf = await api.get("/runtime");
       setRuntimeConfig(resConf.data);
       // const appsRes = (await remoteApi.get("/rq/apps")).data;
@@ -385,6 +388,7 @@ const StateContext = ({ children }) => {
         setModalTitle,
         menuPos,
         setMenuPos,
+        profile,
       }}
     >
       {children}

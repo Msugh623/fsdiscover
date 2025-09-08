@@ -900,6 +900,10 @@ class AuthHandler {
     });
   };
 
+  getProfile = (req, res) => {
+    res.status(200).json(req.user)
+  }
+
   getConfig = () => {
     return this.config;
   };
