@@ -229,7 +229,7 @@ app.post(
     }
     next();
   },
-  upload.array("files", 10),
+  upload.array("files"),
   (req, res) => {
     const dir = req.body.dir == "/" ? "/" : req.body.dir;
     const absoluteDir =
