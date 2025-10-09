@@ -239,7 +239,7 @@ const AppWindow = ({ app }) => {
         height: app.height,
         top: app.y + "px",
         left: window.innerWidth > 640 ? app.x : 0 + "px",
-        zIndex: 10+app.zIndex,
+        zIndex: 10 + app.zIndex,
         transition: "all, .1s",
       }}
     >
@@ -262,7 +262,10 @@ const AppWindow = ({ app }) => {
           }}
         ></div>
       )}
-      <div className="growIn" style={{ width: "calc(100% - 4px)",borderRadius:"14px" }}>
+      <div
+        className="growIn"
+        style={{ width: "calc(100% - 4px)", borderRadius: "14px" }}
+      >
         {Boolean(window.innerWidth > 640) && (
           <hr
             className="m-0 bg-light border-light resizeHr resN"
@@ -352,8 +355,10 @@ const AppWindow = ({ app }) => {
           </button>
         </header>
         <iframe
-          src={app.location}
-          className={(isAbouting ? "d-none" : "") + "window-inner border border-top-0"}
+          src={app.href || app.location}
+          className={
+            (isAbouting ? "d-none" : "") + "window-inner border border-top-0"
+          }
           draggable="false"
           id={"iframe-" + app.location}
         />
@@ -469,10 +474,13 @@ const AppDropDown = ({ app, abouter, ddSetter }) => {
             draggable={false}
             className="rounded my-auto me-1"
           />{" "}
-          <div className="ms-auto mb-auto" onClick={() => {
-            ddSetter((prev) => !prev);
-          }}>
-            <FaTimes/>
+          <div
+            className="ms-auto mb-auto"
+            onClick={() => {
+              ddSetter((prev) => !prev);
+            }}
+          >
+            <FaTimes />
           </div>
         </div>
         <div className="rounded pt-1">
@@ -486,7 +494,7 @@ const AppDropDown = ({ app, abouter, ddSetter }) => {
             className="border p-1 mt-1 rounded c-pointer"
             onClick={() => {
               ddSetter((prev) => !prev);
-              window.open(app.location, "_blank");
+              window.open(app.href||app.location, "_blank");
             }}
           >
             <div className="d-flex">

@@ -42,6 +42,15 @@ const StateContext = ({ children }) => {
     category: "utility",
   };
 
+  const deviceMgr = {
+    name: "Device Manager",
+    location: "/devices",
+    icon: "/device-manager.png",
+    pinned: true,
+    about: "Control Devices connected to host machine",
+    category: "utility",
+  };
+
   const sprintos = {
     name: "Sprint OS",
     location: "/os",
@@ -51,7 +60,7 @@ const StateContext = ({ children }) => {
     category: "default",
   };
 
-  const defaultApps = [sprintet, sprintos, fsdiscover, touchpad];
+  const defaultApps = [sprintet, fsdiscover, deviceMgr, touchpad];
 
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
@@ -82,6 +91,7 @@ const StateContext = ({ children }) => {
     x: 40,
     y: window.innerHeight - 80,
   });
+  const [key, setKey] = useState("");
   const [sessions, setSessions] = useState([]);
   async function init() {
     window.onresize = () => setVw(window.innerWidth);
@@ -112,9 +122,9 @@ const StateContext = ({ children }) => {
     }, 700);
   }
 
-  async function killWindow(loc) {
+  async function killWindow(loc, href) {
     setOpened((prev) => {
-      return prev.filter((item) => item.location !== loc);
+      return prev.filter((item) => item.location !== loc && item.href !== href);
     });
   }
 
@@ -134,7 +144,11 @@ const StateContext = ({ children }) => {
     return window.innerWidth > 600 ? defBig : defSmall;
   };
 
-  async function openApp(loc) {
+  async function openApp(loc, href = "") {
+    const openedApp = opened.find((app) => app.location == loc);
+    if (openedApp) {
+      return upDateWindow(loc, "href", href);
+    }
     const app = apps.find((app) => app.location == loc);
     setOpened((prev) => [
       ...prev,
@@ -143,6 +157,7 @@ const StateContext = ({ children }) => {
         ...defaults(),
         isMini: false,
         zIndex: 3,
+        href: href || "",
         x:
           window.innerWidth > 600
             ? defaults().x + opened.length * 10
@@ -155,7 +170,7 @@ const StateContext = ({ children }) => {
     ]);
   }
 
-  function handleIconClick(loc) {
+  function handleIconClick(loc, href) {
     const app = opened.find((app) => app.location == loc);
     if (app) {
       localStorage.focused = app.location;
@@ -164,15 +179,15 @@ const StateContext = ({ children }) => {
       }
       return upDateWindow(loc, "isMini", !app.isMini);
     }
-    openApp(loc);
+    openApp(loc, href);
   }
 
   const fetchSrc = async () => {
     try {
       const hn = await api.get("/hostname");
       setHostname(hn.data);
-      const resProfile=await api.get("/profile")
-      setProfile(resProfile.data)
+      const resProfile = await api.get("/profile");
+      setProfile(resProfile.data);
       const resConf = await api.get("/runtime");
       setRuntimeConfig(resConf.data);
       // const appsRes = (await remoteApi.get("/rq/apps")).data;
@@ -294,6 +309,8 @@ const StateContext = ({ children }) => {
         height: document.documentElement.scrollHeight - window.innerHeight,
       });
     }, 400);
+    document.killWindow = killWindow;
+    document.openApp = openApp;
     return () => {
       socket.off("sessionEvent", parseSession);
     };
@@ -301,7 +318,7 @@ const StateContext = ({ children }) => {
 
   useEffect(() => {
     function parseAction(data) {
-      actions[data.action](data);
+      actions[data.action](data, openApp);
     }
     socket.id && socket.on("exec-" + socket.id, parseAction);
     return () => {
@@ -336,6 +353,7 @@ const StateContext = ({ children }) => {
         !win.isMini
     );
     setWinIsFs(Boolean(fsWin));
+    socket.emit("activities", opened);
   }, [opened]);
 
   return (
@@ -389,6 +407,8 @@ const StateContext = ({ children }) => {
         menuPos,
         setMenuPos,
         profile,
+        key,
+        setKey,
       }}
     >
       {children}
@@ -429,6 +449,10 @@ const StateContext = ({ children }) => {
                 style={{
                   minWidth: "25vw",
                   minHeight: "30vh",
+
+                  maxWidth: "90vw",
+                  maxHeight: "75vh",
+                  overflow: "auto",
                   backgroundColor: "#121b27ff",
                 }}
               >

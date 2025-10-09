@@ -8,6 +8,7 @@ import { useStateContext } from "../../../state/StateContext";
 import { FaDesktop, FaMobile } from "react-icons/fa";
 import api from "../../../../axios/api";
 import { toast } from "react-toastify";
+import ConnectedDevice from "../../deviceManager/ConnectedDevice";
 
 const DirItem = ({ item }) => {
   const { key, getFs } = useFsContext();
@@ -79,7 +80,7 @@ const DirItem = ({ item }) => {
           title="Download as compressed ZIP"
           style={{ cursor: "pointer" }}
           onClick={() => {
-            const path = location.pathname+"/"+item;
+            const path = location.pathname + "/" + item;
             const data = {
               action: "open",
               pathname: path,
@@ -172,7 +173,7 @@ const DirItem = ({ item }) => {
 export default DirItem;
 
 function OpenWith({ data, sessions }) {
-  const {setModal,setModalTitle}=useStateContext()
+  const { setModal, setModalTitle } = useStateContext();
   async function handleSelect(id) {
     const meta = {
       ...data,
@@ -180,10 +181,12 @@ function OpenWith({ data, sessions }) {
     };
     try {
       await api.post("/admin/rq/exec", meta);
-      setModal("")
-      setModalTitle("")
+      setModal(<ConnectedDevice socketid={id} />);
+      setModalTitle("");
     } catch (error) {
-      toast.error("Open failed with " + error?.response?.data||error?.message)
+      toast.error(
+        "Open failed with " + error?.response?.data || error?.message
+      );
     }
   }
 
@@ -193,8 +196,8 @@ function OpenWith({ data, sessions }) {
         className="container p-3 px-4 "
         style={{
           maxWidth: "90vw",
-          maxHeight:"80vh",
-          overflowY:"auto"
+          maxHeight: "80vh",
+          overflowY: "auto",
         }}
       >
         {sessions.map((device, i) => (
@@ -204,8 +207,8 @@ function OpenWith({ data, sessions }) {
             onClick={() => {
               handleSelect(device.socketid);
             }}
-            style={{ 
-          overflow:"auto"
+            style={{
+              overflow: "auto",
             }}
           >
             <div className="icon col-sm-1 mb-2 mt-1">
@@ -218,7 +221,9 @@ function OpenWith({ data, sessions }) {
             <div className="ps-2 col-sm-2 mb-2 mt-1">{device.addr}</div>
             <div className="ps-2 col-sm-5 mb-2 mt-1">{device.agent} </div>
             <div className="ps-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
-            <div className="ps-2 col-sm-2 mb-2 mt-1">{device.lastAccess.split("GMT")[0]} </div>
+            <div className="ps-2 col-sm-2 mb-2 mt-1">
+              {device.lastAccess.split("GMT")[0]}{" "}
+            </div>
           </div>
         ))}
       </div>

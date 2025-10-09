@@ -1,10 +1,10 @@
 export default {
-    open: (data) => {
-        const a = document.getElementById("url-mounter");
-        a.href = data.pathname
-        a.target="_blank"
-        a.click()
-        a.href = ""
-        navigator.vibrate(50)
-    }
-}
+  open: (data, openApp) => {
+    openApp("/fsexplorer", data.pathname);
+    navigator.vibrate(50);
+  },
+  close: (data) => {
+    document.killWindow(data.location, data.href);
+    navigator.vibrate(50);
+  },
+};

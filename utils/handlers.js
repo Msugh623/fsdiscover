@@ -370,19 +370,23 @@ class AuthHandler {
           `);
         const url = "http://" + this?.netFace?.address + ":" + this.port;
         logger.log(
-          `\nSprint FS Explorer is serving ${os.hostname()} home directory @ \x1b[32m${url} \n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
+          `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32m${url} \n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
         );
         const qr = require("qrcode");
-        qr.toString(url, { type: "terminal" }, (err, code) => {
-          if (!err) {
-            logger.log(
-              "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n"
-            );
-            logger.log(code);
-            return;
+        qr.toString(
+          url,
+          { type: "terminal", margin: 100, small: true },
+          (err, code) => {
+            if (!err) {
+              logger.log(
+                "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n"
+              );
+              logger.log(code);
+              return;
+            }
+            console.log("Initiator: Unable to generate qrcode");
           }
-          console.log("Initiator: Unable to generate qrcode");
-        });
+        );
       }
       if (data == "uninstall") {
         console.log(`\nRun fsdiscover /u to uninstall fsdiscover`);

@@ -11,6 +11,7 @@ const conf = {
     "/fsexplorer",
     "/touchpad",
     "/os",
+    "/devices",
   ],
 };
 

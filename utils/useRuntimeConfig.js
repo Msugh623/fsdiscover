@@ -35,7 +35,11 @@ class RuntimeConfig {
 
   // SESSION MANAGEMENT
   connectSession = (user) => {
-    const theUser = this.sessions.find((u) =>u.addr+u.agent+u?.uuid== user.addr+u.agent+user?.uuid);
+    const theUser = this.sessions.find(
+      (u) =>
+        u.addr + u.agent + u?.uuid + u?.socketid ==
+        user.addr + u.agent + user?.uuid + user?.socketid
+    );
     if (theUser) {
       const keys = Object.keys(user);
       for (const key of keys) {
@@ -44,16 +48,40 @@ class RuntimeConfig {
     } else {
       this.sessions.unshift(user);
     }
-    this.socket.emit("sessionEvent",this.sessions)
+    this.socket.emit("sessionEvent", this.sessions);
   };
 
   disconnectSession = (user) => {
     this.sessions = this.sessions.filter(
-      (u) => u.addr + u.agent +u?.uuid!== user.addr + user.agent+user?.uuid
+      (u) =>
+        u.addr + u.agent + u?.uuid + u?.socketid !==
+        user.addr + user.agent + user?.uuid + user?.socketid
     );
     this.socket.emit("sessionEvent", this.sessions);
   };
 
+  updateSession = (user) => {
+    const theUser = this.sessions.find(
+      (u) =>
+        u.addr + u.agent + u?.uuid + u?.socketid ==
+        user.addr + u.agent + user?.uuid + user?.socketid
+    );
+    if (theUser?.addr) {
+      const keys = Object.keys(user);
+      for (const key of keys) {
+        theUser[key] = user[key];
+      }
+      this.sessions = this.sessions.map((u) =>
+        u.addr + u.agent + u?.uuid + u?.socketid ==
+        user.addr + user.agent + user?.uuid + user?.socketid
+          ? theUser
+          : u
+      );
+    } else {
+      this.sessions.unshift(user);
+    }
+    this.socket.emit("sessionEvent", this.sessions);
+  };
   getSessions = (_, res) => {
     res.status(200).json([...this.sessions]);
   };
@@ -130,7 +158,7 @@ class UseRuntimeConfig {
   attatchSocket = (socket) => {
     this.runtimeConfig.socket = socket;
     socket.on("getSessions", (data) => {
-      console.log(data)
+      console.log(data);
       this.socket.emit("sessionEvent", this.sessions);
     });
   };

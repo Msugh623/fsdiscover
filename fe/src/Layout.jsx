@@ -17,6 +17,8 @@ import MainSection from "./apps/fsmanager/MainSection";
 import SysAdminIndex from "./pages/SysAdminIndex";
 import Loader from "./components/Loader";
 import Menu from "./components/Menu";
+import ConnectedDevices from "./apps/deviceManager/ConnectedDevices";
+import ConnectedDevice from "./apps/deviceManager/ConnectedDevice";
 const TouchPad = lazy(() => import("./apps/touchpad/Index"));
 
 const Layout = () => {
@@ -25,7 +27,7 @@ const Layout = () => {
 
   return (
     <>
-      <Opened/>
+      <Opened />
       <ToastContainer progressStyle={{ opacity: "0" }} />
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -60,7 +62,10 @@ const Layout = () => {
             </>
           }
         />
-
+        <Route path="/devices" element={<Admin sudo={true} />}>
+          <Route index element={<ConnectedDevices />} />
+          <Route path=":addr" element={<ConnectedDevice />} />
+        </Route>
         {/* Home */}
         <Route path="/admin" element={<Admin sudo={true} />}>
           <Route index element={<SysAdminIndex />} />
@@ -103,7 +108,7 @@ const Layout = () => {
           {pop}
         </div>
       )}
-      <Menu/>
+      <Menu />
     </>
   );
 };

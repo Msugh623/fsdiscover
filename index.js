@@ -18,15 +18,15 @@ const { LogIoParser, UseLogger } = require("./utils/logger");
 const update = require("./update");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 const cookieParser = require("cookie-parser");
-const socketCookie= require("socket.io-cookie")
+const socketCookie = require("socket.io-cookie");
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 app.use(cookieParser());
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
-socket.use(socketCookie)
-process.socket=socket
+socket.use(socketCookie);
+process.socket = socket;
 const ioParser = new LogIoParser();
 const runtime = new UseRuntimeConfig();
 const { runtimeConfig } = runtime;
@@ -45,7 +45,7 @@ socket.on("connection", (client) => {
       client.id,
     client.user
   );
-  runtimeConfig.connectSession(client.user)
+  runtimeConfig.connectSession(client.user);
   const mouse = new Mouse(handlers, authHandler, "mouse", client, socket);
   const keyboard = new Keyboard(
     handlers,
@@ -83,7 +83,7 @@ socket.on("connection", (client) => {
   });
   client.on("reconnect", () => {
     runtimeConfig.connectSession(client.user);
-  })
+  });
   // client.on("reconnect", () => {
   //   runtimeConfig.connectSession(client.user);
   // });
@@ -94,9 +94,14 @@ socket.on("connection", (client) => {
     keyboard.remDevice((err) => {
       client.emit("error", err);
     });
-    runtimeConfig.disconnectSession(client.user)
+    runtimeConfig.disconnectSession(client.user);
   });
-
+  client.on("activities", (data) => {
+    runtimeConfig.updateSession({
+      ...client.user,
+      activities: data,
+    });
+  });
   client.on("pointerEvent", async (data) => {
     await mouse.mouseEvent(data, (err) => {
       client.emit("error", err);
@@ -265,7 +270,7 @@ app.post(
   }
 );
 app.use("/admin", authHandler.enforceAuth, adminRouter);
-app.get("/profile",authHandler.getProfile)
+app.get("/profile", authHandler.getProfile);
 app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
 app.post("/rq/login", authHandler.login);
 app.get("/fsexplorer*", handlers.sendUi);
@@ -278,8 +283,8 @@ app.get("*", handlers.sendUi);
 
 async function getNewPort(port) {
   const { logger } = new UseLogger();
-  authHandler.netFace = netFace
-  authHandler.port=port
+  authHandler.netFace = netFace;
+  authHandler.port = port;
   const url = "http://" + netFace.address + ":" + port;
   try {
     const _ = await fetch(url, { method: "HEAD" });
@@ -291,19 +296,25 @@ async function getNewPort(port) {
     netProb.port = port;
     server.listen(port, netFace.address, () => {
       logger.log(
-        `\nSprint FS Explorer is serving ${os.hostname()} home directory @ \x1b[32mhttp://${
+        `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32mhttp://${
           netFace.address
         }:${port}\n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
       );
-      const qr = require("qrcode")
-      qr.toString(url, { type: "terminal" ,margin:100,small:true}, (err, code) => {
-        if (!err) {
-          logger.log("\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n")
-          logger.log(code)
-          return;
+      const qr = require("qrcode");
+      qr.toString(
+        url,
+        { type: "terminal", margin: 100, small: true },
+        (err, code) => {
+          if (!err) {
+            logger.log(
+              "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n"
+            );
+            logger.log(code);
+            return;
+          }
+          console.log("Initiator: Unable to generate qrcode");
         }
-        console.log("Initiator: Unable to generate qrcode")
-      })
+      );
       netProb.initLiveCheck();
       update();
     });

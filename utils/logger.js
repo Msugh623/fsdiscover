@@ -1,17 +1,23 @@
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const readline=require("readline")
 
 class Logger {
   constructor() {
     try {
       this.logs = fs.readdirSync(path.join(__dirname, "..", "logs"));
     } catch (error) {
-      process.emit("uncaughtException", error)
+      process.emit("uncaughtException", error);
     }
     this.name =
       "fsdiscover-log-" +
-      new Date().toString().replaceAll(" ", "_").replaceAll("(", "").replaceAll(")", "").replaceAll(":", "-");
+      new Date()
+        .toString()
+        .replaceAll(" ", "_")
+        .replaceAll("(", "")
+        .replaceAll(")", "")
+        .replaceAll(":", "-");
     this.netname = this.name.replace("log", "netlog");
     this.nethistory = [];
     this.allhistory = [];
@@ -37,8 +43,10 @@ class Logger {
     if (this.logs.length >= 20) {
       this.allhistory.push(
         "Logger: " +
-        new Date().toString() +
-        " Log history has recoreded upto 20 logs, old logs will be deleted to make room for new logs as " + __dirname + "/../logs cannot hold more that 20 logs"
+          new Date().toString() +
+          " Log history has recoreded upto 20 logs, old logs will be deleted to make room for new logs as " +
+          __dirname +
+          "/../logs cannot hold more that 20 logs"
       );
       const toRem = this.logs.pop();
       fs.unlinkSync(path.join(__dirname, "..", "logs", toRem));
@@ -46,7 +54,7 @@ class Logger {
   }
 
   lognet(message, user, toConsole = true) {
-    toConsole && console.log(message);
+    toConsole && console.log("\r" + message);
     const entry = {
       message: message,
       user: user,
@@ -59,13 +67,14 @@ class Logger {
   }
 
   log(message, toConsole = true) {
-    toConsole && console.log(message);
+    toConsole && console.log("\r" + message);
     this.allhistory.push(message);
     this.saveLog();
   }
 
   saveLog() {
-    this.useLog && fs.writeFileSync(this.logPath, this.allhistory.join("\n"), "utf8");
+    this.useLog &&
+      fs.writeFileSync(this.logPath, this.allhistory.join("\n"), "utf8");
   }
 }
 

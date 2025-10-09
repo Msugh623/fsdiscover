@@ -16,7 +16,13 @@ const AdminIndex = () => {
 
   useEffect(() => {
     category == "All"
-      ? setPrs(apps.filter((a) => runtimeConfig?.apps?.includes(a?.location)))
+      ? setPrs(
+          apps.filter(
+            (a) =>
+              runtimeConfig?.apps?.includes(a?.location) ||
+              a?.location.includes("devices")
+          )
+        )
       : setPrs(
           apps
             .filter((cr) => cr.category == category)
