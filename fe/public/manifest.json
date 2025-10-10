@@ -1,0 +1,31 @@
+{
+  "name": "FSdiscover Client",
+  "short_name": "FSdiscover",
+  "description": "Lightweight cross-platform remote control and file sharing client by Sprintet.",
+  "id": "com.sprintet.fsdiscover.client",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "theme_color": "#0d1e2d",
+  "background_color": "#0d1e2d",
+  "categories": ["utilities", "networking", "productivity", "tools"],
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "lang": "en",
+  "dir": "ltr"
+}

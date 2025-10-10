@@ -195,21 +195,21 @@ const AppWindow = ({ app }) => {
     handlers[title]();
   }
 
-  useEffect(() => {
-    upDateWindow(
-      location,
-      "height",
-      Number(localStorage.getItem("h-" + app.location)) || defVal.height
-    );
-    upDateWindow(
-      location,
-      "width",
-      Number(localStorage.getItem("w-" + app.location)) || defVal.width
-    );
-    // return () => localStorage.clear()
-    localStorage.setItem("focused", app.location);
-    setToTop(app.location);
-  }, []);
+  // useEffect(() => {
+  //   upDateWindow(
+  //     location,
+  //     "height",
+  //     Number(localStorage.getItem("h-" + app.location)) || defVal.height
+  //   );
+  //   upDateWindow(
+  //     location,
+  //     "width",
+  //     Number(localStorage.getItem("w-" + app.location)) || defVal.width
+  //   );
+  //   // return () => localStorage.clear()
+  //   localStorage.setItem("focused", app.location);
+  //   setToTop(app.location);
+  // }, []);
 
   useEffect(() => {
     app.height > 0 &&
@@ -235,8 +235,8 @@ const AppWindow = ({ app }) => {
       }}
       style={{
         position: "fixed",
-        width: window.innerWidth > 640 ? app.width + "px" : "100vw",
-        height: app.height,
+        width: app.width + "px",
+        height: app.height + "px",
         top: app.y + "px",
         left: window.innerWidth > 640 ? app.x : 0 + "px",
         zIndex: 10 + app.zIndex,
@@ -494,7 +494,7 @@ const AppDropDown = ({ app, abouter, ddSetter }) => {
             className="border p-1 mt-1 rounded c-pointer"
             onClick={() => {
               ddSetter((prev) => !prev);
-              window.open(app.href||app.location, "_blank");
+              window.open(app.href || app.location, "_blank");
             }}
           >
             <div className="d-flex">

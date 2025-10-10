@@ -1,17 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="$favico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="$description" />
-    <meta name="keywords" content="$keywords" /> 
-    <meta name="color-scheme" content="dark" /> 
+    <meta name="keywords" content="$keywords" />
+    <meta name="color-scheme" content="dark" />
     <title>$title</title>
-    <script type="module" crossorigin src="/assets/index-iTaE1Csd.js"></script>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0d1e2d" />
+
+    <!-- iOS PWA support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="FSdiscover" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+
+    <!-- Remove Safari overscroll bounce + clean feel -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #0d1e2d;
+        color: #fff;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: auto;
+      }
+
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-xVdgOWPH.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-X1sCs60d.css">
   </head>
   <body>
-    <div id="root"></div> 
+    <div id="root"></div>
   </body>
 </html>

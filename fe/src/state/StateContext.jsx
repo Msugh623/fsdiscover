@@ -130,18 +130,12 @@ const StateContext = ({ children }) => {
 
   const defaults = () => {
     const defBig = {
-      width: 400,
-      height: 500,
-      x: window.innerWidth / 4,
-      y: 10,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      x: 0,
+      y: 0,
     };
-    const defSmall = {
-      width: 400,
-      height: 400,
-      x: 5,
-      y: 5,
-    };
-    return window.innerWidth > 600 ? defBig : defSmall;
+    return defBig;
   };
 
   async function openApp(loc, href = "") {
@@ -158,14 +152,8 @@ const StateContext = ({ children }) => {
         isMini: false,
         zIndex: 3,
         href: href || "",
-        x:
-          window.innerWidth > 600
-            ? defaults().x + opened.length * 10
-            : defaults().x,
-        y:
-          window.innerWidth > 600
-            ? defaults().y + opened.length * 10
-            : defaults().y,
+        x: 0,
+        y: 0,
       },
     ]);
   }
