@@ -4,7 +4,7 @@ export default {
     navigator.vibrate(50);
   },
   close: (data) => {
-    document.killWindow(data.location, data.href);
+    document.killWindow(data.id, data.href);
     navigator.vibrate(50);
   },
 };

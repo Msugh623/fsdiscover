@@ -341,7 +341,7 @@ const AppWindow = ({ app }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              killWindow(app.location);
+              killWindow(app.id);
             }}
             style={{ width: "16px", height: "16px" }}
             className="btn p-0 icon d-flex text-light m-auto rounded-circle text-center my-auto shadow-sm me-0 active "

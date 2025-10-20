@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../../state/StateContext";
 import { FaDesktop, FaMobile, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import api from "../../../axios/api";
-import { BiX } from "react-icons/bi";
+import { FaFileWaveform } from "react-icons/fa6";
 
 const ConnectedDevice = ({ socketid }) => {
-  const { sessions } = useStateContext();
+  const { sessions, setModal } = useStateContext();
   const [device, setDevice] = useState(null);
   const activities = device?.activities || [];
-  const navigate=useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const foundDevice = sessions.find((d) => d.socketid == socketid);
@@ -30,17 +30,16 @@ const ConnectedDevice = ({ socketid }) => {
         socketid,
         location: activity.location,
         href: activity.href,
+        id: activity.id,
       });
     } catch (err) {
-      toast.error(
-        err?.response?.data || err.message || "Failed to eject device"
-      );
+      toast.error(err?.response?.data || err.message || "Something went wrong");
     }
   };
 
   const ejectDevice = async () => {
     try {
-      navigate("/admin")
+      navigate("/admin");
     } catch (err) {
       toast.error(
         err?.response?.data || err.message || "Failed to eject device"
@@ -67,7 +66,7 @@ const ConnectedDevice = ({ socketid }) => {
           <div className="col-lg-6">
             <div className="d-flex align-items-center mb-3">
               <div className="pe-3 fs-1 icon">
-                {getDeviceType(device?.user?.agent) === "mobile" ? (
+                {getDeviceType(device?.agent) === "mobile" ? (
                   <FaMobile />
                 ) : (
                   <FaDesktop />
@@ -82,24 +81,32 @@ const ConnectedDevice = ({ socketid }) => {
         </div>
 
         <div className="row mb-4">
-          <div className="col-lg-6 pb-4">
-            <div className="paper shadow row p-3">
+          <div className="col-lg-6 px-4 pb-4">
+            <div className="paper shadow row p-3 px-2">
               <h5 className="text-light mb-3">Running Activities</h5>
               {activities.map((activity) => (
                 <>
-                  <div className="paper shadow p-3">
+                  <div className="paper shadow mb-2 p-3">
                     <div className="d-flex">
                       <img
                         src={activity.icon}
                         alt=""
-                        className="rounded"
+                        className="rounded my-auto"
                         style={{
                           width: "40px",
                           height: "40px",
                         }}
                       />
                       <div className="my-auto d-flex ps-2 fs-4 fw-bold w-100">
-                        {activity.name}
+                        <div className="fs-6">
+                          {" "}
+                          {activity.name}
+                          <div className="small">
+                            <small>
+                              {activity?.href || activity?.location}
+                            </small>
+                          </div>
+                        </div>
                         <button
                           className="btn p-1 py-0 ms-auto my-auto fs-5 btn-danger"
                           onClick={() => {
@@ -113,9 +120,49 @@ const ConnectedDevice = ({ socketid }) => {
                   </div>
                 </>
               ))}
+              <div className="px-3">
+                {" "}
+                {!activities?.length ? "No running activities" : ""}
+              </div>
             </div>
           </div>
-          <div className="col-lg-6">
+          <div className="col-lg-6 ">
+            <div className="paper shadow p-3 mb-4">
+              <h5 className="text-light mb-3">Actions</h5>
+              <div
+                className="paper shadow mb-2 p-1 me-1 "
+                style={{
+                  width: "fit-content",
+                }}
+                onClick={() => {
+                  document.toastId = toast.info(
+                    `Choose a file you want to open with ${device.addr}`,
+                    {
+                      autoClose: false,
+                    }
+                  );
+                  setModal("");
+                  navigate("/fsexplorer");
+                }}
+              >
+                <div className="d-flex flex-column">
+                  <div>
+                    <button className="btn p-1 py-0 ms-auto my-auto fs-5 py-1 btn-primary">
+                      <FaFileWaveform
+                        alt=""
+                        className="rounded fs-1 my-auto"
+                        style={{
+                          width: "50px",
+                        }}
+                      />
+                    </button>
+                  </div>
+                  <div className="small">
+                    <small>Open a file</small>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="paper shadow p-3">
               <h5 className="text-light mb-3">User Information</h5>
               <div className="mb-2">

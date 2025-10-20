@@ -60,7 +60,7 @@ const StateContext = ({ children }) => {
     category: "default",
   };
 
-  const defaultApps = [sprintet, fsdiscover, deviceMgr, touchpad];
+  const defaultApps = [fsdiscover, touchpad, deviceMgr, sprintet];
 
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
@@ -122,9 +122,9 @@ const StateContext = ({ children }) => {
     }, 700);
   }
 
-  async function killWindow(loc, href) {
+  async function killWindow(id) {
     setOpened((prev) => {
-      return prev.filter((item) => item.location !== loc && item.href !== href);
+      return prev.filter((item) => item.id !== id);
     });
   }
 
@@ -151,6 +151,7 @@ const StateContext = ({ children }) => {
         ...defaults(),
         isMini: false,
         zIndex: 3,
+        id: "" + Date.now(),
         href: href || "",
         x: 0,
         y: 0,

@@ -183,6 +183,7 @@ function OpenWith({ data, sessions }) {
       await api.post("/admin/rq/exec", meta);
       setModal(<ConnectedDevice socketid={id} />);
       setModalTitle("");
+      document.toastId && toast.dismiss(document.toastId);
     } catch (error) {
       toast.error(
         "Open failed with " + error?.response?.data || error?.message
