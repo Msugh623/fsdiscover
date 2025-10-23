@@ -100,7 +100,7 @@ const StateContext = ({ children }) => {
   async function upDateWindow(loc, key, val) {
     setOpened((prev) => {
       return prev.map((item) =>
-        item.location == loc ? { ...item, [key]: val } : item
+        item.id == loc ||item.location == loc ? { ...item, [key]: val } : item
       );
     });
   }
@@ -110,7 +110,7 @@ const StateContext = ({ children }) => {
     setTimeout(() => {
       setOpened((prev) => {
         return prev.map((item) =>
-          item.location == raised
+          item.id == raised
             ? { ...item, zIndex: 5 }
             : { ...item, zIndex: 3 }
         );

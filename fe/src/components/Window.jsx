@@ -10,7 +10,7 @@ import { FaTimes } from "react-icons/fa";
 
 const AppWindow = ({ app }) => {
   const { upDateWindow, killWindow, defaults, setToTop } = useStateContext();
-  const { location } = app;
+  const location  = app?.id;
   const [lastMsDown, setLastMsDown] = useState({
     x: 0,
     y: 0,
@@ -38,12 +38,12 @@ const AppWindow = ({ app }) => {
       upDateWindow(
         location,
         "height",
-        Number(localStorage.getItem("h-" + app.location)) || defVal.height
+        Number(localStorage.getItem("h-" + app.id)) || defVal.height
       );
       upDateWindow(
         location,
         "width",
-        Number(localStorage.getItem("w-" + app.location)) || defVal.width
+        Number(localStorage.getItem("w-" + app.id)) || defVal.width
       );
       upDateWindow(location, "x", prev.x);
       upDateWindow(location, "y", prev.y);
@@ -83,7 +83,7 @@ const AppWindow = ({ app }) => {
       upDateWindow(
         location,
         "height",
-        Number(localStorage.getItem("h-" + app.location)) || defVal.height
+        Number(localStorage.getItem("h-" + app.id)) || defVal.height
       );
     }
     if (appX <= 5 || appX >= window.innerWidth - 5) {
@@ -96,7 +96,7 @@ const AppWindow = ({ app }) => {
         upDateWindow(
           location,
           "width",
-          Number(localStorage.getItem("w-" + app.location)) || defVal.width
+          Number(localStorage.getItem("w-" + app.id)) || defVal.width
         );
       }
     }
@@ -104,9 +104,9 @@ const AppWindow = ({ app }) => {
 
   const changeKey = (key, val) => {
     const swap = ["w", "s"].includes(key);
-    const prevVal = Number(localStorage.getItem(key + "-" + app.location)) || 0;
+    const prevVal = Number(localStorage.getItem(key + "-" + app.id)) || 0;
     const diff = !swap ? prevVal - val : val - prevVal;
-    setTimeout(() => localStorage.setItem(key + "-" + app.location, val), 0);
+    setTimeout(() => localStorage.setItem(key + "-" + app.id, val), 0);
     return diff < 100 && diff > -100 ? diff : 0;
   };
 
@@ -146,7 +146,7 @@ const AppWindow = ({ app }) => {
         const newHeight = prevHeight + diff;
         newHeight > 200 &&
           (() => {
-            localStorage.setItem("h-" + app.location, "" + newHeight);
+            localStorage.setItem("h-" + app.id, "" + newHeight);
             upDateWindow(location, "height", newHeight);
             upDateWindow(location, "y", clientY);
           })();
@@ -156,7 +156,7 @@ const AppWindow = ({ app }) => {
         const newHeight = prevHeight + diff;
         newHeight > 200 &&
           (() => {
-            localStorage.setItem("h-" + app.location, "" + newHeight);
+            localStorage.setItem("h-" + app.id, "" + newHeight);
             upDateWindow(location, "height", newHeight);
           })();
       },
@@ -165,7 +165,7 @@ const AppWindow = ({ app }) => {
         const newWidth = prevWidth + diff;
         newWidth > 100 &&
           (() => {
-            localStorage.setItem("w-" + app.location, "" + newWidth);
+            localStorage.setItem("w-" + app.id, "" + newWidth);
             upDateWindow(location, "width", newWidth);
             upDateWindow(location, "x", clientX);
           })();
@@ -175,7 +175,7 @@ const AppWindow = ({ app }) => {
         const newWidth = prevWidth + diff;
         newWidth > 100 &&
           (() => {
-            localStorage.setItem("w-" + app.location, "" + newWidth);
+            localStorage.setItem("w-" + app.id, "" + newWidth);
             upDateWindow(location, "width", newWidth);
           })();
       },
@@ -199,39 +199,39 @@ const AppWindow = ({ app }) => {
   //   upDateWindow(
   //     location,
   //     "height",
-  //     Number(localStorage.getItem("h-" + app.location)) || defVal.height
+  //     Number(localStorage.getItem("h-" + app.id)) || defVal.height
   //   );
   //   upDateWindow(
   //     location,
   //     "width",
-  //     Number(localStorage.getItem("w-" + app.location)) || defVal.width
+  //     Number(localStorage.getItem("w-" + app.id)) || defVal.width
   //   );
   //   // return () => localStorage.clear()
-  //   localStorage.setItem("focused", app.location);
-  //   setToTop(app.location);
+  //   localStorage.setItem("focused", app.id);
+  //   setToTop(app.id);
   // }, []);
 
   useEffect(() => {
     app.height > 0 &&
       app.height < window.innerHeight &&
       localStorage.setItem(
-        "h-" + app.location,
+        "h-" + app.id,
         "" + app.height || defVal.height
       );
     app.width > 0 &&
       app.width < window.innerWidth &&
-      localStorage.setItem("w-" + app.location, "" + app.width || defVal.width);
+      localStorage.setItem("w-" + app.id, "" + app.width || defVal.width);
   }, [app.width, app.height]);
 
   return (
     <div
-      id={`window-${app.location}`}
+      id={`window-${app.id}`}
       className={`rounded   ${app.zIndex == 3 ? "shadow-lg" : "shadow-md"} ${
         app.isMini && "d-none"
       } d-flex`}
       onMouseEnter={() => {
-        localStorage.setItem("focused", app.location);
-        setToTop(app.location);
+        localStorage.setItem("focused", app.id);
+        setToTop(app.id);
       }}
       style={{
         position: "fixed",
@@ -280,7 +280,7 @@ const AppWindow = ({ app }) => {
           />
         )}
         <header
-          id={`window-header-${app.location}`}
+          id={`window-header-${app.id}`}
           className="d-flex window-header text-light border border-bottom-0"
         >
           <div
@@ -306,7 +306,7 @@ const AppWindow = ({ app }) => {
             draggable
             onClick={(e) => {
               e.stopPropagation();
-              upDateWindow(app.location, "isMini", !app.isMini);
+              upDateWindow(app.id, "isMini", !app.isMini);
             }}
             onMouseDown={(e) => {
               const appOtherEnd = app.width / 2 + e.clientX;
@@ -360,7 +360,7 @@ const AppWindow = ({ app }) => {
             (isAbouting ? "d-none" : "") + "window-inner border border-top-0"
           }
           draggable="false"
-          id={"iframe-" + app.location}
+          id={"iframe-" + app.id}
         />
         {
           <hr

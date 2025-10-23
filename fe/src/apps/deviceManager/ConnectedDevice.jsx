@@ -103,7 +103,7 @@ const ConnectedDevice = ({ socketid }) => {
                           {activity.name}
                           <div className="small">
                             <small>
-                              {activity?.href || activity?.location}
+                              {(activity?.href||"").replace("/fsexplorer","") || activity?.location}
                             </small>
                           </div>
                         </div>

@@ -105,7 +105,7 @@ const Menu = ({ hasDivider }) => {
                   <div className="mt-3 mb-3">
                     {apps.map((app) => (
                       <PinnedIcons
-                        key={app?.location}
+                        key={app?.id||app?.location}
                         app={app}
                         handleClick={() => setHasPannel(false)}
                       />

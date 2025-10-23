@@ -9,7 +9,7 @@ const Opened = () => {
         <>
             {
                 opened.map(app => (
-                    <AppWindow key={app.location} app={app} />
+                    <AppWindow key={app.id} app={app} />
                 ))
             }
         </>
