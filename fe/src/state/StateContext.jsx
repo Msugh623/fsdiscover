@@ -114,10 +114,10 @@ const StateContext = ({ children }) => {
         );
       });
     }, 600);
-    setTimeout(() => {
-      const ifr = document.getElementById("iframe-" + raised);
-      ifr && ifr.focus();
-    }, 700);
+    // setTimeout(() => {
+    //   const ifr = document.getElementById("iframe-" + raised);
+    //   ifr && ifr.focus();
+    // }, 700);
   }
 
   async function killWindow(id) {
@@ -144,7 +144,7 @@ const StateContext = ({ children }) => {
     const app =
       apps.find((app) => app.location == loc) || href ? fsdiscover : null;
     if (app == null) {
-      toast.warning("WindowManager: App open failed")
+      toast.warning("WindowManager: App open failed");
       return;
     }
     const newApp = {
@@ -165,13 +165,15 @@ const StateContext = ({ children }) => {
   }
 
   function handleIconClick(loc, href) {
-    const app = opened.find((app) => app.location == loc);
+    const app =
+      opened.find((app) => app.location == loc || app.id == loc) ||
+    (  document.opened||[]).find((app) => app.location == loc || app.id == loc);
     if (app) {
       localStorage.focused = app.location;
       if (app.zIndex < 5) {
         return setToTop(loc);
       }
-      return upDateWindow(loc, "isMini", !app.isMini);
+      return upDateWindow(app.id, "isMini", !app.isMini);
     }
     openApp(loc, href);
   }
@@ -305,6 +307,7 @@ const StateContext = ({ children }) => {
     }, 400);
     document.killWindow = killWindow;
     document.openApp = openApp;
+    document.handleIconClick = handleIconClick;
     return () => {
       socket.off("sessionEvent", parseSession);
     };
@@ -347,6 +350,7 @@ const StateContext = ({ children }) => {
         !win.isMini
     );
     setWinIsFs(Boolean(fsWin));
+    document.opened = opened;
     socket.emit("activities", opened);
   }, [opened]);
 

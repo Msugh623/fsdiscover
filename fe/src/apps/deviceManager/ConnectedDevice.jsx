@@ -4,16 +4,23 @@ import { useStateContext } from "../../state/StateContext";
 import { FaDesktop, FaMobile, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import api from "../../../axios/api";
-import { FaFileWaveform } from "react-icons/fa6";
+import { FaFileWaveform, FaSpinner } from "react-icons/fa6";
 
 const ConnectedDevice = ({ socketid }) => {
+  const [socketId, setsocketId] = useState();
   const { sessions, setModal } = useStateContext();
   const [device, setDevice] = useState(null);
+  const [loading, setLoading] = useState(true);
   const activities = device?.activities || [];
   const navigate = useNavigate();
 
   useEffect(() => {
-    const foundDevice = sessions.find((d) => d.socketid == socketid);
+    const foundDevice =
+      sessions.find((d) => d.socketid == socketid) ||
+      sessions.find((d) => d.addr == socketid);
+    if (foundDevice) {
+      setsocketId(foundDevice.socketid);
+    }
     setDevice(foundDevice);
   }, [socketid, sessions]);
 
@@ -27,7 +34,7 @@ const ConnectedDevice = ({ socketid }) => {
     try {
       await api.post("/admin/rq/exec", {
         action: "close",
-        socketid,
+        socketid: socketId || socketid,
         location: activity.location,
         href: activity.href,
         id: activity.id,
@@ -36,7 +43,19 @@ const ConnectedDevice = ({ socketid }) => {
       toast.error(err?.response?.data || err.message || "Something went wrong");
     }
   };
-
+  const toggleActivity = async (activity) => {
+    try {
+      await api.post("/admin/rq/exec", {
+        action: "toggle",
+        socketid: socketId || socketid,
+        location: activity.location,
+        href: activity.href,
+        id: activity.id,
+      });
+    } catch (err) {
+      toast.error(err?.response?.data || err.message || "Something went wrong");
+    }
+  };
   const ejectDevice = async () => {
     try {
       navigate("/admin");
@@ -47,12 +66,30 @@ const ConnectedDevice = ({ socketid }) => {
     }
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 15000);
+  }, []);
+
   if (!device) {
-    console.log(sessions);
     return (
-      <div className="p-4">
-        <h3 className="text-danger">Device not found</h3>
-        <p>The device with ID {socketid} could not be found.</p>
+      <div className="my-auto p-4 fadeIn">
+        {loading ? (
+          <>
+            <div className="text-center pt-4 px-5 mt-4">
+              <FaSpinner className="spinner fs-1" />
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className="text-danger">Device not found</h3>
+            <p>
+              The device with ID or Address {socketId || socketid} could not be
+              found.
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -61,7 +98,6 @@ const ConnectedDevice = ({ socketid }) => {
     <div className="container p-2">
       <div className="paper text-light shadow p-3">
         <h3 className="text-light fw-bold mb-4">Device Details</h3>
-
         <div className="row mb-4">
           <div className="col-lg-6">
             <div className="d-flex align-items-center mb-3">
@@ -73,7 +109,11 @@ const ConnectedDevice = ({ socketid }) => {
                 )}
               </div>
               <div>
-                <h5 className="text-light mb-0">{device.addr}</h5>
+                <h5 className="text-light mb-0">
+                  {device.addr == "127.0.0.1"
+                    ? "HOST - " + device.addr
+                    : device.addr}
+                </h5>
                 <div className="text-muted">{device.type}</div>
               </div>
             </div>
@@ -86,7 +126,10 @@ const ConnectedDevice = ({ socketid }) => {
               <h5 className="text-light mb-3">Running Activities</h5>
               {activities.map((activity) => (
                 <>
-                  <div className="paper shadow mb-2 p-3">
+                  <div
+                    className="paper shadow mb-2 p-3"
+                    onClick={()=>toggleActivity(activity)}
+                  >
                     <div className="d-flex">
                       <img
                         src={activity.icon}
@@ -103,13 +146,17 @@ const ConnectedDevice = ({ socketid }) => {
                           {activity.name}
                           <div className="small">
                             <small>
-                              {(activity?.href||"").replace("/fsexplorer","") || activity?.location}
+                              {(activity?.href || "").replace(
+                                "/fsexplorer",
+                                ""
+                              ) || activity?.location}
                             </small>
                           </div>
                         </div>
                         <button
                           className="btn p-1 py-0 ms-auto my-auto fs-5 btn-danger"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
                             closeActivity(activity);
                           }}
                         >
@@ -136,7 +183,11 @@ const ConnectedDevice = ({ socketid }) => {
                 }}
                 onClick={() => {
                   document.toastId = toast.info(
-                    `Choose a file you want to open with ${device.addr}`,
+                    `Choose a file you want to open with ${
+                      device.addr == "127.0.0.1"
+                        ? "HOST - " + device.addr
+                        : device.addr
+                    }`,
                     {
                       autoClose: false,
                     }

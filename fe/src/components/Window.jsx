@@ -64,7 +64,6 @@ const AppWindow = ({ app }) => {
 
     const xcurr = e.clientX || e.touches[0].clientX;
     const ycurr = e.clientY || e.touches[0].clientY;
-    console.log(xcurr);
     let appX = xcurr;
     let appY = ycurr;
 

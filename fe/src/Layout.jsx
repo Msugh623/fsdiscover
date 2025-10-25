@@ -6,6 +6,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigate,
   useSearchParams,
 } from "react-router-dom";
 import Background from "./components/Background";

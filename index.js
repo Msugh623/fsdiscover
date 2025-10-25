@@ -297,7 +297,7 @@ async function getNewPort(port) {
     netProb.port = port;
     process.netPort = port;
     process.netUrl = `http://${netFace.address}:${port}`;
-    server.listen(port, netFace.address, () => {
+    server.listen(port, "0.0.0.0"||netFace.address, () => {
       logger.log(
         `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32mhttp://${
           netFace.address
@@ -337,11 +337,9 @@ async function getNewLocalPort(port) {
   } catch (err) {
     process.localPort = port;
     process.localUrl = `http://127.0.0.1:${port}`;
-    app.listen(port, "127.0.0.1", () => {
       logger.log(
         `Local is running @ \x1b[32mhttp://127.0.0.1:${port}\n\n\x1b[0m`
       );
-    });
   }
 }
 getNewPort(port);

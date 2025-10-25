@@ -54,7 +54,7 @@ class Logger {
   }
 
   lognet(message, user, toConsole = true) {
-    toConsole && console.log("\r" + message);
+    toConsole && process.stdout.write("\r" + message);
     const entry = {
       message: message,
       user: user,
@@ -67,7 +67,7 @@ class Logger {
   }
 
   log(message, toConsole = true) {
-    toConsole && console.log("\r" + message);
+    toConsole && process.stdout.write("\r" + message);
     this.allhistory.push(message);
     this.saveLog();
   }

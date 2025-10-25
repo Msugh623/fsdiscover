@@ -41,7 +41,7 @@ const ConnectedDevices = () => {
                 )
                 .map((device, i) => (
                   <div
-                    key={device.addr + device.agent + i}
+                    key={"$d-" + device.addr + device.agent + i}
                     className="active p-1 d-flex rounded c-pointer mb-2 row"
                     onClick={() => {
                       setModal(<ConnectedDevice socketid={device.socketid} />);
@@ -58,7 +58,9 @@ const ConnectedDevices = () => {
                           <FaDesktop />
                         )}
                       </div>
-                      {device.addr}
+                      {device.addr == "127.0.0.1"
+                        ? "HOST - " + device.addr
+                        : device.addr}
                     </div>
                     <div className="ps-2 mt-auto col-sm-5 mb-2 mt-1">
                       {device.agent}{" "}
