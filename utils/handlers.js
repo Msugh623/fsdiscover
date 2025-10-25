@@ -319,7 +319,8 @@ class Middleware {
           type: "rest",
           date: `${new Date()}`,
           lastAccess: `${new Date()}`,
-        }
+        },
+        !req.url.includes("socket")
       );
     next();
   };
@@ -359,14 +360,13 @@ class AuthHandler {
       if (data == "exit" || data == "quit") {
         process.stdin.write("\x1b[2A");
         process.stdin.write("\x1b[2k");
-        console.log(
-          'Process has been asked to exit from stdin. user input "%s"',
-          data
+        logger.log(
+          'Process has been asked to exit from stdin. user input "' + data + '"'
         );
         process.exit(0);
       }
       if (data == "help" || data == "h") {
-        console.log(`\nUse: quit or exit to stop fsdiscover\nUse: uninstall to remove fsdiscover\nUse: fsdiscover --help or fsdiscover \\help for options\nUse: help to see options
+        logger.log(`\nUse: quit or exit to stop fsdiscover\nUse: uninstall to remove fsdiscover\nUse: fsdiscover --help or fsdiscover \\help for options\nUse: help to see options
           `);
         const url = "http://" + this?.netFace?.address + ":" + this.port;
         logger.log(
@@ -384,12 +384,14 @@ class AuthHandler {
               logger.log(code);
               return;
             }
-            console.log("Initiator: Unable to generate qrcode");
+            logger.log("Initiator: Unable to generate qrcode");
           }
         );
       }
       if (data == "uninstall") {
-        console.log(`\nRun fsdiscover /u to uninstall fsdiscover`);
+        logger.log(
+          `\nRun fsdiscover -u  or fsdiscover /u to uninstall fsdiscover`
+        );
       }
     });
     process.on("SIGINT", async () => {
@@ -905,8 +907,8 @@ class AuthHandler {
   };
 
   getProfile = (req, res) => {
-    res.status(200).json(req.user)
-  }
+    res.status(200).json(req.user);
+  };
 
   getConfig = () => {
     return this.config;

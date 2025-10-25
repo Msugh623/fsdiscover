@@ -1,7 +1,13 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import TaskBar from "./components/TaskBar";
 import Opened from "./components/Opened";
-import { Outlet, Route, Routes, useLocation } from "react-router-dom";
+import {
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import Background from "./components/Background";
 import { useStateContext } from "./state/StateContext";
 import About from "./pages/About";
@@ -22,9 +28,18 @@ import ConnectedDevice from "./apps/deviceManager/ConnectedDevice";
 const TouchPad = lazy(() => import("./apps/touchpad/Index"));
 
 const Layout = () => {
-  const { pop } = useStateContext();
+  const { pop, openApp } = useStateContext();
   const location = useLocation();
-
+  const navigate=useNavigate()
+  const [params, _] = useSearchParams();
+  useEffect(() => {
+    const a = params.get("a");
+    const href = params.get("href");
+    if (href || a) {
+      openApp(a, href);
+      navigate(location.pathname)
+    }
+  }, []);
   return (
     <>
       <Opened />

@@ -12,7 +12,7 @@ echo ""
 echo "Fsdiscover is a tool that allows you to access your filesystem over local http network"
 
 
-if [ $PARAM == "--auto" ]; then
+if [[ $PARAM == "--auto" || $2 == "--auto" ]]; then
     echo "Skipping permission because auto is supplied... automatic installer shall proceed"
 else
     echo "Do you want to proceed installation (y/n)"
@@ -158,13 +158,14 @@ fi
 echo ""
 echo "Installation Finished."
 echo
-echo "********************************"
-echo 'Default password is set to "password", please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten'
-echo "The email requested at login is not tested against any value, use your own email as it doesn't matter which email you use to login"
-echo "********************************"
+printf "\n\x1b[43m********************************\x1b[49m\n"
+printf '\n\x1b[33mINSTRUCTION FOR LOGIN PASSWORD\x1b[39m\nThe default password is set to "password", please change it as soon as possible\nIf you already changed it then ignore this message, it will not be overwritten\n\n'
+printf "\x1b[33mINSTRUCTIONS FOR LOGIN EMAIL\x1b[39m\nThe email requested at login is not tested against any value\nUse your own email as it doesn't matter which email you use to login\n"
+printf "\n\x1b[43m********************************\x1b[49m\n"
 echo
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"
 echo 'Use "fsdiscover --help" for details';
-sleep "7"
+printf '\n\nPress CTRL+C to end installer or wait 15 seconds\n'
+sleep "15"

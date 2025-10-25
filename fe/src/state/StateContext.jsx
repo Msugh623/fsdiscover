@@ -100,7 +100,7 @@ const StateContext = ({ children }) => {
   async function upDateWindow(loc, key, val) {
     setOpened((prev) => {
       return prev.map((item) =>
-        item.id == loc ||item.location == loc ? { ...item, [key]: val } : item
+        item.id == loc || item.location == loc ? { ...item, [key]: val } : item
       );
     });
   }
@@ -110,9 +110,7 @@ const StateContext = ({ children }) => {
     setTimeout(() => {
       setOpened((prev) => {
         return prev.map((item) =>
-          item.id == raised
-            ? { ...item, zIndex: 5 }
-            : { ...item, zIndex: 3 }
+          item.id == raised ? { ...item, zIndex: 5 } : { ...item, zIndex: 3 }
         );
       });
     }, 600);
@@ -143,20 +141,27 @@ const StateContext = ({ children }) => {
     if (openedApp) {
       return upDateWindow(loc, "href", href);
     }
-    const app = apps.find((app) => app.location == loc);
-    setOpened((prev) => [
-      ...prev,
-      {
-        ...app,
-        ...defaults(),
-        isMini: false,
-        zIndex: 3,
-        id: "" + Date.now(),
-        href: href || "",
-        x: 0,
-        y: 0,
-      },
-    ]);
+    const app =
+      apps.find((app) => app.location == loc) || href ? fsdiscover : null;
+    if (app == null) {
+      toast.warning("WindowManager: App open failed")
+      return;
+    }
+    const newApp = {
+      ...app,
+      ...defaults(),
+      isMini: false,
+      zIndex: 3,
+      id: "" + Date.now(),
+      href: href || "",
+      x: 0,
+      y: 0,
+    };
+    setOpened((prev) => [...prev, newApp]);
+    localStorage.focused = newApp.id;
+    setTimeout(() => {
+      setToTop();
+    }, 300);
   }
 
   function handleIconClick(loc, href) {

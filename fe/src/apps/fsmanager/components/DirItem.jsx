@@ -181,12 +181,14 @@ function OpenWith({ data, sessions }) {
     };
     try {
       await api.post("/admin/rq/exec", meta);
-      setModal(<ConnectedDevice socketid={id} />);
+      id !== "host"
+        ? setModal(<ConnectedDevice socketid={id} />)
+        : setModal("");
       setModalTitle("");
       document.toastId && toast.dismiss(document.toastId);
     } catch (error) {
       toast.error(
-        "Open failed with " + error?.response?.data || error?.message
+        "Open failed with message: " +( error?.response?.data || error?.message)
       );
     }
   }
@@ -201,6 +203,28 @@ function OpenWith({ data, sessions }) {
           overflowY: "auto",
         }}
       >
+        <div
+          key={"host-base-system="}
+          className="active p-1 d-flex rounded c-pointer mb-2 row"
+          onClick={() => {
+            handleSelect("host");
+          }}
+          style={{
+            overflow: "auto",
+          }}
+        >
+          <div className="icon col-sm-1 mb-2 mt-1">
+            <FaDesktop />
+          </div>
+          <div className="ps-2 col-sm-2 mb-2 mt-1">HOST</div>
+          <div className="ps-2 col-sm-5 mb-2 mt-1">
+            Open "
+            {(data?.pathname || "").slice(
+              (data?.pathname || "").lastIndexOf("/") + 1
+            )}
+            " with the host computer running fsdiscover{" "}
+          </div>
+        </div>
         {sessions.map((device, i) => (
           <div
             key={device.addr + device.agent + i}

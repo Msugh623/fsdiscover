@@ -181,6 +181,7 @@ if (args.includes("--prefer") || args.includes("-p")) {
 }
 
 const netFace = netProb.autoDetect();
+process.netFace = netFace;
 
 app.use(authHandler.checkAuth);
 
@@ -294,6 +295,8 @@ async function getNewPort(port) {
     return getNewPort(chport(port));
   } catch (err) {
     netProb.port = port;
+    process.netPort = port;
+    process.netUrl = `http://${netFace.address}:${port}`;
     server.listen(port, netFace.address, () => {
       logger.log(
         `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32mhttp://${
@@ -321,4 +324,25 @@ async function getNewPort(port) {
   }
 }
 
+async function getNewLocalPort(port) {
+  const { logger } = new UseLogger();
+  authHandler.netFace = netFace;
+  const localUrl = "http://127.0.0.1" + ":" + port;
+  try {
+    const _ = await fetch(localUrl, { method: "HEAD" });
+    logger.log(
+      `EADDRINUSE: failed to use port ${port} for local addressing as address is already in use... attempting change port`
+    );
+    return getNewLocalPort(chport(port));
+  } catch (err) {
+    process.localPort = port;
+    process.localUrl = `http://127.0.0.1:${port}`;
+    app.listen(port, "127.0.0.1", () => {
+      logger.log(
+        `Local is running @ \x1b[32mhttp://127.0.0.1:${port}\n\n\x1b[0m`
+      );
+    });
+  }
+}
 getNewPort(port);
+getNewLocalPort(port);
