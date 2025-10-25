@@ -19,6 +19,8 @@ const update = require("./update");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 const cookieParser = require("cookie-parser");
 const socketCookie = require("socket.io-cookie");
+const UseCompositor = require("./utils/tui");
+const { compositor } = new UseCompositor();
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
@@ -163,6 +165,7 @@ function chport(port) {
 const upload = multer({ storage: storage });
 let port = process.env.PORT || 3000;
 const netProb = new NetworkProbe(port, null, true, null);
+netProb.verbose = false;
 if (args.includes("--prefer") || args.includes("-p")) {
   const i =
     args.indexOf("--prefer") > -1
@@ -297,11 +300,12 @@ async function getNewPort(port) {
     netProb.port = port;
     process.netPort = port;
     process.netUrl = `http://${netFace.address}:${port}`;
-    server.listen(port, "0.0.0.0"||netFace.address, () => {
+    server.listen(port, "0.0.0.0" || netFace.address, () => {
       logger.log(
         `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32mhttp://${
           netFace.address
-        }:${port}\n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
+        }:${port}\n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`,
+        false
       );
       const qr = require("qrcode");
       qr.toString(
@@ -310,12 +314,14 @@ async function getNewPort(port) {
         (err, code) => {
           if (!err) {
             logger.log(
-              "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n"
+              "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n",
+              false
             );
-            logger.log(code);
+            logger.log(code, false);
+            process.netQrcode = code;
             return;
           }
-          console.log("Initiator: Unable to generate qrcode");
+          logger.log("Initiator: Unable to generate qrcode", false);
         }
       );
       netProb.initLiveCheck();
@@ -337,10 +343,13 @@ async function getNewLocalPort(port) {
   } catch (err) {
     process.localPort = port;
     process.localUrl = `http://127.0.0.1:${port}`;
-      logger.log(
-        `Local is running @ \x1b[32mhttp://127.0.0.1:${port}\n\n\x1b[0m`
-      );
+    logger.log(
+      `Local is running @ \x1b[32mhttp://127.0.0.1:${port}\n\n\x1b[0m`,
+      false
+    );
   }
 }
 getNewPort(port);
 getNewLocalPort(port);
+
+// TUI composition starts here

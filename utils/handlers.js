@@ -397,21 +397,21 @@ class AuthHandler {
     process.on("SIGINT", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGINT received, Fsdiscover will exit Safely"
+          " SIGINT received, Fsdiscover will exit Safely\n"
       );
       this.saveConfig(() => process.exit(0));
     });
     process.on("SIGTERM", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGTERM received, Fsdiscover will exit Safely"
+          " SIGTERM received, Fsdiscover will exit Safely\n"
       );
       this.saveConfig(() => process.exit(0));
     });
     process.on("SIGBREAK", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGTERM received, Fsdiscover will exit Safely"
+          " SIGTERM received, Fsdiscover will exit Safely\n"
       );
       this.saveConfig(() => process.exit(0));
     });
