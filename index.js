@@ -22,6 +22,7 @@ const socketCookie = require("socket.io-cookie");
 const UseCompositor = require("./utils/tui");
 const { compositor } = new UseCompositor();
 
+compositor.init();
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 app.use(cookieParser());
@@ -318,7 +319,10 @@ async function getNewPort(port) {
               false
             );
             logger.log(code, false);
-            process.netQrcode = code;
+            runtimeConfig.netQrcode = code.toString();
+            compositor.draw(4, 17, 41, 41, code);
+            compositor.draw(4, 15, 41, 2, "URL: " + process.netUrl);
+
             return;
           }
           logger.log("Initiator: Unable to generate qrcode", false);
@@ -353,3 +357,31 @@ getNewPort(port);
 getNewLocalPort(port);
 
 // TUI composition starts here
+const logo = `SprintET FSdiscover`;
+compositor.drawRow(1, 2, compositor.width - 2, compositor.rod);
+compositor.drawRow(
+  1,
+  compositor.height - 1,
+  compositor.width - 2,
+  compositor.rod
+);
+compositor.drawDivider(2, 2, compositor.height - 1, compositor.pole);
+compositor.drawDivider(
+  compositor.width - 3,
+  2,
+  compositor.height - 2,
+  compositor.pole
+);
+compositor.draw(7, 5, 19, 1, logo);
+compositor.drawRow(3, 8, compositor.width - 6, compositor.rod);
+const pastMid = Math.floor(
+  compositor.width > 80 ? (compositor.width / 3) * 2 : compositor.width / 2 + 5
+);
+compositor.drawDivider(pastMid, 9, compositor.height - 10, compositor.pole);
+process.pastMid = pastMid;
+compositor.draw(4, 9, 7, 1, "Actions");
+compositor.drawRow(4, 10, 7, compositor.rod);
+compositor.draw(4, 11, 41, 2, "exit - Close FSdiscover");
+
+compositor.draw(4, 15, 41, 2, "URL: " + process.netUrl);
+compositor.draw(4, 17, 25, 25, runtimeConfig.netQrcode);
