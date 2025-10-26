@@ -370,7 +370,6 @@ async function refresh() {
       2,
       "Scan this QR code on a device connected to the same network\n"
     );
-    compositor.draw(4, 16, 42, 42, runtimeConfig.netQrcode);
     compositor.drawRow(1, 2, compositor.width - 2, compositor.rod);
     compositor.drawRow(
       1,
@@ -428,6 +427,7 @@ async function refresh() {
       Math.max(connections.length, 1),
       connections.join("\n")
     );
+    compositor.draw(4, 16, 42, 42, runtimeConfig.netQrcode);
     compositor.display();
   } catch (err) {
     logger.log(err.message);
