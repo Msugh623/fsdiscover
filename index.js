@@ -427,7 +427,7 @@ async function refresh() {
       Math.max(connections.length, 1),
       connections.join("\n")
     );
-    compositor.draw(4, 16, 30, 30, runtimeConfig.netQrcode);
+    compositor.draw(4, 16, 30, 15, runtimeConfig.netQrcode);
     compositor.display();
   } catch (err) {
     logger.log(err.message);
