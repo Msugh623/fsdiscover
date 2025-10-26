@@ -8,6 +8,8 @@ class Compositor {
     this.pole = "│";
     this.rod = "─";
     this.row = [...this.genRow()];
+    this.refresh = () => {};
+    this.dirty = false;
   }
   init = () => {
     this.width = process.stdout.columns;
@@ -17,17 +19,20 @@ class Compositor {
     for (let i = 0; i < this.height; i++) {
       this.screen.push([...row]);
     }
+    this.dirty = true;
   };
   display() {
-    console.log("\x1b[2J");
-    console.log("\x1b[H");
-    console.log(this.toString());
-    if (process.stdout.columns !== this.width) {
+    const cols = process.stdout.columns;
+    const rows = process.stdout.rows;
+    if (cols !== this.width || rows !== this.height) {
       this.init();
     }
-    if (process.stdout.rows !== this.height) {
-      this.init();
+    if (!this.dirty) {
+      return;
     }
+    const frame = this.toString();
+    process.stdout.write("\x1b[2J\x1b[H" + frame + "\n");
+    this.dirty = false;
   }
   toString = (screen = this.screen) => {
     return screen.map((scr) => scr.join("")).join("\n");
@@ -53,7 +58,7 @@ class Compositor {
         (this.screen[i] || [])[x] = String(char);
       }
     }
-    this.display();
+    this.dirty = true;
   };
   drawRow = (x, y, width, char = "─") => {
     this.fill(x, y, width, 1, char);
@@ -82,7 +87,7 @@ class Compositor {
       yCounter++;
     }
     // console.log(this.screen.map((dat) => dat.join("")).join("\n"));
-    this.display();
+    this.dirty = true;
   };
   fill = (x = 0, y = 0, width = 1, height = 1, char = " ") => {
     // Create a screen buffer to compose the content
@@ -106,7 +111,7 @@ class Compositor {
       xCounter = 0;
       yCounter++;
     }
-    this.display();
+    this.dirty = true;
   };
 }
 
@@ -116,6 +121,7 @@ class UseCompositor {
   constructor() {
     this.compositor = compositor;
     process.compositor = compositor;
+    process.refreshCompositor = () => {};
   }
 }
 

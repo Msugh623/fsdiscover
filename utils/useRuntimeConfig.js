@@ -49,6 +49,7 @@ class RuntimeConfig {
       this.sessions.unshift(user);
     }
     this.socket.emit("sessionEvent", this.sessions);
+    process.refreshCompositor()
   };
 
   disconnectSession = (user) => {
@@ -58,6 +59,7 @@ class RuntimeConfig {
         user.addr + user.agent + user?.uuid + user?.socketid
     );
     this.socket.emit("sessionEvent", this.sessions);
+    process.refreshCompositor();
   };
 
   updateSession = (user) => {
@@ -81,6 +83,7 @@ class RuntimeConfig {
       this.sessions.unshift(user);
     }
     this.socket.emit("sessionEvent", this.sessions);
+    process.refreshCompositor();
   };
   getSessions = (_, res) => {
     res.status(200).json([...this.sessions]);

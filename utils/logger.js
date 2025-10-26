@@ -1,7 +1,6 @@
 const { exec } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const readline=require("readline")
 
 class Logger {
   constructor() {
@@ -54,7 +53,14 @@ class Logger {
   }
 
   lognet(message, user, toConsole = true) {
-    toConsole && process.stdout.write("\r" + message);
+    if (toConsole) {
+      const splits = (message || "").split();
+      if ((message || "").length > process.compositor.width - 8) {
+        splits[(splits.length / 3) * 2] =
+          "\n" + splits[(splits.length / 3) * 2];
+      }
+      process.lastlog = (splits || [""]).join("");
+    }
     const entry = {
       message: message,
       user: user,
@@ -67,7 +73,15 @@ class Logger {
   }
 
   log(message, toConsole = true) {
-    toConsole && process.stdout.write("\r" + message);
+    if (toConsole) {
+      const splits = (message || "").split();
+      if ((message || "").length > process.compositor.width - 8) {
+        splits[(splits.length / 3) * 2] =
+          "\n" + splits[(splits.length / 3) * 2];
+      }
+      process.lastlog = (splits || [""]).join("");
+      process.refreshCompositor()
+    }
     this.allhistory.push(message);
     this.saveLog();
   }

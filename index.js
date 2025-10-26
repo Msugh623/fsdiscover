@@ -1,4 +1,6 @@
 const express = require("express");
+const UseCompositor = require("./utils/tui");
+const { compositor } = new UseCompositor();
 // const NetworkProbe = require("./utils/networkProbe");
 const NetworkProbe = require("netprobe");
 const { handlers, authHandler, middleware } = require("./utils/handlers");
@@ -15,14 +17,12 @@ const http = require("http");
 const { Mouse } = require("./utils/devices");
 const { Keyboard } = require("./utils/devices");
 const { LogIoParser, UseLogger } = require("./utils/logger");
-const update = require("./update");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
+const update = require("./update");
 const cookieParser = require("cookie-parser");
 const socketCookie = require("socket.io-cookie");
-const UseCompositor = require("./utils/tui");
-const { compositor } = new UseCompositor();
+const { logger } = new UseLogger();
 
-compositor.init();
 config({ path: path.join(dirname(), ".env") });
 const app = express();
 app.use(cookieParser());
@@ -282,12 +282,10 @@ app.get("/fsexplorer*", handlers.sendUi);
 app.get("/hostname", handlers.getHost);
 app.get("/zipper*", handlers.zipDir);
 app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
-// app.delete("/fs*", handlers.deletePath);
 app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
 
 async function getNewPort(port) {
-  const { logger } = new UseLogger();
   authHandler.netFace = netFace;
   authHandler.port = port;
   const url = "http://" + netFace.address + ":" + port;
@@ -319,10 +317,8 @@ async function getNewPort(port) {
               false
             );
             logger.log(code, false);
-            runtimeConfig.netQrcode = code.toString();
-            compositor.draw(4, 17, 41, 41, code);
-            compositor.draw(4, 15, 41, 2, "URL: " + process.netUrl);
-
+            runtimeConfig.netQrcode = code;
+            refresh();
             return;
           }
           logger.log("Initiator: Unable to generate qrcode", false);
@@ -358,30 +354,92 @@ getNewLocalPort(port);
 
 // TUI composition starts here
 const logo = `SprintET FSdiscover`;
-compositor.drawRow(1, 2, compositor.width - 2, compositor.rod);
-compositor.drawRow(
-  1,
-  compositor.height - 1,
-  compositor.width - 2,
-  compositor.rod
-);
-compositor.drawDivider(2, 2, compositor.height - 1, compositor.pole);
-compositor.drawDivider(
-  compositor.width - 3,
-  2,
-  compositor.height - 2,
-  compositor.pole
-);
-compositor.draw(7, 5, 19, 1, logo);
-compositor.drawRow(3, 8, compositor.width - 6, compositor.rod);
-const pastMid = Math.floor(
-  compositor.width > 80 ? (compositor.width / 3) * 2 : compositor.width / 2 + 5
-);
-compositor.drawDivider(pastMid, 9, compositor.height - 10, compositor.pole);
-process.pastMid = pastMid;
-compositor.draw(4, 9, 7, 1, "Actions");
-compositor.drawRow(4, 10, 7, compositor.rod);
-compositor.draw(4, 11, 41, 2, "exit - Close FSdiscover");
 
-compositor.draw(4, 15, 41, 2, "URL: " + process.netUrl);
-compositor.draw(4, 17, 25, 25, runtimeConfig.netQrcode);
+async function refresh() {
+  try {
+    compositor.init();
+    compositor.draw(
+      4,
+      12,
+      41,
+      2,
+      "URL: \x1b[36m" + process.netUrl + "\x1b[39m"
+    );
+    compositor.draw(
+      4,
+      14,
+      60,
+      2,
+      "Scan this QR code on a device connected to the same network\n"
+    );
+    compositor.draw(4, 16, 42, 42, runtimeConfig.netQrcode);
+    compositor.drawRow(1, 2, compositor.width - 2, compositor.rod);
+    compositor.drawRow(
+      1,
+      compositor.height - 1,
+      compositor.width - 2,
+      compositor.rod
+    );
+    compositor.drawDivider(2, 2, compositor.height - 1, compositor.pole);
+    compositor.drawDivider(
+      compositor.width - 3,
+      2,
+      compositor.height - 2,
+      compositor.pole
+    );
+    compositor.draw(4, 4, 19, 1, logo);
+    compositor.drawRow(3, 6, compositor.width - 6, compositor.rod);
+    const pastMid = Math.floor(
+      compositor.width > 80
+        ? (compositor.width / 3) * 2
+        : compositor.width / 2 + 5
+    );
+    compositor.drawDivider(pastMid, 7, compositor.height - 14, compositor.pole);
+    compositor.drawRow(
+      3,
+      compositor.height - 5,
+      compositor.width - 6,
+      compositor.rod
+    );
+    process.pastMid = pastMid;
+    compositor.draw(4, 8, 8, 1, "Actions");
+    compositor.drawRow(4, 9, 7, compositor.rod);
+    compositor.draw(4, 10, 41, 2, "exit - Close FSdiscover");
+    compositor.draw(pastMid + 2, 8, 17, 1, "Connected Devices");
+    compositor.drawRow(pastMid + 2, 9, 17, compositor.rod);
+    const logHeight = (process.lastlog || "").includes(compositor.newLine)
+      ? 2
+      : 1;
+    process.lastlog &&
+      compositor.draw(
+        4,
+        compositor.height - 2 - logHeight,
+        process.compositor.width - 8,
+        logHeight,
+        process.lastlog
+      );
+    const connections = runtimeConfig.sessions.map(
+      (sess, i) =>
+        `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "🖥️"} ` +
+        sess.addr
+    );
+    compositor.draw(
+      pastMid + 2,
+      11,
+      22,
+      Math.max(connections.length, 1),
+      connections.join("\n")
+    );
+    compositor.display();
+  } catch (err) {
+    logger.log(err.message);
+  }
+}
+process.refreshCompositor = refresh;
+refresh();
+
+function getDeviceType(userAgent) {
+  const mobileRegex =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  return mobileRegex.test(userAgent) ? "mobile" : "desktop";
+}
