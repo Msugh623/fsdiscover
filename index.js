@@ -20,7 +20,6 @@ const { LogIoParser, UseLogger } = require("./utils/logger");
 const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 const update = require("./update");
 const cookieParser = require("cookie-parser");
-const socketCookie = require("socket.io-cookie");
 const { logger } = new UseLogger();
 
 config({ path: path.join(dirname(), ".env") });
@@ -28,7 +27,6 @@ const app = express();
 app.use(cookieParser());
 const server = http.createServer(app);
 const socket = new SocketIo.Server(server, { cors: { origin: "*" } });
-socket.use(socketCookie);
 process.socket = socket;
 const ioParser = new LogIoParser();
 const runtime = new UseRuntimeConfig();
@@ -394,7 +392,7 @@ async function refresh() {
         ? (compositor.width / 3) * 2
         : compositor.width / 2 + 5
     );
-    compositor.drawDivider(pastMid, 7, compositor.height - 14, compositor.pole);
+    compositor.drawDivider(pastMid, 7, compositor.height - 12, compositor.pole);
     compositor.drawRow(
       3,
       compositor.height - 5,

@@ -60,6 +60,7 @@ class Logger {
           "\n" + splits[(splits.length / 3) * 2];
       }
       process.lastlog = (splits || [""]).join("");
+      process.refreshCompositor();
     }
     const entry = {
       message: message,
@@ -80,7 +81,6 @@ class Logger {
           "\n" + splits[(splits.length / 3) * 2];
       }
       process.lastlog = (splits || [""]).join("");
-      process.refreshCompositor()
     }
     this.allhistory.push(message);
     this.saveLog();
