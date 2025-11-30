@@ -62,7 +62,7 @@ if ! [ -f "package.json" ]; then
     exit 1
 elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
     echo "Installing required dependencies..."
-    npm install
+    npm install 
     cd fe 
     echo "Building client..."
     npm run build
@@ -79,7 +79,7 @@ elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
     echo "Build Succesfull"
 else
     echo "Prepareing to install..."
-    npm install
+    npm install || sleep 5 && npm install
 fi
 if ! [ $? -eq 0 ]; then
    echo '!!! Installer Exited prematurely... Installer failed to install necessary dependencies'
