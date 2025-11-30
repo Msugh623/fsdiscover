@@ -133,8 +133,6 @@ class Mouse extends Device {
       scrollX: event.scrollX,
       scrollY: event.scrollY,
     });
-    process.compositor.draw(4, 4, 80, 2, JSON.stringify(this.buffer));
-    process.compositor.display();
     this.refresh();
     this.parseHistory(event);
   }
