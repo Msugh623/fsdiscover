@@ -1,4 +1,5 @@
 #!/bin/bash
+source ~/.bashrc
 V=$(cat version)
 PARAM=${1:-null}
 
