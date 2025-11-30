@@ -12,7 +12,7 @@ const Menu = ({ hasDivider }) => {
   const [panelClassName, setPanelClassName] = useState("d-none");
   const [href, setHref] = useState(location.href);
   const [hasPannel, setHasPannel] = useState(page);
-  const { apps, vw, handleIconClick, menuPos, setMenuPos } = useStateContext();
+  const { apps, menuPos, setMenuPos } = useStateContext();
 
   useEffect(() => {
     location.href !== href && setHref(location.href);
@@ -145,6 +145,7 @@ const Menu = ({ hasDivider }) => {
         className={`app my-auto p-1 btn fs-5 ${hasPannel && "active"}`}
         onClick={() => setHasPannel((prev) => !prev)}
         style={{
+          transition:"all, 0.4s",
           position: "fixed",
           left: menuPos.x + "px",
           top: menuPos.y + "px",

@@ -347,7 +347,7 @@ class AuthHandler {
       );
     } catch {
       logger.log(
-        `ERROR: failed to load auth config as ${__dirname}/../auth.config.json is curropted, falling back to default config.`
+        `ERROR: failed to load corrupted or non existant auth config from ${__dirname}/../auth.config.json, using default settings`
       );
       toJson = config;
     }

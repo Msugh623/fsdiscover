@@ -40,6 +40,14 @@ if ! command -v node &> /dev/null; then
         nvm current 
         echo 'NPM version:'
         npm -v
+        if ! [$? -eq 0 ]; then 
+            echo "npm Installer encountered and issue... retrying!"
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+            export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install --lts
+            nvm use --lts
+        fi
     else
         echo "Node.js is required to run this script. Exiting..."
         exit 1
@@ -47,12 +55,12 @@ if ! command -v node &> /dev/null; then
 fi
 
 
-# Install project dependencies
+# Install required dependencies
 if ! [ -f "package.json" ]; then
-    echo "Failure: package.json not found... Failed to find project dependencies"
+    echo "Failure: package.json not found... Failed to find required dependencies"
     exit 1
-elif [ $PARAM == "--build" ]; then
-    echo "Installing project dependencies..."
+elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
+    echo "Installing required dependencies..."
     npm install
     cd fe 
     echo "Building client..."
@@ -78,14 +86,6 @@ if ! [ $? -eq 0 ]; then
    exit 1
 fi
 
-# echo ""
-# echo "Generating SSL certificate... Please enter the details as prompted (Press ENTER to skip field)"
-# if ! [ -d "cert" ]; then
-#     echo "Creating cert directory..."
-#     mkdir cert
-# fi
-
-# ./gencert.sh
 
 if ! [ $? -eq 0 ]; then
     echo '!!! Installer Exited prematurely... Failed to generate SSL certificate'
@@ -95,12 +95,11 @@ fi
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 
-head "$APP_DIR/auth.config.json" | grep "the ungrepable" ||   echo "{}" > auth.config.json
 ls logs | grep "ungrepable" || mkdir logs
 
 echo 'Copying files to application directory... This can take a while'
 if command  rsync --version &> /dev/null ; then
-    rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"||tar --exclude=".git" -cf - ./ | tar -xf - -C "$APP_DIR"
+    rsync -av --exclude='fe' --exclude='.git' --exclude='auth.config.json' ./ "$APP_DIR"||tar --exclude=".git" --exclude='auth.config.json' -cf - ./ | tar -xf - -C "$APP_DIR"
 else
     echo "rsync failed... falling back to cp (This should take a bit longer)"
     # cp -r ./ "$APP_DIR"
@@ -167,5 +166,9 @@ echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"
 echo 'Use "fsdiscover --help" for details';
-printf '\n\nPress CTRL+C to end installer or wait 15 seconds\n'
-sleep "15"
+printf '\n\nRead the instructions above or Press CTRL+C to end installer\n'
+if [[ $PARAM == "--auto" || $2 == "--auto" ]]; then
+    sleep "5"
+else
+    sleep "15"
+fi

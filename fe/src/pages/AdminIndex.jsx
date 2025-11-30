@@ -9,8 +9,15 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
 
 const AdminIndex = () => {
-  const { apps, fetchSrc, categories, hostname, runtimeConfig, profile } =
-    useStateContext();
+  const {
+    apps,
+    fetchSrc,
+    categories,
+    hostname,
+    runtimeConfig,
+    profile,
+    setMenuPos,
+  } = useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, setCategory] = useState("All");
 
@@ -33,6 +40,10 @@ const AdminIndex = () => {
   useEffect(() => {
     document.title = "Sprintet Fsdiscover  - " + hostname;
     fetchSrc();
+    setMenuPos({
+      x: 40,
+      y: window.innerHeight - 80,
+    });
   }, []);
 
   return (

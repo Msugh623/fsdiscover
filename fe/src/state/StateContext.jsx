@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import api, { remoteApi } from "../../axios/api";
+import api from "../../axios/api";
 import { io } from "socket.io-client";
 import { baseUrl } from "../../axios/api";
 import { FaTimes } from "react-icons/fa";
@@ -186,7 +186,6 @@ const StateContext = ({ children }) => {
       setProfile(resProfile.data);
       const resConf = await api.get("/runtime");
       setRuntimeConfig(resConf.data);
-      // const appsRes = (await remoteApi.get("/rq/apps")).data;
       const psr = [...defaultApps];
       setApps(psr);
       const appName = searchParams.get("a") || "";
@@ -198,7 +197,7 @@ const StateContext = ({ children }) => {
       if (theApp) {
         document.theApp = theApp.location;
       }
-    } catch (err) {
+    } catch  {
       // location.pathname !== '/' && toast.error(`ERROR: ${err.message}`)
     }
   };

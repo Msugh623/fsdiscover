@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useInputContext } from "../../../state/InputContext";
 import { BiInfoCircle } from "react-icons/bi";
 import { toast } from "react-toastify";
+import { useStateContext } from "../../../state/StateContext";
 
 const Panel = () => {
   const { init, touchConfig, mouseDownHold, socket } = useInputContext();
+  const { setMenuPos } = useStateContext();
   const [didInit, setDidInit] = useState(false);
   const [_, setToaster] = useState(0);
 
@@ -173,6 +175,13 @@ const Panel = () => {
   function tourGuide(level = 0) {
     levels[level](level);
   }
+
+  useEffect(() => {
+    setMenuPos({
+      x: window.innerWidth - 60,
+      y: 15,
+    });
+  }, []);
 
   return (
     <div

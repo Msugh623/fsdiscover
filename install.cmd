@@ -23,7 +23,7 @@ if errorlevel 1 (
 
 REM === Install dependencies ===
 if exist package.json (
-    echo Installing project dependencies...
+    echo Installing required dependencies...
     if not exist logs mkdir logs
     call npm install || (
         echo [ERROR] Failed to install dependencies.
@@ -108,8 +108,11 @@ echo Installation complete
 echo Shortcut created at:  %SHORTCUT_PATH%
 echo.
 echo "********************************"
+echo.
 echo "Default password is set to ```password```, please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten"
+echo.
 echo "The email requested at login is not tested against any value, use your own email as it doesn't matter which email you use to login"
+echo.
 echo "********************************"
 echo.
 echo You can now launch FSDiscover from the Start Menu or by running: fsdiscover
