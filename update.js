@@ -36,6 +36,12 @@ module.exports = async function () {
       true
     );
   } finally {
+    if (isUpTodate && checkDidFinishCleanly) {
+      logger.log(
+        `NetUpdater: You are using the latest version of fsdiscover`,
+        true
+      );
+    }
     if (!isUpTodate && checkDidFinishCleanly) {
       logger.log(
         `NetUpdater: Update Available... current version: ${currentVersion}, remoteVersion: ${remoteVersion} FsDiscover will try to update in the background. This will not interrupt or affect your system.`,

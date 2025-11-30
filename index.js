@@ -5,6 +5,7 @@ const { compositor } = new UseCompositor();
 const NetworkProbe = require("netprobe");
 const { handlers, authHandler, middleware } = require("./utils/handlers");
 const os = require("os");
+const fs = require("fs")
 const path = require("path");
 const dirname = require("./dirname");
 const cors = require("cors");
@@ -323,7 +324,6 @@ async function getNewPort(port) {
         }
       );
       netProb.initLiveCheck();
-      update();
     });
   }
 }
@@ -384,7 +384,13 @@ async function refresh() {
       compositor.height - 2,
       compositor.pole
     );
-    compositor.draw(4, 4, 19, 1, logo);
+    compositor.draw(
+      4,
+      4,
+      `${logo} ${process.currentVersion || "<loading version...>"}`.length,
+      1,
+      `${logo} ${process.currentVersion || "<loading version...>"}`
+    );
     compositor.drawRow(3, 6, compositor.width - 6, compositor.rod);
     const pastMid = Math.floor(
       compositor.width > 80
@@ -435,9 +441,12 @@ async function refresh() {
 }
 process.refreshCompositor = refresh;
 refresh();
-
+update();
 function getDeviceType(userAgent) {
   const mobileRegex =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
   return mobileRegex.test(userAgent) ? "mobile" : "desktop";
 }
+process.currentVersion = fs.readFileSync(path.join(dirname(), "version"), {
+  encoding: "utf-8",
+});
