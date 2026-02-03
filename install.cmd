@@ -11,7 +11,7 @@ if errorlevel 1 (
     echo [WARNING] Node.js is not installed. Fsdiscover depends on the NodeJs runtime to function properly. Downloading and Installing NodeJs...
     node.msi || curl https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi > node.msi
     node.msi
-    pause
+    start "" /c "%~f0" && exit
 )
 
 where node >nul 2>&1
