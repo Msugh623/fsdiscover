@@ -1,11 +1,10 @@
 const express = require("express");
 const UseCompositor = require("./utils/tui");
 const { compositor } = new UseCompositor();
-// const NetworkProbe = require("./utils/networkProbe");
 const NetworkProbe = require("netprobe");
 const { handlers, authHandler, middleware } = require("./utils/handlers");
 const os = require("os");
-const fs = require("fs")
+const fs = require("fs");
 const path = require("path");
 const dirname = require("./dirname");
 const cors = require("cors");
@@ -45,7 +44,7 @@ socket.on("connection", (client) => {
       client.user.addr +
       " with " +
       client.id,
-    client.user
+    client.user,
   );
   runtimeConfig.connectSession(client.user);
   const mouse = new Mouse(handlers, authHandler, "mouse", client, socket);
@@ -54,18 +53,18 @@ socket.on("connection", (client) => {
     authHandler,
     "keyboard",
     client,
-    socket
+    socket,
   );
 
   mouse.parseDevice(client.id, () => {
     client.emit(
       "error",
-      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
+      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices",
     );
     setTimeout(() => {
       client.emit(
         "error",
-        "Unable to parse device after 2s... Session terminated"
+        "Unable to parse device after 2s... Session terminated",
       );
       client.disconnect();
     }, 3000);
@@ -73,12 +72,12 @@ socket.on("connection", (client) => {
   keyboard.parseDevice(client.id, () => {
     client.emit(
       "error",
-      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices"
+      "Connection Rejected By firewall... Too many devices attatched, Go to admin page to remove other devices",
     );
     setTimeout(() => {
       client.emit(
         "error",
-        "Unable to parse device after 2s... Session terminated"
+        "Unable to parse device after 2s... Session terminated",
       );
       client.disconnect();
     }, 3000);
@@ -121,21 +120,21 @@ socket.on("connection", (client) => {
     async (data) =>
       await keyboard.keydown(data, (err) => {
         client.emit("error", err);
-      })
+      }),
   );
   client.on(
     "keyup",
     async (data) =>
       await keyboard.keyup(data, (err) => {
         client.emit("error", err);
-      })
+      }),
   );
   client.on(
     "keypress",
     async (data) =>
       await keyboard.keypress(data, (err) => {
         client.emit("error", err);
-      })
+      }),
   );
 
   client.on(
@@ -143,7 +142,7 @@ socket.on("connection", (client) => {
     async (data) =>
       await keyboard.keytype(data, (err) => {
         client.emit("error", err);
-      })
+      }),
   );
 });
 
@@ -177,7 +176,7 @@ if (args.includes("--prefer") || args.includes("-p")) {
       "Bad network interface supplied. %s Use --prefer <face> or -p <face>",
       '"' +
         face +
-        '" is not a valid network interface and will be ignored by automatic detection.'
+        '" is not a valid network interface and will be ignored by automatic detection.',
     );
   }
   netProb.prefer(face);
@@ -193,7 +192,7 @@ app.use(
     origin: "*",
     methods: ["GET", "HEAD", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.use(middleware.logger);
@@ -203,14 +202,14 @@ app.use(
     const cookies = req.cookies;
     const { noAuthFsRead } = runtimeConfig.config;
     const theToken = authHandler.config.authorizations.find(
-      (auth) => auth.token == cookies?.uuid
+      (auth) => auth.token == cookies?.uuid,
     );
     if (!noAuthFsRead && !theToken) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res
         .status(401)
         .send(
-          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/login'>Login</a> to read files</h1>"
+          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/login'>Login</a> to read files</h1>",
         );
     }
     next();
@@ -218,7 +217,7 @@ app.use(
   authHandler.checkDirAuth,
   express.static(path.join(runtimeConfig.config.publicDir), {
     index: false,
-  })
+  }),
 );
 
 app.use(express.json({ limit: "1000000mb" }));
@@ -240,26 +239,42 @@ app.post(
   },
   upload.array("files"),
   (req, res) => {
+    /*
+    
+    PLEASE DO NOT TRY TO REFACTOR THIS LOGIC WITHOUT FULLY UNDERSTANDING IT
+    CONTACT: Ernest Msugh Chia, iternenge469@gmail.com
+
+    - This logic replaces all "%20" with " " 
+    - It formats the path to quote every path segment in double quotes e.g /"home"/"uname"
+    - It replaces path seperator "/" with "\" for win32 enviroments
+    - Lastly it remove double path seperators like \\ becomes \ and // becomes /
+
+    */
     const dir = req.body.dir == "/" ? "/" : req.body.dir;
-    const absoluteDir =
+    const absoluteDir = (
       runtimeConfig.config.defaultUploadDir ||
-      runtimeConfig.config.publicDir + (dir || "/") + "/";
-    const placeDir = dir || "/";
+      runtimeConfig.config.publicDir + (dir || "/") + "/"
+    )
+      .split("%20")
+      .join(" ");
     const mv = `mv temp/* ${absoluteDir
       .split("/")
-      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
+      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p || ""}"` : p))
       .join("/")} || move temp\\* ${absoluteDir
-      .replaceAll("/", "\\")
+      .split("/")
+      .join("\\")
       .split("\\")
-      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p}"` : p))
+      .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p || ""}"` : p))
       .join("\\")}`;
     exec(
       `${mv} || mkdir ${absoluteDir} && ${mv}`
-        .replaceAll("//", "/")
-        .replaceAll("\\\\", "\\")
+        .split("//")
+        .join("/")
+        .split("\\\\")
+        .join("\\"),
     );
     const rConfPathSplit = runtimeConfig.config.defaultUploadDir.split(
-      os.platform() == "win32" ? "\\" : "/"
+      os.platform() == "win32" ? "\\" : "/",
     );
     res
       .status(201)
@@ -268,10 +283,10 @@ app.post(
           runtimeConfig.config.defaultUploadDir
             ? "Default Upload Directory @/" +
               rConfPathSplit[rConfPathSplit.length - 1]
-            : "@" + placeDir
-        } succesfully`
+            : "@" + absoluteDir.replace(runtimeConfig.config.publicDir, "")
+        } succesfully`,
       );
-  }
+  },
 );
 app.use("/admin", authHandler.enforceAuth, adminRouter);
 app.get("/profile", authHandler.getProfile);
@@ -291,7 +306,7 @@ async function getNewPort(port) {
   try {
     const _ = await fetch(url, { method: "HEAD" });
     logger.log(
-      `EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`
+      `EADDRINUSE: failed to use port ${port} as address is already in use... attempting change port`,
     );
     return getNewPort(chport(port));
   } catch (err) {
@@ -303,7 +318,7 @@ async function getNewPort(port) {
         `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32mhttp://${
           netFace.address
         }:${port}\n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`,
-        false
+        false,
       );
       const qr = require("qrcode");
       qr.toString(
@@ -313,7 +328,7 @@ async function getNewPort(port) {
           if (!err) {
             logger.log(
               "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n",
-              false
+              false,
             );
             logger.log(code, false);
             runtimeConfig.netQrcode = code;
@@ -321,7 +336,7 @@ async function getNewPort(port) {
             return;
           }
           logger.log("Initiator: Unable to generate qrcode", false);
-        }
+        },
       );
       netProb.initLiveCheck();
     });
@@ -335,7 +350,7 @@ async function getNewLocalPort(port) {
   try {
     const _ = await fetch(localUrl, { method: "HEAD" });
     logger.log(
-      `EADDRINUSE: failed to use port ${port} for local addressing as address is already in use... attempting change port`
+      `EADDRINUSE: failed to use port ${port} for local addressing as address is already in use... attempting change port`,
     );
     return getNewLocalPort(chport(port));
   } catch (err) {
@@ -343,7 +358,7 @@ async function getNewLocalPort(port) {
     process.localUrl = `http://127.0.0.1:${port}`;
     logger.log(
       `Local is running @ \x1b[32mhttp://127.0.0.1:${port}\n\n\x1b[0m`,
-      false
+      false,
     );
   }
 }
@@ -361,48 +376,48 @@ async function refresh() {
       12,
       41,
       2,
-      "URL: \x1b[36m" + process.netUrl + "\x1b[39m"
+      "URL: \x1b[36m" + process.netUrl + "\x1b[39m",
     );
     compositor.draw(
       4,
       14,
       60,
       2,
-      "Scan this QR code on a device connected to the same network\n"
+      "Scan this QR code on a device connected to the same network\n",
     );
     compositor.drawRow(1, 2, compositor.width - 2, compositor.rod);
     compositor.drawRow(
       1,
       compositor.height - 1,
       compositor.width - 2,
-      compositor.rod
+      compositor.rod,
     );
     compositor.drawDivider(2, 2, compositor.height - 1, compositor.pole);
     compositor.drawDivider(
       compositor.width - 3,
       2,
       compositor.height - 2,
-      compositor.pole
+      compositor.pole,
     );
     compositor.draw(
       4,
       4,
       `${logo} ${process.currentVersion || "<loading version...>"}`.length,
       1,
-      `${logo} ${process.currentVersion || "<loading version...>"}`
+      `${logo} ${process.currentVersion || "<loading version...>"}`,
     );
     compositor.drawRow(3, 6, compositor.width - 6, compositor.rod);
     const pastMid = Math.floor(
       compositor.width > 80
         ? (compositor.width / 3) * 2
-        : compositor.width / 2 + 5
+        : compositor.width / 2 + 5,
     );
     compositor.drawDivider(pastMid, 7, compositor.height - 12, compositor.pole);
     compositor.drawRow(
       3,
       compositor.height - 5,
       compositor.width - 6,
-      compositor.rod
+      compositor.rod,
     );
     process.pastMid = pastMid;
     compositor.draw(4, 8, 8, 1, "Actions");
@@ -419,19 +434,19 @@ async function refresh() {
         compositor.height - 2 - logHeight,
         process.compositor.width - 8,
         logHeight,
-        process.lastlog
+        process.lastlog,
       );
     const connections = runtimeConfig.sessions.map(
       (sess, i) =>
         `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "🖥️"} ` +
-        sess.addr
+        sess.addr,
     );
     compositor.draw(
       pastMid + 2,
       11,
       22,
       Math.max(connections.length, 1),
-      connections.join("\n")
+      connections.join("\n"),
     );
     compositor.draw(4, 16, 30, 15, runtimeConfig.netQrcode);
     compositor.display();
