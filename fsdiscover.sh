@@ -24,10 +24,14 @@ elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
 elif [ $PARAM1 == "--version" ] || [ $PARAM1 == "-v" ]; then
     echo $V
     exit 0
+elif [ $PARAM1 == "--config" ] || [ $PARAM1 == "-c" ]; then
+    cat auth.config.json
+    exit 0
 elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "Usage: fsdiscover [option...]"
     echo ""
     echo "-l, --logs            See Fsdiscover logs"
+    echo "-c, --config          See fsdiscover configuration file"
     echo "-p, --prefer          Supply a prefered network interface. e.g fsdiscover --prefer <interface_name>"
     echo "                      This will be ignored if the interface is not available"
     echo "-u, --uninstall       Uninstall (remove) fsdiscover"

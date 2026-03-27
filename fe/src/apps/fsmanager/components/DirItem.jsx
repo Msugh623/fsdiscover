@@ -127,12 +127,12 @@ const DirItem = ({ item }) => {
 
   return name.toLowerCase().includes(key.toLowerCase()) ||
     key.toLowerCase().includes(name.toLowerCase()) ? (
-    <div className="fs-5 my-1 d-flex active p-2">
+    <div className="fs-5 my-1 d-flex active ">
       {type == "folder" ? <Folder data={psr} /> : <File data={psr} />}
-      <div className="ms-auto">
+      <div className="">
         <div>
           <div
-            className="pe-2"
+            className="pe-2 m-2"
             title="Download File"
             style={{ cursor: "pointer" }}
             onClick={(e) => {

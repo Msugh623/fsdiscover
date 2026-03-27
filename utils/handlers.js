@@ -62,17 +62,17 @@ class Handlers {
       path.join(dirname(), "public", "client", "index.html"),
       {
         encoding: "utf-8",
-      }
+      },
     );
     const psr = boilerplate.replace(
       "$title",
-      os.hostname() + "SprintET FSdiscover"
+      os.hostname() + "SprintET FSdiscover",
     );
     res.send(psr);
   };
   getPath = (req, res) => {
     const theToken = useNativeAuthHandler().config.authorizations.find(
-      (auth) => auth.token == req?.cookies?.uuid
+      (auth) => auth.token == req?.cookies?.uuid,
     );
     if (!runtimeConfig.config.noAuthFsRead && !theToken) {
       req?.cookies?.uuid && res.clearCookie("uuid");
@@ -106,16 +106,16 @@ class Handlers {
         const prsData = await render(
           "Sprint FS Explorer - index of: " + pathname,
           data,
-          true
+          true,
         );
         if (typeof prsData == "object") {
           res.json(
             prsData.filter(
               (r) =>
                 !config.protectedroutes.some(
-                  (v) => r.includes(v) || v.includes(r)
-                )
-            )
+                  (v) => r.includes(v) || v.includes(r),
+                ),
+            ),
           );
         } else {
           res.send(prsData);
@@ -190,7 +190,7 @@ class Handlers {
         }
 
         return useData(stdout);
-      }
+      },
     );
   };
   fswin32 = (pathname, useData) => {
@@ -218,7 +218,7 @@ class Handlers {
         }
 
         return useData(stdout);
-      }
+      },
     );
   };
   fsdarwin = (pathname, useData) => {
@@ -242,7 +242,7 @@ class Handlers {
         }
 
         return useData(stdout);
-      }
+      },
     );
   };
 
@@ -300,7 +300,7 @@ class Handlers {
         }
 
         return useData(stdout);
-      }
+      },
     );
   };
 }
@@ -320,7 +320,7 @@ class Middleware {
           date: `${new Date()}`,
           lastAccess: `${new Date()}`,
         },
-        !req.url.includes("socket")
+        !req.url.includes("socket"),
       );
     next();
   };
@@ -338,16 +338,16 @@ class AuthHandler {
       path.join(dirname(), "auth.config.json"),
       {
         encoding: "utf-8",
-      }
+      },
     );
     let toJson = {};
     try {
       toJson = JSON.parse(
-        authconfigRaw.length > 10 ? authconfigRaw : JSON.stringify(config)
+        authconfigRaw.length > 10 ? authconfigRaw : JSON.stringify(config),
       );
     } catch {
       logger.log(
-        `ERROR: failed to load corrupted or non existant auth config from ${__dirname}/../auth.config.json, using default settings`
+        `ERROR: failed to load corrupted or non existant auth config from ${__dirname}/../auth.config.json, using default settings`,
       );
       toJson = config;
     }
@@ -361,7 +361,9 @@ class AuthHandler {
         process.stdin.write("\x1b[2A");
         process.stdin.write("\x1b[2k");
         logger.log(
-          'Process has been asked to exit from stdin. user input "' + data + '"'
+          'Process has been asked to exit from stdin. user input "' +
+            data +
+            '"',
         );
         process.exit(0);
       }
@@ -370,7 +372,7 @@ class AuthHandler {
           `);
         const url = "http://" + this?.netFace?.address + ":" + this.port;
         logger.log(
-          `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32m${url} \n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`
+          `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32m${url} \n\n\x1b[0mUse: help to see options\nUse: exit or quit to stop fsdiscover`,
         );
         const qr = require("qrcode");
         qr.toString(
@@ -379,39 +381,39 @@ class AuthHandler {
           (err, code) => {
             if (!err) {
               logger.log(
-                "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n"
+                "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n",
               );
               logger.log(code);
               return;
             }
             logger.log("Initiator: Unable to generate qrcode");
-          }
+          },
         );
       }
       if (data == "uninstall") {
         logger.log(
-          `\nRun fsdiscover -u  or fsdiscover /u to uninstall fsdiscover`
+          `\nRun fsdiscover -u  or fsdiscover /u to uninstall fsdiscover`,
         );
       }
     });
     process.on("SIGINT", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGINT received, Fsdiscover will exit Safely\n"
+          " SIGINT received, Fsdiscover will exit Safely\n",
       );
       this.saveConfig(() => process.exit(0));
     });
     process.on("SIGTERM", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGTERM received, Fsdiscover will exit Safely\n"
+          " SIGTERM received, Fsdiscover will exit Safely\n",
       );
       this.saveConfig(() => process.exit(0));
     });
     process.on("SIGBREAK", async () => {
       logger.log(
         ("\n" + new Date()).split("(")[0] +
-          " SIGTERM received, Fsdiscover will exit Safely\n"
+          " SIGTERM received, Fsdiscover will exit Safely\n",
       );
       this.saveConfig(() => process.exit(0));
     });
@@ -427,12 +429,12 @@ class AuthHandler {
                   i == 0
                     ? "×─── "
                     : i == stackArr.length - 1
-                    ? "╰───>"
-                    : "│─── "
-                } ${s.replaceAll("   ", " ")}`
+                      ? "╰───>"
+                      : "│─── "
+                } ${s.replaceAll("   ", " ")}`,
             )
             .join("\n") +
-          "\n"
+          "\n",
       );
       this.saveConfig();
     });
@@ -451,7 +453,7 @@ class AuthHandler {
       uuid: req?.cookies?.uuid,
     };
     const theVisitor = this.config.visitors.find(
-      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr
+      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr,
     );
     if (!theVisitor) {
       this.config.visitors.push(uInfo);
@@ -460,25 +462,25 @@ class AuthHandler {
       this.config.visitors = this.config.visitors.map((u) =>
         u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
           ? { ...u, lastAccess: `${new Date()}` }
-          : u
+          : u,
       );
     }
     req.user = this.config.visitors.find(
       (v) =>
         (req?.cookies?.uuid && Boolean(req?.cookies?.uuid == v?.uuid)) ||
-        (v.agent == uInfo.agent && v.addr == uInfo.addr)
+        (v.agent == uInfo.agent && v.addr == uInfo.addr),
     );
     if (
       this.config.forbidden.find(
         (v) =>
           (req?.cookies?.uuid && Boolean(req?.cookies?.uuid == v?.uuid)) ||
-          (v.agent == uInfo.agent && v.addr == uInfo.addr)
+          (v.agent == uInfo.agent && v.addr == uInfo.addr),
       )
     ) {
       return res
         .status(403)
         .send(
-          "<center><h1> EACCES </h1> <hr> \n 403 Forbidden by Admin\n</center>"
+          "<center><h1> EACCES </h1> <hr> \n 403 Forbidden by Admin\n</center>",
         );
     }
     if (this.hasAuth) {
@@ -517,12 +519,12 @@ class AuthHandler {
         " SOCKET Attempt from " +
         uInfo.addr +
         "",
-      uInfo
+      uInfo,
     );
 
     // Track visitors
     const theVisitor = this.config.visitors.find(
-      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr
+      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr,
     );
     if (!theVisitor) {
       this.config.visitors.push(uInfo);
@@ -531,7 +533,7 @@ class AuthHandler {
       this.config.visitors = this.config.visitors.map((u) =>
         u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
           ? { ...u, lastAccess: `${new Date()}`, uuid: socket.id }
-          : u
+          : u,
       );
     }
 
@@ -540,7 +542,7 @@ class AuthHandler {
     // Check forbidden
     if (
       this.config.forbidden.find(
-        (u) => u.agent == uInfo.agent && u.addr == uInfo.addr
+        (u) => u.agent == uInfo.agent && u.addr == uInfo.addr,
       )
     ) {
       logger.lognet(
@@ -549,7 +551,7 @@ class AuthHandler {
           " SOCKET Rejected from " +
           user.addr +
           " with Forbidden Session",
-        user
+        user,
       );
       return;
     }
@@ -574,13 +576,13 @@ class AuthHandler {
           " SOCKET Rejected from " +
           user.addr +
           " with Invalid Authorization - Login with credentials to get valid Authorization",
-        user
+        user,
       );
       return socket.emit(
         "error",
         `<center>
           <h1> EACCES </h1> <hr> \n ${true ? "401 Unauthorized" : ""}\n 
-          </center>`
+          </center>`,
       );
     }
     if (!this.tokenIsYoung(user)) {
@@ -590,7 +592,7 @@ class AuthHandler {
           " SOCKET Rejected from " +
           user.addr +
           " with (Old/Expired) Socket Session - Login again to renew Authorization",
-        user
+        user,
       );
       socket.emit("error", "Session Expired");
       return this.ejectCred(user.token);
@@ -602,11 +604,11 @@ class AuthHandler {
           " SOCKET Rejected from " +
           user.addr +
           " with Forbidden Socket Session - Login with credentials to get valid Authorization",
-        user
+        user,
       );
       socket.emit(
         "error",
-        "Authorization compromised: Login again to renew Authorization"
+        "Authorization compromised: Login again to renew Authorization",
       );
       return this.ejectCred(user.token);
     }
@@ -634,12 +636,12 @@ class AuthHandler {
           " ACCESS Rejected from " +
           user.addr +
           " with Forbidden Route Trespassed - This route is forbidden by Admin",
-        user
+        user,
       );
       return res
         .status(403)
         .send(
-          "<center><h1> EACCES </h1> <hr> \n 403 Entity Forbidden by Admin\n</center>"
+          "<center><h1> EACCES </h1> <hr> \n 403 Entity Forbidden by Admin\n</center>",
         );
     }
     next();
@@ -649,7 +651,7 @@ class AuthHandler {
     const { headers, token } = req;
     const user = req.user;
     const haslogin = this.config.authorizations.find(
-      (a) => a?.addr == user?.addr && a?.agent == user?.agent
+      (a) => a?.addr == user?.addr && a?.agent == user?.agent,
     );
     if (!token?.token) {
       logger.lognet(
@@ -658,7 +660,7 @@ class AuthHandler {
           " ACCESS Rejected from " +
           user.addr +
           " with Invalid Authorization",
-        user
+        user,
       );
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n ${!haslogin ? "401 Unauthorized" : ""}\n 
@@ -676,7 +678,7 @@ class AuthHandler {
           " ACCESS Rejected from " +
           user.addr +
           " with Old_Session",
-        user
+        user,
       );
       res
         .status(401)
@@ -690,7 +692,7 @@ class AuthHandler {
           " ACCESS Rejected from " +
           user.addr +
           " with Bad_Session",
-        user
+        user,
       );
       res
         .status(403)
@@ -712,7 +714,7 @@ class AuthHandler {
 
   ejectCred = async (token) => {
     const newAuths = this.config.authorizations.filter(
-      (a) => a.token !== token
+      (a) => a.token !== token,
     );
     this.config.authorizations = newAuths;
     this.saveConfig();
@@ -725,7 +727,7 @@ class AuthHandler {
   saveConfig = (cb = () => {}) => {
     writeFileSync(
       path.join(dirname(), "auth.config.json"),
-      JSON.stringify(this.config)
+      JSON.stringify({ ...this.config, devices: [] }),
     );
     config = this.config;
     cb();
@@ -737,7 +739,7 @@ class AuthHandler {
       logger.log(
         `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Attempt from ${
           req.user.addr
-        } with ${req.user.agent.split("Apple")[0]}`
+        } with ${req.user.agent.split("Apple")[0]}`,
       );
     const { body, headers, socket } = req;
     if (body.password !== this.config.password) {
@@ -746,7 +748,7 @@ class AuthHandler {
           `AuthHandler: ${
             ("" + new Date()).split("(")[0]
           } LOGIN Rejected from ${req.user.addr} with invalid credentials`,
-          req.user
+          req.user,
         );
       return res
         .status(401)
@@ -767,7 +769,7 @@ class AuthHandler {
       `AuthHandler: ${("" + new Date()).split("(")[0]} LOGIN Succes from ${
         req.user.addr
       } with ${req.user.agent.split("Apple")[0]}`,
-      req.user
+      req.user,
     );
     res.cookie("uuid", cred.token, {
       httpOnly: true,
@@ -794,7 +796,7 @@ class AuthHandler {
     const newForbidden = body || {};
     if (
       this.config.forbidden.find(
-        (f) => f.agent == body.agent && f.addr == body.addr
+        (f) => f.agent == body.agent && f.addr == body.addr,
       )
     ) {
       return res.status(200).json(this.config.forbidden);
@@ -808,7 +810,7 @@ class AuthHandler {
     const { body } = req;
     const { agent, addr } = body;
     this.config.forbidden = this.config.forbidden.filter(
-      (f) => f.agent !== agent || f.addr !== addr
+      (f) => f.agent !== agent || f.addr !== addr,
     );
     this.saveConfig();
     res.status(200).json(this.config.forbidden);
@@ -831,7 +833,7 @@ class AuthHandler {
   remprotected = (req, res) => {
     const { body } = req;
     this.config.protectedroutes = this.config.protectedroutes.filter(
-      (f) => f !== body.route
+      (f) => f !== body.route,
     );
     this.saveConfig();
     res.status(200).json(this.config.protectedroutes);
@@ -846,7 +848,7 @@ class AuthHandler {
     const { clientId, type } = body;
     // logger.log(body)
     this.config.devices = this.config.devices.filter(
-      (d) => d.clientId !== clientId && d.type !== type
+      (d) => d.clientId !== clientId && d.type !== type,
     );
     this.saveConfig();
     res.status(200).json(this.config.devices);
@@ -864,7 +866,7 @@ class AuthHandler {
         " PASSWORD Change Attempt from " +
         user.addr +
         "",
-      user
+      user,
     );
     if (body.oldpassword !== this.config.password) {
       logger.lognet(
@@ -873,7 +875,7 @@ class AuthHandler {
           " ACCESS Rejected from " +
           user.addr +
           " with Invalid or Old Password",
-        user
+        user,
       );
       return res.status(401).send("Old password is not correct");
     }
@@ -887,7 +889,7 @@ class AuthHandler {
         " PASSWORD Change_Success from " +
         user.addr +
         "with <Check auth.config.json>",
-      user
+      user,
     );
     res.status(200).json({
       password: this.config.password,
@@ -902,7 +904,7 @@ class AuthHandler {
       forbidden: this.config.forbidden,
       visitors: this.config.visitors,
       protectedRoutes: this.config.protectedroutes,
-      devices: this.config.devices,
+      devices: [],
     });
   };
 

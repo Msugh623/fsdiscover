@@ -6,7 +6,7 @@ const Folder = ({ data }) => {
   const maxL = window.innerWidth < 468 ? 16 : 30;
   const prn = data?.name.substring(0, maxL - 5);
   return (
-    <Link to={location.pathname + "/" + data?.name} className="text-light">
+    <Link to={location.pathname + "/" + data?.name} className="text-light d-block w-100 p-2">
       <FaFolder className="icon" />{" "}
       <span className="text-truncate">
         {data?.name.length > maxL

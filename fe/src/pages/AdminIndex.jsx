@@ -7,6 +7,7 @@ import { FaTrash } from "react-icons/fa";
 import { BiPencil, BiSync, BiX } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
+import { FaGear } from "react-icons/fa6";
 
 const AdminIndex = () => {
   const {
@@ -72,7 +73,7 @@ const AdminIndex = () => {
                     to={!localStorage.access ? `/login` : "/admin"}
                     className="rounded shadow-lg p-3 ms-auto py-2 border border-dashed readmore custom-navmenu text-light"
                   >
-                    {!localStorage.access ? "authorize" : "Admin"}
+                  <FaGear className="fs-6"/>  SETTINGS
                   </Link>
                 </div>
                 <span className="text-primary">Host:</span> {hostname} <br />
