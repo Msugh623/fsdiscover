@@ -23,9 +23,10 @@ if errorlevel 1 (
 
 REM === Install dependencies ===
 if exist package.json (
-    echo Installing required dependencies...
+    echo.
+    echo Installing app dependencies. Please wait, this process requires internet connection and might take a moment
     if not exist logs mkdir logs
-    call npm install || (
+    call npm install > .npm_install.log || (
         echo [ERROR] Failed to install dependencies.
         exit /b 1
     )

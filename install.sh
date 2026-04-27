@@ -62,7 +62,7 @@ if ! [ -f "package.json" ]; then
     exit 1
 elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
     echo "Installing required dependencies..."
-    npm install 
+    npm install > .npm_install.log
     cd fe 
     echo "Building client..."
     npm run build
@@ -78,8 +78,10 @@ elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
     mv fe/dist/ public/client
     echo "Build Succesfull"
 else
-    echo "Prepareing to install..."
-    npm install || sleep 5 && npm install
+    echo ""
+    echo "Installing app dependencies, Please wait..."
+    echo "This process requires internet connection and might take a moment"
+    npm install > .npm_install.log || sleep 5 && npm install > .npm_install.log
 fi
 if ! [ $? -eq 0 ]; then
    echo '!!! Installer Exited prematurely... Installer failed to install necessary dependencies'
@@ -148,12 +150,14 @@ if [ $UNAME -eq 0 ]; then
     ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" 
 else
     echo "Installer needs root access to create Global executable"
-    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
+    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/local/bin/fsdiscover"
 fi
 
 if [ $OS == "Darwin" ]; then
     xcode-select --install
+    printf "\n\x1b[43m********************************\x1b[49m\n"
     echo "!>>> Fsdiscover remote input relies on Iterm's accesibility setting. To use the remote input service, Go to your 'System Settings -> Security & Privacy -> Privacy tab -> Accessibility' and make sure Iterm.app and Intellij IDEA.app are enabled"
+    printf "\n\n\x1b[43m********************************\x1b[49m\n"
 fi
 echo ""
 echo "Installation Finished."
