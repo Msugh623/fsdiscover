@@ -63,7 +63,7 @@ if [ -d ../update/fsdiscover-main ]; then
   if [ -f ../update/fsdiscover-main/package.json ]; then
     cd ../update/fsdiscover-main
     chmod +x ./install.sh
-    bash ./install.sh --auto || ./install.sh --auto
+    bash -l ./install.sh --auto || ./install.sh --auto
     cd ../../  
     rm -r update/fsdiscover-main
     rm sysnet.zip; 
