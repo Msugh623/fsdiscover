@@ -4,7 +4,7 @@ const fs = require("fs");
 const dirname = require("../dirname");
 const { UseLogger } = require("./logger");
 const { logger } = new UseLogger();
-const crypto = require("crypto");
+const crypto = require("node:crypto");
 
 class RuntimeConfig {
   constructor() {
@@ -17,14 +17,14 @@ class RuntimeConfig {
     try {
       const persistConf = fs.readFileSync(
         path.join(dirname(), "runtime.config.json"),
-        { encoding: "utf-8" }
+        { encoding: "utf-8" },
       );
       const toJson =
         persistConf.length > 10 ? JSON.parse(persistConf) : this.config;
       this.config = { ...conf, ...toJson };
     } catch (err) {
       logger.log(
-        "RuntimeConfig: Failed to mount non-existent or curropted runtime.config.json... Cleaning and regenerating"
+        "RuntimeConfig: Failed to mount non-existent or curropted runtime.config.json... Cleaning and regenerating",
       );
       this.config = conf;
       this.saveConfig();
@@ -38,7 +38,7 @@ class RuntimeConfig {
     const theUser = this.sessions.find(
       (u) =>
         u.addr + u.agent + u?.uuid + u?.socketid ==
-        user.addr + u.agent + user?.uuid + user?.socketid
+        user.addr + u.agent + user?.uuid + user?.socketid,
     );
     if (theUser) {
       const keys = Object.keys(user);
@@ -49,14 +49,14 @@ class RuntimeConfig {
       this.sessions.unshift(user);
     }
     this.socket.emit("sessionEvent", this.sessions);
-    process.refreshCompositor()
+    process.refreshCompositor();
   };
 
   disconnectSession = (user) => {
     this.sessions = this.sessions.filter(
       (u) =>
         u.addr + u.agent + u?.uuid + u?.socketid !==
-        user.addr + user.agent + user?.uuid + user?.socketid
+        user.addr + user.agent + user?.uuid + user?.socketid,
     );
     this.socket.emit("sessionEvent", this.sessions);
     process.refreshCompositor();
@@ -66,7 +66,7 @@ class RuntimeConfig {
     const theUser = this.sessions.find(
       (u) =>
         u.addr + u.agent + u?.uuid + u?.socketid ==
-        user.addr + u.agent + user?.uuid + user?.socketid
+        user.addr + u.agent + user?.uuid + user?.socketid,
     );
     if (theUser?.addr) {
       const keys = Object.keys(user);
@@ -77,7 +77,7 @@ class RuntimeConfig {
         u.addr + u.agent + u?.uuid + u?.socketid ==
         user.addr + user.agent + user?.uuid + user?.socketid
           ? theUser
-          : u
+          : u,
       );
     } else {
       this.sessions.unshift(user);
@@ -104,7 +104,7 @@ class RuntimeConfig {
           " RUNTIME_CONFIG update rejected from " +
           user.addr +
           " with INVALID SESSION ID",
-        user
+        user,
       );
       return res
         .status(400)
@@ -131,7 +131,7 @@ class RuntimeConfig {
           ("" + new Date()).split("(")[0] +
           " RUNTIME_CONFIG update success from " +
           user.addr,
-        user
+        user,
       );
     } catch (err) {
       res.status(500).send("Failed to update runtime config");
