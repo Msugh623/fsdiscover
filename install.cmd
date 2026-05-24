@@ -6,7 +6,7 @@ echo Fsdiscover is a tool that allows you to access your filesystem over your lo
 echo.
 
 REM === Check if Node.js is installed ===
-where node >nul 2>&1
+where node >nul 2>&1 || "%PROGRAMFILES%\nodejs\node" -v
 if errorlevel 1 (
     echo [WARNING] Node.js is not installed. Fsdiscover depends on the NodeJs runtime to function properly. Downloading and Installing NodeJs...
     node.msi || curl https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi > node.msi
@@ -14,7 +14,7 @@ if errorlevel 1 (
     pause
 )
 
-where node >nul 2>&1
+where node >nul 2>&1 || "%PROGRAMFILES%\nodejs\node" -v
 if errorlevel 1 (
     echo "NodeJs not found. Fsdiscover depends on the NodeJs runtime to function properly. visit https://nodejs.org/en/download to download it..."
     pause
@@ -25,7 +25,7 @@ REM === Install dependencies ===
 if exist package.json (
     echo Installing project dependencies...
     if not exist logs mkdir logs
-    call npm install || (
+    call npm install || call "%PROGRAMFILES%\nodejs\npm" install || (
         echo [ERROR] Failed to install dependencies.
         exit /b 1
     )
@@ -69,7 +69,7 @@ set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FsDiscover"
 set "TARGET_PATH=%APP_DIR%\fsdiscover.cmd"
 set "ICON_PATH=%APP_DIR%\public\icon.ICO"
 dir "%SHORTCUT_PATH%" > "logs.log" || mkdir "%SHORTCUT_PATH%"
-node utils/makeico.js "%TARGET_PATH%" "%SHORTCUT_PATH%" "%ICON_PATH%"
+node utils/makeico.js "%TARGET_PATH%" "%SHORTCUT_PATH%" "%ICON_PATH%" || "%PROGRAMFILES%\nodejs\node" utils/makeico.js "%TARGET_PATH%" "%SHORTCUT_PATH%" "%ICON_PATH%"
 
 if not exist "%SHORTCUT_PATH%" (
   echo [WARNING] Failed to create Start Menu shortcut.
