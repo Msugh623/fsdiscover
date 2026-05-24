@@ -36,53 +36,62 @@ set "PARAM2=%~2"
 @REM     exit /b 1
 @REM )
 
-if /I "%PARAM1%"=="/uninstall" (
+if /I "%PARAM1%"=="--uninstall" (
     call "%APP_DIR%\uninstall.cmd"
     exit /b %errorlevel%
 )
 
-if /I "%PARAM1%"=="/u" (
+if /I "%PARAM1%"=="-u" (
     call "%APP_DIR%\uninstall.cmd"
     exit /b %errorlevel%
 )
 
-if /I "%PARAM1%"=="/version" (
+if /I "%PARAM1%"=="-version" (
     echo %VERSION%
     exit /b 0
 )
 
-if /I "%PARAM1%"=="/logs" (
-    cd "%APP_DIR%\logs"
+if /I "%PARAM1%"=="--logs" (
+    cd "logs"
     explorer ./
     exit /b 0
 )
 
-if /I "%PARAM1%"=="/l" (
-    cd "%APP_DIR%\logs"
+if /I "%PARAM1%"=="-l" (
+    cd "logs"
     explorer ./
     exit /b 0
 )
 
+if /I "%PARAM1%"=="--config" (
+    type "auth.config.json"
+    exit /b 0
+)
 
-if /I "%PARAM1%"=="/v" (
+if /I "%PARAM1%"=="-c" (
+    type "auth.config.json"
+    exit /b 0
+)
+
+if /I "%PARAM1%"=="-v" (
     echo %VERSION%
     exit /b 0
 )
 
-if /I "%PARAM1%"=="/p" (
+if /I "%PARAM1%"=="-p" (
     echo "Initiator: Prefered network interface set to: %PARAM2%"
     echo "Initiator: Prefered network interface will be ignored if not available"
     PARAMS="--prefer %PARAM2%"
 )
 
-if /I "%PARAM1%"=="/prefer" (
+if /I "%PARAM1%"=="-prefer" (
     echo "Initiator: Prefered network interface set to: %PARAM2%"
     echo "Initiator: Prefered network interface will be ignored if not available"
     set PARAMS="--prefer %PARAM2%"
 )
 
-if /I "%PARAM1%"=="/help" goto :show_help
-if /I "%PARAM1%"=="/h" goto :show_help
+if /I "%PARAM1%"=="-help" goto :show_help
+if /I "%PARAM1%"=="-h" goto :show_help
 
 REM If no known argument, assume default run
 
@@ -115,12 +124,13 @@ exit /b 0
 :show_help
 echo Usage: fsdiscover [option]
 echo.
-echo   /l, /logs            See logs
-echo   /p, /prefer          Supply a prefered network interface. e.g fsdiscover --prefer <interface_name>
+echo   -l, --logs            See logs
+echo   -c, --config          See fsdiscover configuration file
+echo   -p, --prefer          Supply a prefered network interface. e.g fsdiscover --prefer <interface_name>
 echo                        This will be ignored if the interface is not available
-echo   /u, /uninstall       Uninstall (remove) fsdiscover
-echo   /v, /version         Show current version
-echo   /h, /help            Display help message
+echo   -u, --uninstall       Uninstall (remove) fsdiscover
+echo   -v, --version         Show current version
+echo   -h, --help            Display help message
 echo.
 echo For more information, contact: sprintetmail@gmail.com
 exit /b 0

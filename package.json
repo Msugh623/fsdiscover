@@ -1,26 +1,30 @@
 {
   "name": "fsdiscover",
-  "version": "1.5.0",
+  "version": "1.5.3",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon index.js",
     "postinstall": "ls logs > logs.log || dir logs > logs.log || mkdir logs; ls temp > logs.log || dir temp > logs.log || mkdir temp"
   },
   "author": "Msugh623",
   "license": "ISC",
   "dependencies": {
     "@nut-tree-fork/nut-js": "^4.2.6",
-    "1.0.3": "^1.0.3",
     "archiver": "^7.0.1",
     "axios": "^1.8.2",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "create-desktop-shortcuts": "^1.11.1",
+    "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
-    "multer": "^1.4.5-lts.2",
+    "multer": "^2.0.2",
     "netprobe": "^1.1.1",
+    "nodemon": "^3.1.10",
+    "qrcode": "^1.5.4",
     "socket.io": "^4.8.1",
     "unzipper": "^0.12.3"
   },

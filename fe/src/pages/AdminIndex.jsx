@@ -4,28 +4,47 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
 import { toast } from "react-toastify";
 import { FaTrash } from "react-icons/fa";
-import {  BiPencil, BiSync, BiX } from "react-icons/bi";
+import { BiPencil, BiSync, BiX } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
+import { FaGear } from "react-icons/fa6";
 
 const AdminIndex = () => {
-  const { apps, fetchSrc, categories, hostname,runtimeConfig } = useStateContext();
+  const {
+    apps,
+    fetchSrc,
+    categories,
+    hostname,
+    runtimeConfig,
+    profile,
+    setMenuPos,
+  } = useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, setCategory] = useState("All");
 
   useEffect(() => {
     category == "All"
-      ? setPrs(apps.filter((a) => runtimeConfig?.apps?.includes(a?.location)))
+      ? setPrs(
+          apps.filter(
+            (a) =>
+              runtimeConfig?.apps?.includes(a?.location) ||
+              a?.location.includes("devices")
+          )
+        )
       : setPrs(
           apps
             .filter((cr) => cr.category == category)
             .filter((a) => runtimeConfig?.apps?.includes(a?.location))
         );
-  }, [category, apps]);
+  }, [category, apps, runtimeConfig?.apps]);
 
   useEffect(() => {
     document.title = "Sprintet Fsdiscover  - " + hostname;
     fetchSrc();
+    setMenuPos({
+      x: 40,
+      y: window.innerHeight - 80,
+    });
   }, []);
 
   return (
@@ -54,14 +73,13 @@ const AdminIndex = () => {
                     to={!localStorage.access ? `/login` : "/admin"}
                     className="rounded shadow-lg p-3 ms-auto py-2 border border-dashed readmore custom-navmenu text-light"
                   >
-                    {!localStorage.access ? (
-                      "authorize"
-                    ) : (
-                      "Admin"
-                    )}
+                  <FaGear className="fs-6"/>  SETTINGS
                   </Link>
                 </div>
-                {"Device Hostname: " + hostname}
+                <span className="text-primary">Host:</span> {hostname} <br />
+                <span className="text-primary">Profile: </span>
+                {profile.addr} <br />
+                <span className="text-primary">UUID: </span> {profile.uuid}
               </div>
             </div>
             <div
@@ -90,6 +108,7 @@ const AdminIndex = () => {
                 </a>
                 {categories.map((flt) => (
                   <a
+                    key={flt}
                     href={`#${flt}`}
                     data-category="*"
                     className={
@@ -110,8 +129,8 @@ const AdminIndex = () => {
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            {prs.map((app) => {
-              return <AppCard key={app.id} app={app} />;
+            {prs.map((app, i) => {
+              return <AppCard key={"" + app.id + i} app={app} />;
             })}
           </div>
         </div>

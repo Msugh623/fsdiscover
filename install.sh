@@ -1,4 +1,5 @@
 #!/bin/bash
+source ~/.bashrc
 V=$(cat version)
 PARAM=${1:-null}
 
@@ -12,13 +13,13 @@ echo ""
 echo "Fsdiscover is a tool that allows you to access your filesystem over local http network"
 
 
-if [ $PARAM == "--auto" ]; then
+if [[ $PARAM == "--auto" || $2 == "--auto" ]]; then
     echo "Skipping permission because auto is supplied... automatic installer shall proceed"
 else
     echo "Do you want to proceed installation (y/n)"
     echo "Use --auto to prevent this prompt"
     read -r ACCEPT
-    if ! [ $ACCEPT == "y" ]; then
+    if [ "$ACCEPT" != "y" ]; then
         echo "Exiting...Installer Aborted by User, $ACCEPT is not y"
         exit 2
     fi
@@ -40,6 +41,14 @@ if ! command -v node &> /dev/null; then
         nvm current 
         echo 'NPM version:'
         npm -v
+        if ! [$? -eq 0 ]; then 
+            echo "npm Installer encountered and issue... retrying!"
+            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+            export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install --lts
+            nvm use --lts
+        fi
     else
         echo "Node.js is required to run this script. Exiting..."
         exit 1
@@ -47,13 +56,13 @@ if ! command -v node &> /dev/null; then
 fi
 
 
-# Install project dependencies
+# Install required dependencies
 if ! [ -f "package.json" ]; then
-    echo "Failure: package.json not found... Failed to find project dependencies"
+    echo "Failure: package.json not found... Failed to find required dependencies"
     exit 1
-elif [ $PARAM == "--build" ]; then
-    echo "Installing project dependencies..."
-    npm install
+elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
+    echo "Installing required dependencies..."
+    npm install > .npm_install.log
     cd fe 
     echo "Building client..."
     npm run build
@@ -69,8 +78,10 @@ elif [ $PARAM == "--build" ]; then
     mv fe/dist/ public/client
     echo "Build Succesfull"
 else
-    echo "Prepareing to install..."
-    npm install
+    echo ""
+    echo "Installing app dependencies, Please wait..."
+    echo "This process requires internet connection and might take a moment"
+    npm install > .npm_install.log || sleep 5 && npm install > .npm_install.log
 fi
 if ! [ $? -eq 0 ]; then
    echo '!!! Installer Exited prematurely... Installer failed to install necessary dependencies'
@@ -78,14 +89,6 @@ if ! [ $? -eq 0 ]; then
    exit 1
 fi
 
-# echo ""
-# echo "Generating SSL certificate... Please enter the details as prompted (Press ENTER to skip field)"
-# if ! [ -d "cert" ]; then
-#     echo "Creating cert directory..."
-#     mkdir cert
-# fi
-
-# ./gencert.sh
 
 if ! [ $? -eq 0 ]; then
     echo '!!! Installer Exited prematurely... Failed to generate SSL certificate'
@@ -95,12 +98,11 @@ fi
 APP_DIR="$HOME/.local/share/fsdiscover"
 mkdir -p "$APP_DIR"
 
-head "$APP_DIR/auth.config.json" | grep "the ungrepable" ||   echo "{}" > auth.config.json
 ls logs | grep "ungrepable" || mkdir logs
 
 echo 'Copying files to application directory... This can take a while'
 if command  rsync --version &> /dev/null ; then
-    rsync -av --exclude='fe' --exclude='.git' ./ "$APP_DIR"||tar --exclude=".git" -cf - ./ | tar -xf - -C "$APP_DIR"
+    rsync -av --exclude='fe' --exclude='.git' --exclude='auth.config.json' ./ "$APP_DIR"||tar --exclude=".git" --exclude='auth.config.json' -cf - ./ | tar -xf - -C "$APP_DIR"
 else
     echo "rsync failed... falling back to cp (This should take a bit longer)"
     # cp -r ./ "$APP_DIR"
@@ -137,20 +139,41 @@ DESKTOP_DIR="$HOME/.local/share/applications"
 mkdir -p "$DESKTOP_DIR"
 echo "$DESKTOP_FILE" > "$DESKTOP_DIR/fsdiscover.desktop"
 
+node utils/makeico.js "$APP_DIR/fsdiscover.sh" "$DESKTOP_DIR/" "$APP_DIR/public/icon.png"
 update-desktop-database "$HOME/.local/share/applications"
 
 UNAME=$(id -u)
+OS=$(uname -s)
 
 if [ $UNAME -eq 0 ]; then
-    ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
+    echo "Creating Global Executable... Might require sudo access"
+    ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" 
 else
     echo "Installer needs root access to create Global executable"
-    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover"
+    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/local/bin/fsdiscover"
 fi
 
+if [ $OS == "Darwin" ]; then
+    xcode-select --install
+    printf "\n\x1b[43m********************************\x1b[49m\n"
+    echo "!>>> Fsdiscover remote input relies on Iterm's accesibility setting. To use the remote input service, Go to your 'System Settings -> Security & Privacy -> Privacy tab -> Accessibility' and make sure Iterm.app and Intellij IDEA.app are enabled"
+    printf "\n\n\x1b[43m********************************\x1b[49m\n"
+fi
+echo ""
 echo "Installation Finished."
-echo '!>>> Default password is set to "password", please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten'
+echo
+printf "\n\x1b[43m********************************\x1b[49m\n"
+printf '\n\x1b[33mINSTRUCTION FOR LOGIN PASSWORD\x1b[39m\nThe default password is set to "password", please change it as soon as possible\nIf you already changed it then ignore this message, it will not be overwritten\n\n'
+printf "\x1b[33mINSTRUCTIONS FOR LOGIN EMAIL\x1b[39m\nThe email requested at login is not tested against any value\nUse your own email as it doesn't matter which email you use to login\n"
+printf "\n\x1b[43m********************************\x1b[49m\n"
+echo
 echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
 echo "Symbolic link created at /usr/bin/fsdiscover"
 echo "You can now run the application using the command 'fsdiscover'"
-echo 'Use "fsdiscover --help" for details'
+echo 'Use "fsdiscover --help" for details';
+printf '\n\nRead the instructions above or Press CTRL+C to end installer\n'
+if [[ $PARAM == "--auto" || $2 == "--auto" ]]; then
+    sleep "5"
+else
+    sleep "15"
+fi

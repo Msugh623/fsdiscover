@@ -11,7 +11,7 @@ if errorlevel 1 (
     echo [WARNING] Node.js is not installed. Fsdiscover depends on the NodeJs runtime to function properly. Downloading and Installing NodeJs...
     node.msi || curl https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi > node.msi
     node.msi
-    pause
+    start "" /c "%~f0" && exit
 )
 
 where node >nul 2>&1 || "%PROGRAMFILES%\nodejs\node" -v
@@ -23,9 +23,10 @@ if errorlevel 1 (
 
 REM === Install dependencies ===
 if exist package.json (
-    echo Installing project dependencies...
+    echo.
+    echo Installing app dependencies. Please wait, this process requires internet connection and might take a moment
     if not exist logs mkdir logs
-    call npm install || call "%PROGRAMFILES%\nodejs\npm" install || (
+    call npm install  > .npm_install.log  || call "%PROGRAMFILES%\nodejs\npm" install  > .npm_install.log  || (
         echo [ERROR] Failed to install dependencies.
         exit /b 1
     )
@@ -91,6 +92,7 @@ copy /Y "%APP_DIR%\fsdiscover.cmd" "%BIN_DIR%\fsdiscover.cmd"
 if errorlevel 1 (
     echo [ERROR] Failed to create CLI shortcut in %BIN_DIR%
     exit /b 1
+    pause
 )
 
 REM === Add to PATH if missing ===
@@ -106,8 +108,16 @@ echo.
 echo Installation complete
 echo Shortcut created at:  %SHORTCUT_PATH%
 echo.
+echo "********************************"
+echo.
+echo "Default password is set to ```password```, please change it as soon as possible, if you already changed it then ignore this message, it will not be overwritten"
+echo.
+echo "The email requested at login is not tested against any value, use your own email as it doesn't matter which email you use to login"
+echo.
+echo "********************************"
+echo.
 echo You can now launch FSDiscover from the Start Menu or by running: fsdiscover
 echo Use: fsdiscover /help
 echo for options.
-
+pause
 exit /b 0

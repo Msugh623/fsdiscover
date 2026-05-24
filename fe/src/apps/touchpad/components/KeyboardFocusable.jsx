@@ -8,16 +8,17 @@ import {
   FaArrowUp,
   FaBackspace,
   FaBackward,
-  FaExpandArrowsAlt,
   FaForward,
   FaPause,
   FaPlay,
   FaRegKeyboard,
+  FaTimes,
   FaWindows,
 } from "react-icons/fa";
 import { useEffect } from "react";
 import Menu from "../../../components/Menu";
-import { BiX } from "react-icons/bi";
+import { BiVolumeLow, BiX } from "react-icons/bi";
+import Delay from "../../../components/Delay";
 
 const KeyboardFocusable = ({ hasDivider }) => {
   const [panelClassName, setPanelClassName] = useState("d-none");
@@ -42,8 +43,8 @@ const KeyboardFocusable = ({ hasDivider }) => {
   const [inputHadFocus, setInputHadFocus] = useState(false);
   const [controller, setController] = useState(false);
 
-  function handleVirtualKey(e, killfocus) {
-    killfocus && inputHadFocus && strokerRef.current.focus();
+  function handleVirtualKey(e) {
+    inputHadFocus && strokerRef.current.focus();
     if (e.target.value == "toggle") {
       return handleToggleKey(e.target.id);
     }
@@ -82,8 +83,8 @@ const KeyboardFocusable = ({ hasDivider }) => {
     socket.on("downkeys", (data) => {
       setDownKeys(data || []);
     });
-    if(!socket.connected){
-      socket.connect()
+    if (!socket.connected) {
+      socket.connect();
     }
   }, []);
 
@@ -96,6 +97,26 @@ const KeyboardFocusable = ({ hasDivider }) => {
         />
       )}
       <div className="menu-panel">
+        {hasPannel && (
+          <Delay delay={800}>
+            <div
+              className="ms-auto slideUp my-auto me-4 px-1 icon active rounded"
+              style={{
+                width: "fit-content",
+                position: "relative",
+                top: "35px",
+                left: "10px",
+                zIndex: 2,
+              }}
+              onClick={() => {
+                setHasPannel(false);
+                toggleKeyboard(false);
+              }}
+            >
+              <FaTimes className="icon" />
+            </div>
+          </Delay>
+        )}
         <div className="mx-auto col-12 col-sm-10 col-md-8 col-xl-9">
           <div
             className={`inner ani  rounded shadow-lg p-3 text-light bg-dark text-left slideUp ${panelClassName}`}
@@ -118,15 +139,23 @@ const KeyboardFocusable = ({ hasDivider }) => {
               <div className="d-flex px-0 px-md-1 pb-2 virtualKeyboard">
                 <div className="row">
                   <h5
-                    className="text-light ps-3 m-0 mt-0 mb-0"
+                    className="text-light my-auto pt-2 col-12 d-flex ps-3 m-0 mt-0 mb-0"
                     style={{
-                      maxWidth: "fit-content",
-                      pointerEvents: "none",
                       position: "relative",
                       bottom: "6px",
                     }}
                   >
-                    Remote Keyboard
+                    <span
+                      style={{
+                        maxWidth: "fit-content",
+                        // pointerEvents: "none",
+                        position: "relative",
+                        bottom: "6px",
+                      }}
+                    >
+                      {" "}
+                      Remote Keyboard
+                    </span>
                   </h5>
                   {/* First row */}
                   <div className="d-flex col-md-12">
@@ -164,28 +193,53 @@ const KeyboardFocusable = ({ hasDivider }) => {
                     >
                       End
                     </VirtualKey>
-                    <VirtualKey
-                      alt={
-                        <VirtualKey
-                          id={"Backspace"}
-                          onClick={(e) => handleVirtualKey(e)}
-                        >
-                          <FaBackspace
-                            style={{
-                              fontSize: "1.6em",
-                              rotate: "180deg",
-                              pointerEvents: "none",
-                              rotate: "",
-                            }}
-                          />
-                        </VirtualKey>
-                      }
-                      isAlt={otherKeys}
-                      id={"PageUp"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      PgUp
-                    </VirtualKey>
+                    {!mediaKeys ? (
+                      <VirtualKey
+                        alt={
+                          <VirtualKey
+                            id={"Backspace"}
+                            onClick={(e) => handleVirtualKey(e)}
+                          >
+                            <FaBackspace
+                              style={{
+                                fontSize: "1.6em",
+                                rotate: "180deg",
+                                pointerEvents: "none",
+                                rotate: "",
+                              }}
+                            />
+                          </VirtualKey>
+                        }
+                        isAlt={otherKeys}
+                        id={"PageUp"}
+                        onClick={(e) => handleVirtualKey(e)}
+                      >
+                        PgUp
+                      </VirtualKey>
+                    ) : (
+                      <VirtualKey
+                        isAlt={otherKeys}
+                        id={"VolumeUp"}
+                        onClick={(e) => handleVirtualKey(e)}
+                        alt={
+                          <VirtualKey
+                            id={"VolumeUp"}
+                            onClick={(e) => handleVirtualKey(e)}
+                          >
+                            <FaBackspace
+                              style={{
+                                fontSize: "1.6em",
+                                rotate: "180deg",
+                                pointerEvents: "none",
+                                rotate: "",
+                              }}
+                            />
+                          </VirtualKey>
+                        }
+                      >
+                        Vol +
+                      </VirtualKey>
+                    )}
                   </div>
 
                   {/* Second Row */}
@@ -232,21 +286,33 @@ const KeyboardFocusable = ({ hasDivider }) => {
                     >
                       Shift
                     </VirtualKey>
-                    <VirtualKey
-                      alt={
+                    {!mediaKeys ? (
+                      <VirtualKey
+                        alt={
+                          <VirtualKey
+                            id={"Enter"}
+                            onClick={(e) => handleVirtualKey(e)}
+                          >
+                            Enter
+                          </VirtualKey>
+                        }
+                        isAlt={otherKeys}
+                        id={"PageDown"}
+                        onClick={(e) => handleVirtualKey(e)}
+                      >
+                        PgDown
+                      </VirtualKey>
+                    ) : (
+                      <>
                         <VirtualKey
-                          id={"Enter"}
+                          isAlt={otherKeys}
+                          id={"VolumeDown"}
                           onClick={(e) => handleVirtualKey(e)}
                         >
-                          Enter
+                          <small>Volume -</small>
                         </VirtualKey>
-                      }
-                      isAlt={otherKeys}
-                      id={"PageDown"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      PgDown
-                    </VirtualKey>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="ms-auto mt-auto">
@@ -384,7 +450,7 @@ const KeyboardFocusable = ({ hasDivider }) => {
                   </div>
                 </div>
               </div>
-              <div className="px-2">
+              <div className="px-2 ">
                 <input
                   type="text"
                   onKeyDown={handleKeydown}
@@ -449,7 +515,6 @@ const KeyboardFocusable = ({ hasDivider }) => {
           }}
         />
       </div>
-      <Menu hasDivider={false} />
       {hasDivider !== false && (
         <div
           className="divider my-auto mx-2"
@@ -480,6 +545,17 @@ function VirtualKey({ children, id, onClick, className, value, isAlt, alt }) {
 }
 
 function VirtualNavigator({ handleVirtualKey, closeController }) {
+  useEffect(() => {
+    const killCtr = (e) => {
+      e.code == "Escape" && closeController();
+    };
+    window.addEventListener("keydown", killCtr);
+
+    return () => {
+      window.removeEventListener("keydown", killCtr);
+    };
+  }, []);
+
   return (
     <>
       <div
@@ -492,11 +568,11 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
           bottom: "0",
           backgroundColor: "#061e2cfa",
           zIndex: 10,
-          backdropFilter:'blur(20px)'
+          backdropFilter: "blur(20px)",
         }}
       >
         <div
-          className="m-auto slideUp shadow border text-light active p-3"
+          className="m-auto slideUp shadow border text-light active p-3 virtualKeyboard"
           style={{
             borderRadius: "25px",
           }}
@@ -507,7 +583,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               className="ms-auto active rounded my-auto me-1 border"
               onClick={closeController}
             >
-              <BiX />
+              <BiX className="icon" />
             </button>
           </h4>
           <div className="d-flex">
@@ -516,7 +592,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               <button
                 id="Left"
                 onClick={(e) => handleVirtualKey(e, true)}
-                className="btn border my-auto text-light h-100 w-100 text-center"
+                className="btn border my-auto text-light h-100 w-100 fs-5 text-center"
                 style={{
                   width: "25vw",
                   minWidth: "25vw",
@@ -540,7 +616,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
                     minHeight: "25vh",
                   }}
                   onClick={(e) => handleVirtualKey(e)}
-                  className="btn text-light border w-100 text-center"
+                  className="btn text-light border w-100 text-center fs-5"
                 >
                   <FaArrowUp style={{ pointerEvents: "none" }} />
                 </button>
@@ -557,7 +633,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
                     minHeight: "25vh",
                   }}
                   onClick={(e) => handleVirtualKey(e, true)}
-                  className="btn border text-light w-100 text-center"
+                  className="btn border text-light w-100 text-center fs-5"
                 >
                   <FaArrowDown style={{ pointerEvents: "none" }} />
                 </button>
@@ -569,7 +645,7 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
               <button
                 id="Right"
                 onClick={(e) => handleVirtualKey(e, true)}
-                className="btn border my-auto text-light w-100 h-100 text-center"
+                className="btn border my-auto text-light w-100 h-100 text-center fs-5"
                 style={{
                   width: "25vw",
                   minWidth: "25vw",

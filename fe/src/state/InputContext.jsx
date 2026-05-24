@@ -71,10 +71,6 @@ const InputConext = ({ children }) => {
         setStatus("");
       }, 4000);
     });
-    return () => {
-      !location.href.includes(":5173") && socket.disconnect();
-      !location.href.includes(":5173") && location.reload();
-    };
   }, []);
 
   const init = () => {

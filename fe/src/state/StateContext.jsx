@@ -1,16 +1,19 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import api, { remoteApi } from "../../axios/api";
+import api from "../../axios/api";
 import { io } from "socket.io-client";
 import { baseUrl } from "../../axios/api";
+import { FaTimes } from "react-icons/fa";
+import actions from "../assets/actions";
 
 const context = createContext();
 // Create the socket instance outside the component
 const socket = io(baseUrl, {
   auth: { token: localStorage.access || "" },
-  autoConnect: Boolean(localStorage.access),
+  autoConnect: Boolean(true),
 });
+
 const StateContext = ({ children }) => {
   const sprintet = {
     name: "App Info",
@@ -39,6 +42,15 @@ const StateContext = ({ children }) => {
     category: "utility",
   };
 
+  const deviceMgr = {
+    name: "Device Manager",
+    location: "/devices",
+    icon: "/device-manager.png",
+    pinned: true,
+    about: "Control Devices connected to host machine",
+    category: "utility",
+  };
+
   const sprintos = {
     name: "Sprint OS",
     location: "/os",
@@ -48,13 +60,14 @@ const StateContext = ({ children }) => {
     category: "default",
   };
 
-  const defaultApps = [sprintet, sprintos, fsdiscover, touchpad];
+  const defaultApps = [fsdiscover, touchpad, deviceMgr, sprintet];
 
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
   const location = useLocation();
   const [apps, setApps] = useState([...defaultApps]);
-
+  const [modal, setModal] = useState("");
+  const [modalTitle, setModalTitle] = useState("");
   const pinned = apps.filter((app) => app?.pinned);
   const [opened, setOpened] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -69,11 +82,17 @@ const StateContext = ({ children }) => {
   const [devices, setDevices] = useState([]);
   const [traffic, setTraffic] = useState([]);
   const [runtimeConfig, setRuntimeConfig] = useState({});
+  const [profile, setProfile] = useState({});
   const [scrollConfig, setScrollConfig] = useState({
     top: scrollY,
     height: document.documentElement.scrollHeight,
   });
-
+  const [menuPos, setMenuPos] = useState({
+    x: 40,
+    y: window.innerHeight - 80,
+  });
+  const [key, setKey] = useState("");
+  const [sessions, setSessions] = useState([]);
   async function init() {
     window.onresize = () => setVw(window.innerWidth);
   }
@@ -81,7 +100,7 @@ const StateContext = ({ children }) => {
   async function upDateWindow(loc, key, val) {
     setOpened((prev) => {
       return prev.map((item) =>
-        item.location == loc ? { ...item, [key]: val } : item
+        item.id == loc || item.location == loc ? { ...item, [key]: val } : item
       );
     });
   }
@@ -91,83 +110,83 @@ const StateContext = ({ children }) => {
     setTimeout(() => {
       setOpened((prev) => {
         return prev.map((item) =>
-          item.location == raised
-            ? { ...item, zIndex: 5 }
-            : { ...item, zIndex: 3 }
+          item.id == raised ? { ...item, zIndex: 5 } : { ...item, zIndex: 3 }
         );
       });
     }, 600);
-    setTimeout(() => {
-      const ifr = document.getElementById("iframe-" + raised);
-      ifr && ifr.focus();
-    }, 700);
+    // setTimeout(() => {
+    //   const ifr = document.getElementById("iframe-" + raised);
+    //   ifr && ifr.focus();
+    // }, 700);
   }
 
-  async function killWindow(loc) {
+  async function killWindow(id) {
     setOpened((prev) => {
-      return prev.filter((item) => item.location !== loc);
+      return prev.filter((item) => item.id !== id);
     });
   }
 
   const defaults = () => {
     const defBig = {
-      width: 400,
-      height: window.innerHeight - 90,
-      x: window.innerWidth / 4,
-      y: 10,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      x: 0,
+      y: 0,
     };
-    const defSmall = {
-      width: window.innerWidth - 10,
-      height: window.innerHeight - 60,
-      x: 5,
-      y: 5,
-    };
-    return window.innerWidth > 600 ? defBig : defSmall;
+    return defBig;
   };
 
-  async function openApp(loc) {
-    const app = apps.find((app) => app.location == loc);
-    setOpened((prev) => [
-      ...prev,
-      {
-        ...app,
-        ...defaults(),
-        isMini: false,
-        zIndex: 3,
-        x:
-          window.innerWidth > 600
-            ? defaults().x + opened.length * 10
-            : defaults().x,
-        y:
-          window.innerWidth > 600
-            ? defaults().y + opened.length * 10
-            : defaults().y,
-      },
-    ]);
+  async function openApp(loc, href = "") {
+    const openedApp = opened.find((app) => app.location == loc);
+    if (openedApp) {
+      return upDateWindow(loc, "href", href);
+    }
+    const app =
+      apps.find((app) => app.location == loc) || href ? fsdiscover : null;
+    if (app == null) {
+      toast.warning("WindowManager: App open failed");
+      return;
+    }
+    const newApp = {
+      ...app,
+      ...defaults(),
+      isMini: false,
+      zIndex: 3,
+      id: "" + Date.now(),
+      href: href || "",
+      x: 0,
+      y: 0,
+    };
+    setOpened((prev) => [...prev, newApp]);
+    localStorage.focused = newApp.id;
+    setTimeout(() => {
+      setToTop();
+    }, 300);
   }
 
-  function handleIconClick(loc) {
-    const app = opened.find((app) => app.location == loc);
+  function handleIconClick(loc, href) {
+    const app =
+      opened.find((app) => app.location == loc || app.id == loc) ||
+    (  document.opened||[]).find((app) => app.location == loc || app.id == loc);
     if (app) {
       localStorage.focused = app.location;
       if (app.zIndex < 5) {
         return setToTop(loc);
       }
-      return upDateWindow(loc, "isMini", !app.isMini);
+      return upDateWindow(app.id, "isMini", !app.isMini);
     }
-    openApp(loc);
+    openApp(loc, href);
   }
 
   const fetchSrc = async () => {
     try {
       const hn = await api.get("/hostname");
       setHostname(hn.data);
+      const resProfile = await api.get("/profile");
+      setProfile(resProfile.data);
       const resConf = await api.get("/runtime");
       setRuntimeConfig(resConf.data);
-      // const appsRes = (await remoteApi.get("/rq/apps")).data;
-      const psr = [
-        ...defaultApps,
-      ];
+      const psr = [...defaultApps];
       setApps(psr);
       const appName = searchParams.get("a") || "";
       const theApp = psr.find(
@@ -178,7 +197,7 @@ const StateContext = ({ children }) => {
       if (theApp) {
         document.theApp = theApp.location;
       }
-    } catch (err) {
+    } catch  {
       // location.pathname !== '/' && toast.error(`ERROR: ${err.message}`)
     }
   };
@@ -235,7 +254,7 @@ const StateContext = ({ children }) => {
     } catch (err) {
       localStorage.access &&
         (() => {
-          !("" + err.response.data).startsWith("<") &&
+          !("" + err?.response?.data).startsWith("<") &&
             toast.error(
               <div
                 dangerouslySetInnerHTML={{
@@ -261,6 +280,18 @@ const StateContext = ({ children }) => {
     socket.on("netlog", (data) => {
       window.dispatchEvent(new CustomEvent("netlog", { detail: data }));
     });
+    localStorage?.access &&
+      (async () => {
+        try {
+          const res = await api.get("/admin/rq/sessions");
+          setSessions(res.data || []);
+        } catch {}
+      })();
+    const parseSession = (data) => {
+      setSessions(data);
+    };
+    localStorage?.access && socket.on("sessionEvent", parseSession);
+    localStorage?.access && socket.emit("getSessions");
     window.onscroll = () => {
       setScrollConfig({
         top: scrollY,
@@ -273,8 +304,23 @@ const StateContext = ({ children }) => {
         height: document.documentElement.scrollHeight - window.innerHeight,
       });
     }, 400);
+    document.killWindow = killWindow;
+    document.openApp = openApp;
+    document.handleIconClick = handleIconClick;
+    return () => {
+      socket.off("sessionEvent", parseSession);
+    };
   }, []);
 
+  useEffect(() => {
+    function parseAction(data) {
+      actions[data.action](data, openApp);
+    }
+    socket.id && socket.on("exec-" + socket.id, parseAction);
+    return () => {
+      socket.off("exec-" + socket.id, parseAction);
+    };
+  }, [socket.id]);
   useEffect(() => {
     setScrollConfig({
       top: scrollY,
@@ -303,6 +349,8 @@ const StateContext = ({ children }) => {
         !win.isMini
     );
     setWinIsFs(Boolean(fsWin));
+    document.opened = opened;
+    socket.emit("activities", opened);
   }, [opened]);
 
   return (
@@ -349,9 +397,68 @@ const StateContext = ({ children }) => {
         setScrollConfig,
         runtimeConfig,
         setRuntimeConfig,
+        sessions,
+        setSessions,
+        setModal,
+        setModalTitle,
+        menuPos,
+        setMenuPos,
+        profile,
+        key,
+        setKey,
       }}
     >
       {children}
+      <>
+        <a id="url-mounter" href=""></a>
+        {modal && (
+          <div
+            className="d-flex"
+            style={{
+              position: "fixed",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: "#00000020",
+              zIndex: 1,
+            }}
+            onClick={() => setModal("")}
+          >
+            <div
+              className="rounded m-auto p-2 d-flex slideUp flex-column"
+              style={{
+                backgroundColor: "#283344ff",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="d-flex pb-2">
+                <div className=" text-light">{modalTitle}</div>
+                <button
+                  className="active ms-auto fs-6 p-0 px-2 my-auto rounded"
+                  onClick={() => setModal("")}
+                >
+                  <FaTimes className="icon" />
+                </button>
+              </div>
+              <div
+                className="rounded"
+                style={{
+                  minWidth: "25vw",
+                  minHeight: "30vh",
+
+                  maxWidth: "90vw",
+                  maxHeight: "75vh",
+                  overflow: "auto",
+                  backgroundColor: "#121b27ff",
+                }}
+              >
+                {modal}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     </context.Provider>
   );
 };

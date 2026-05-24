@@ -6,9 +6,10 @@ const File = ({ data }) => {
   const prn = data?.name.substring(0, maxL - 5);
   return (
     <a
-      className="text-light"
+      className="text-light d-block w-100 p-2"
       style={{ maxWidth: "100%" }}
       href={location.pathname + "/" + data?.name}
+      target="_blank"
     >
       <BiFile />{" "}
       <span className="text-truncate">

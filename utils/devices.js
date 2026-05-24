@@ -15,14 +15,11 @@ class Device {
     type == "keyboard" && (keyboard.config.autoDelayMs = 40);
     this.clientSocket = client;
     this.platform = os.platform();
-    this.accelerator = Number(this.platform == "win32" ? 5 : 0.3);
-    process.on("beforeExit", () => {
-      this.cleanUp();
-      this.authHandler.saveConfig();
-    });
+    this.accelerator = Number(this.platform == "win32" ? 5 : 0.2);
     this.hasAuth = Boolean(client?.token?.token);
-    console.log(client.token.token);
     this.socket = socket;
+    this.running = false;
+    this.buffer = [];
   }
 
   parseDevice(clientId, reject = (error = String()) => error) {
@@ -31,9 +28,8 @@ class Device {
       this.authHandler.getConfig().devices.filter((d) => d.type == this.type)
         .length > 100
     ) {
-      return reject(
-        "Too many devices, please remove some devices before adding a new one."
-      );
+      this.authHandler.config.devices.length >= 100 &&
+        this.authHandler.config.devices.pop();
     }
     if (
       this.authHandler
@@ -44,6 +40,8 @@ class Device {
     ) {
       return reject("Device already exists.");
     }
+    this.authHandler.config.devices.length >= 100 &&
+      this.authHandler.config.devices.pop();
     this.authHandler.config.devices.push({
       clientId,
       type: this.type,
@@ -113,9 +111,6 @@ class Mouse extends Device {
         "Invalid device... Your device does not exist in device index"
       );
     }
-    // const lastEvent = this.history[this.history.length - 1] || {};
-    const currentPos = await mouse.getPosition();
-
     if (event.click) {
       const h = Boolean(this.clickHold);
       this.clickHold && mouse.releaseButton(Button.LEFT);
@@ -132,21 +127,49 @@ class Mouse extends Device {
       this.clientSocket.emit("mouseDownHold", true);
       await mouse.pressButton(Button.LEFT);
     }
-
-    await mouse["move"]([
-      new Point(currentPos.x + event.dispX, currentPos.y + event.dispY),
-    ]);
-
-    if (event.scrollX) {
-      (event.scrollX <= -1 || event.scrollX >= 1) &&
-        mouse.scrollRight(event.scrollX * this.accelerator);
-    }
-    if (event.scrollY) {
-      mouse.scrollUp(event.scrollY * this.accelerator);
-    }
+    this.buffer.push({
+      dispX: this.judge(event.dispX),
+      dispY: this.judge(event.dispY),
+      scrollX: event.scrollX,
+      scrollY: event.scrollY,
+    });
+    this.refresh();
     this.parseHistory(event);
   }
+  judge(number) {
+    if (number == 0) return number;
+    if (number < 0 && number > -1) {
+      return -1;
+    }
+    if (number > 0 && number < 1) {
+      return 1;
+    }
+    return Math.round(number);
+  }
+  refresh = () => {
+    if (this.running) return;
+    this.useBuffer();
+  };
+  useBuffer = async () => {
+    if (!this.running) this.running = true;
+    while (this.buffer.length) {
+      const event = this.buffer.shift();
+      const currentPos = await mouse.getPosition();
 
+      await mouse["move"]([
+        new Point(currentPos.x + event.dispX, currentPos.y + event.dispY),
+      ]);
+
+      if (event.scrollX) {
+        (event.scrollX <= -1 || event.scrollX >= 1) &&
+          (await mouse.scrollRight(event.scrollX * this.accelerator));
+      }
+      if (event.scrollY) {
+        await mouse.scrollUp(event.scrollY * this.accelerator);
+      }
+    }
+    if (!this.buffer.length) this.running = false;
+  };
   cleanUp = () => {
     mouse.releaseButton(Button.LEFT);
     mouse.releaseButton(Button.RIGHT);
