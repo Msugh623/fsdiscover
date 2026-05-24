@@ -52,14 +52,14 @@ if /I "%PARAM1%"=="-version" (
 )
 
 if /I "%PARAM1%"=="--logs" (
-    cd "logs"
-    explorer ./
+    cd ".\logs"
+    explorer .\
     exit /b 0
 )
 
 if /I "%PARAM1%"=="-l" (
-    cd "logs"
-    explorer ./
+    cd ".\logs"
+    explorer .\
     exit /b 0
 )
 
