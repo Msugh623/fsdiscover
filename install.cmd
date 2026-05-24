@@ -53,6 +53,8 @@ if /I "%CD%"=="%APP_DIR%" (
 REM === Write exclusions to temp file ===
 > exclude.txt (
     echo .git\
+    echo auth.config.json
+    echo runtime.config.json
 )
 
 REM === Copy files ===
