@@ -1,5 +1,17 @@
 #!/bin/bash
-source ~/.bashrc
+source ~/.bashrc 2>/dev/null || true
+
+if ! command -v npm >/dev/null 2>&1; then
+    if [ -n "$NVM_DIR" ] && [ -s "$NVM_DIR/nvm.sh" ]; then
+        . "$NVM_DIR/nvm.sh"
+    fi
+    if [ -s "$HOME/.nvm/nvm.sh" ]; then
+        . "$HOME/.nvm/nvm.sh"
+    fi
+    if [ -s "$HOME/.nvm/bash_completion" ]; then
+        . "$HOME/.nvm/bash_completion"
+    fi
+fi
 V=$(cat version)
 PARAM=${1:-null}
 
