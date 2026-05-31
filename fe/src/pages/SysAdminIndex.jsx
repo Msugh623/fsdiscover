@@ -182,18 +182,14 @@ const SysAdminIndex = () => {
   return (
     <main id="main">
       <section className="section site-portfolio py-5 darkTheme">
-        <div className="container">
-          <div className="row mb-5">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex flex-wrap -mx-2 mb-5">
             <div
-              className="d-flex flex-column flex-md-row slideIn mb-4 mb-lg-0"
+              className="flex flex flex-col flex-md-row slideIn mb-4 mb-lg-0"
               data-aos="fade-up"
             >
               <h2 className="">
                 <Link to={"/"}>
-                  <diviDotsNineBold
-                    style={{ fontSize: "2em", color: "steelblue" }}
-                    className="text-primary icon"
-                  />
                   <LazyLoadImage
                     effect="opacity"
                     placeholder={<PlaceHolder />}
@@ -203,21 +199,20 @@ const SysAdminIndex = () => {
                   />
                 </Link>
               </h2>
-              <div className="ms-0 ms-md-auto">
-                <div className="d-flex">
-                  <div className="ms-auto">
-                    <Link
-                      to={`/admin/app/add`}
-                      className="rounded shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu text-light"
+              <div className="ml-0 ms-md-auto">
+                <div className="flex">
+                  <div className="ml-auto">
+                    <a 
+                      className="rounded shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu text-white"
                       onClick={changePass}
                     >
-                      <FaLock className="fs-4" />
-                    </Link>
+                      <FaLock className="text-2xl" />
+                    </a>
                     <Link
                       onClick={() => logout()}
-                      className="rounded ms-2 shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu bg-danger text-light"
+                      className="rounded ml-2 shadow-lg p-3 py-2 border border-dashed readmore custom-navmenu bg-danger text-white"
                     >
-                      <BiLogOut className="fs-4" />
+                      <BiLogOut className="text-2xl" />
                     </Link>
                   </div>
                 </div>
@@ -228,13 +223,13 @@ const SysAdminIndex = () => {
               </div>
             </div>
             <div
-              className="text-start text-lg-end mt-3"
+              className="text-left text-lg-end mt-3"
               data-aos="fade-up"
               data-aos-delay="100"
             >
               <div
                 id="categories"
-                className="ms-auto py-2 categories d-flex slideLeft"
+                className="ml-auto py-2 categories flex slideLeft"
                 style={{
                   maxWidth: "98vw",
                   overflow: "auto",
@@ -244,8 +239,7 @@ const SysAdminIndex = () => {
                   // <a
                   //   href="#All"
                   //   data-category="*"
-                  //   className={
-                  //     "p-1 mx-1 shadow rounded" +
+                  //   className={//"p-1 mx-1 shadow rounded" +
                   //     (category == "All" && "active rounded border")
                   //   }
                   //   onClick={() => setCategory("All")}
@@ -256,8 +250,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#Visitors"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "Visitors" && "active rounded border")
                   }
                   onClick={() => setCategory("Visitors")}
@@ -267,8 +260,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#Forbidden"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "Forbidden" && "active rounded border")
                   }
                   onClick={() => setCategory("Forbidden")}
@@ -278,8 +270,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#Protected Routes"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "Protected Routes" && "active rounded border")
                   }
                   onClick={() => setCategory("Protected Routes")}
@@ -290,8 +281,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#Devices"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "Devices" && "active rounded border")
                   }
                   onClick={() => setCategory("Devices")}
@@ -301,8 +291,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#NetworkTraffick"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "Network Traffic" && "active rounded border")
                   }
                   onClick={() => setCategory("Network Traffic")}
@@ -312,8 +301,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#NetworkTraffick"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "Active Sessions" && "active rounded border")
                   }
                   onClick={() => setCategory("Active Sessions")}
@@ -323,8 +311,7 @@ const SysAdminIndex = () => {
                 <a
                   href="#RuntimeConfiguration"
                   data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
+                  className={"p-1 mx-1 shadow-lg rounded" +
                     (category == "RuntimeConfiguration" &&
                       "active rounded border")
                   }
@@ -337,16 +324,16 @@ const SysAdminIndex = () => {
           </div>
 
           {(category == "All" || category == "Visitors") && (
-            <div className="paper p-4 shadow">
+            <div className="paper p-4 shadow-lg">
               <h3 className="fw-bold">Visitors</h3>
               <div
                 id=""
-                className="row active p-3 fw-bold"
+                className="flex flex-wrap -mx-2 active p-3 fw-bold"
                 data-aos="fade-up"
                 data-aos-delay="200"
               >
-                <div className="py-2 col-lg-3">Type/IP_Address</div>
-                <div className="py-2 col-lg-3">User_Agent</div>
+                <div className="py-2 lg:w-1/4 px-2">Type/IP_Address</div>
+                <div className="py-2 lg:w-1/4 px-2">User_Agent</div>
                 <div className="py-2 col-lg-2">Last_Access</div>
                 <div className="py-2 col-lg-2">First_Access</div>
                 <div className="py-2 col-lg-2">Action</div>
@@ -355,16 +342,13 @@ const SysAdminIndex = () => {
                 <div
                   id=""
                   key={"v" + u?.addr + u?.agent}
-                  className={`row ${
-                    forbidden.find(
-                      (v) => u?.addr == v.addr && u.agent == v.agent
-                    ) && "d-none"
+                  className={`row ${ forbidden.find( (v) => u?.addr == v.addr && u.agent == v.agent ) &&"d-none"
                   } ${i % 2 !== 0 && "active"} p-3 fw-bold`}
                   data-aos="fade-up"
                   data-aos-delay="200"
                 >
-                  <div className="py-2 col-lg-3">
-                    <div className="pe-2 my-auto icon" style={{ zIndex: 0 }}>
+                  <div className="py-2 lg:w-1/4 px-2">
+                    <div className="pr-2 my-auto icon" style={{ zIndex: 0 }}>
                       {getDeviceType(u.agent) == "mobile" ? (
                         <FaMobile />
                       ) : (
@@ -373,14 +357,14 @@ const SysAdminIndex = () => {
                     </div>
                     {u.type} {u?.addr}
                   </div>
-                  <div className="py-2 col-lg-3">{u?.agent}</div>
+                  <div className="py-2 lg:w-1/4 px-2">{u?.agent}</div>
                   <div className="py-2 col-lg-2">
                     {u?.lastAccess.split("(")[0]}
                   </div>
                   <div className="py-2 col-lg-2">{u?.date.split("(")[0]}</div>
                   <div className="py-2 col-lg-2">
                     <button
-                      className="btn btn-danger"
+                      className="bg-red-600 text-white hover:bg-red-700"
                       onClick={() => {
                         forbid(u);
                       }}
@@ -394,16 +378,16 @@ const SysAdminIndex = () => {
           )}
 
           {(category == "All" || category == "Forbidden") && (
-            <div className="paper p-4 shadow mt-5">
-              <h3 className="fw-bold ">Forbidden </h3>
+            <div className="paper p-4 shadow-lg mt-5">
+              <h3 className="fw-bold">Forbidden </h3>
               <div
                 id=""
-                className="row active p-3 fw-bold"
+                className="flex flex-wrap -mx-2 active p-3 fw-bold"
                 data-aos="fade-up"
                 data-aos-delay="200"
               >
-                <div className="py-2 col-lg-3">Type/IP_Address</div>
-                <div className="py-2 col-lg-3">User_Agent</div>
+                <div className="py-2 lg:w-1/4 px-2">Type/IP_Address</div>
+                <div className="py-2 lg:w-1/4 px-2">User_Agent</div>
                 <div className="py-2 col-lg-2">Last_Access</div>
                 <div className="py-2 col-lg-2">First_Access</div>
                 <div className="py-2 col-lg-2">Action</div>
@@ -412,12 +396,12 @@ const SysAdminIndex = () => {
                 <div
                   id=""
                   key={"f" + u?.addr + u?.agent}
-                  className={`row ${i % 2 !== 0 && "active"} p-3 fw-bold`}
+                  className={`row ${i % 2 !== 0 &&"active"} p-3 fw-bold`}
                   data-aos="fade-up"
                   data-aos-delay="200"
                 >
-                  <div className="py-2 col-lg-3">
-                    <div className="pe-2 my-auto icon" style={{ zIndex: 0 }}>
+                  <div className="py-2 lg:w-1/4 px-2">
+                    <div className="pr-2 my-auto icon" style={{ zIndex: 0 }}>
                       {getDeviceType(u.agent) == "mobile" ? (
                         <FaMobile />
                       ) : (
@@ -426,13 +410,13 @@ const SysAdminIndex = () => {
                     </div>
                     {u.type} {u?.addr}
                   </div>
-                  <div className="py-2 col-lg-3">{u?.agent}</div>
+                  <div className="py-2 lg:w-1/4 px-2">{u?.agent}</div>
                   <div className="py-2 col-lg-2">
                     {u?.lastAccess.split("(")[0]}
                   </div>
                   <div className="py-2 col-lg-2">{u?.date.split("(")[0]}</div>
                   <div className="py-2 col-lg-2">
-                    <button className="btn themebg" onClick={() => pardon(u)}>
+                    <button className="themebg" onClick={() => pardon(u)}>
                       Pardon
                     </button>
                   </div>
@@ -442,11 +426,11 @@ const SysAdminIndex = () => {
           )}
 
           {category == "Protected Routes" && (
-            <div className="paper p-4 shadow mt-5">
-              <h3 className="fw-bold ">Protected Routes </h3>
+            <div className="paper p-4 shadow-lg mt-5">
+              <h3 className="fw-bold">Protected Routes </h3>
               <div
                 id=""
-                className="row active p-3 fw-bold"
+                className="flex flex-wrap -mx-2 active p-3 fw-bold"
                 data-aos="fade-up"
                 data-aos-delay="200"
               >
@@ -457,14 +441,14 @@ const SysAdminIndex = () => {
                 <div
                   id=""
                   key={"f" + u}
-                  className={`row ${i % 2 !== 0 && "active"} p-3 fw-bold`}
+                  className={`row ${i % 2 !== 0 &&"active"} p-3 fw-bold`}
                   data-aos="fade-up"
                   data-aos-delay="200"
                 >
                   <div className="py-2 col-lg-10">{u}</div>
                   <div className="py-2 col-lg-2">
                     <button
-                      className="btn themebg"
+                      className="themebg"
                       onClick={() => unprotectRoute(u)}
                     >
                       Free Route
@@ -476,17 +460,17 @@ const SysAdminIndex = () => {
           )}
 
           {(category == "All" || category == "Devices") && (
-            <div className="paper p-4 shadow">
+            <div className="paper p-4 shadow-lg">
               <h3 className="fw-bold">Devices</h3>
               <div
                 id=""
-                className="row active p-3 fw-bold"
+                className="flex flex-wrap -mx-2 active p-3 fw-bold"
                 data-aos="fade-up"
                 data-aos-delay="200"
               >
-                <div className="py-2 col-lg-3">ID</div>
+                <div className="py-2 lg:w-1/4 px-2">ID</div>
                 <div className="py-2 col-lg-2">Address</div>
-                <div className="py-2 col-lg-3">Agent</div>
+                <div className="py-2 lg:w-1/4 px-2">Agent</div>
                 <div className="py-2 col-lg-1">Type</div>
                 <div className="py-2 col-lg-2">Date</div>
                 <div className="py-2 col-lg-1">Action</div>
@@ -495,17 +479,13 @@ const SysAdminIndex = () => {
                 <div
                   id=""
                   key={"v" + device?.clientId + device?.type}
-                  className={`row ${
-                    forbidden.find(
-                      (v) =>
-                        device?.clientId == v.addr && device.type == v.agent
-                    ) && "d-none"
+                  className={`row ${ forbidden.find( (v) => device?.clientId == v.addr && device.type == v.agent ) &&"d-none"
                   } ${i % 2 !== 0 && "active"} p-3 fw-bold`}
                   data-aos="fade-up"
                   data-aos-delay="200"
                 >
-                  <div className="py-2 col-lg-3">
-                    <div className="pe-2 my-auto icon" style={{ zIndex: 0 }}>
+                  <div className="py-2 lg:w-1/4 px-2">
+                    <div className="pr-2 my-auto icon" style={{ zIndex: 0 }}>
                       {getDeviceType(device?.user?.agent) == "mobile" ? (
                         <FaMobile />
                       ) : (
@@ -521,7 +501,7 @@ const SysAdminIndex = () => {
 
                   <div className="py-2 col-lg-1">
                     <button
-                      className="btn m-1 btn-danger"
+                      className="m-1 bg-red-600 text-white hover:bg-red-700"
                       onClick={() => {
                         eject(device);
                       }}
@@ -534,12 +514,12 @@ const SysAdminIndex = () => {
                         u?.agent == device?.user?.agent
                     ) && (
                       <button
-                        className="btn m-1 btn-danger"
+                        className="m-1 bg-red-600 text-white hover:bg-red-700"
                         onClick={() => {
                           forbid(device.user);
                         }}
                       >
-                        <small className="small"> Forbid Owner</small>
+                        <small className="text-sm"> Forbid Owner</small>
                       </button>
                     )}
                   </div>
@@ -605,10 +585,10 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
   return (
     <>
       <div id="NetworkTraffic">
-        <div className="paper p-4 shadow">
+        <div className="paper p-4 shadow-lg">
           <div
             id=""
-            className="row  pb-1 fw-bold"
+            className="flex flex-wrap -mx-2 pb-1 fw-bold"
             data-aos="fade-up"
             data-aos-delay="200"
             style={{
@@ -618,22 +598,22 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
             }}
           >
             <h3
-              className="fw-bold d-flex mt-0"
+              className="fw-bold flex mt-0"
               style={{
                 background: "#2f2f2f",
               }}
             >
               Network Traffic
               <div
-                className="ms-auto"
+                className="ml-auto"
                 onClick={() => setHasPaging((prev) => !prev)}
               >
                 {!hasPaging ? (
-                  <div className="btn">
+                  <div className="">
                     {data.length} <FaCompress className="icon" />
                   </div>
                 ) : (
-                  <div className="btn">
+                  <div className="">
                     {`${data.length > 100 ? data.length - 100 : 0} ─ ${
                       data.length
                     }`}{" "}
@@ -644,7 +624,7 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
             </h3>
 
             <div className="py-1 col-10 col-lg-10">Type/IP_Address</div>
-            <div className="py-1 col-lg-2 d-flex">
+            <div className="py-1 col-lg-2 flex">
               <span className="ms-md-auto pe-md-3">Action</span>
             </div>
           </div>
@@ -655,12 +635,12 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
             <div
               id=""
               key={"f" + message + i}
-              className={`row ${i % 2 !== 0 && "active"}  fw-bold`}
+              className={`row ${i % 2 !== 0 &&"active"}  fw-bold`}
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <div className="py-1 col-md-10 d-flex">
-                <div className="pe-2 my-auto icon" style={{zIndex:0}}>
+              <div className="py-1 col-md-10 flex">
+                <div className="pr-2 my-auto icon" style={{zIndex:0}}>
                   {getDeviceType(user.agent) == "mobile" ? (
                     <FaMobile />
                   ) : (
@@ -669,12 +649,11 @@ function NetworkTraffic({ data, forbid, forbidden, pardon }) {
                 </div>
                 <span className="my-auto">{message}</span>
               </div>
-              <div className="py-1 col-md-2 d-flex">
+              <div className="py-1 col-md-2 flex">
                 <button
                   style={{ fontSize: "0.8em" }}
-                  className={`btn ${
-                    isForbidden ? "themebg" : "bg-danger"
-                  } my-md-auto ms-md-auto me-0 btn-small p-1 text-small`}
+                  className={` ${ isForbidden ?"themebg" : "bg-danger"
+                  } my-md-auto ms-md-auto mr-0 text-sm px-2 py-1 p-1 text-small`}
                   onClick={() => {
                     isForbidden ? pardon(user) : forbid(user);
                     // setIsForbidden((prev) => !prev);
@@ -711,12 +690,12 @@ function RuntimeConfig({
   return (
     <>
       {" "}
-      <div className="paper p-4 shadow mt-5">
-        <h3 className="fw-bold d-flex">
+      <div className="paper p-4 shadow-lg mt-5">
+        <h3 className="fw-bold flex">
           Runtime Config
-          <div className="ms-auto">
+          <div className="ml-auto">
             <button
-              className="btn-primary btn fs-6 mb-auto"
+              className="bg-blue-600 text-white hover:bg-blue-700 text-lg mb-auto"
               onClick={() => {
                 updateRuntimeConfig();
               }}
@@ -725,7 +704,7 @@ function RuntimeConfig({
             </button>
           </div>
         </h3>
-        <div className="small mb-3">
+        <div className="text-sm mb-3">
           These are setting for FSdiscover, Modifying any of these will effect
           on the behaviour of FSdiscover installed on your system
           <hr />
@@ -735,7 +714,7 @@ function RuntimeConfig({
         {/* Publicly available Directory */}
         <div className="form-group">
           <h6 className="h6">Public Directory</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             Public Directory is the directory FSdiscover's File explorer is
             allowed to access, The public directory is available in the Files
             Section. Ensure the directory exists on the host computer and is
@@ -745,7 +724,7 @@ function RuntimeConfig({
                 type="text"
                 value={runtimeConfig.publicDir}
                 name="publicDir"
-                className="form-control"
+                className="w-full border rounded px-2 py-1 bg-transparent"
                 onChange={handleChange}
               />
             </div>
@@ -756,7 +735,7 @@ function RuntimeConfig({
         {/* Default Upload  Directory */}
         <div className="form-group">
           <h6 className="h6">Default Upload Directory</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             Default Upload Directory is the directory FSdiscover will upload
             files to by default. If empty, FSdiscover will upload to the current
             directory of the user when the user is uploading. (e.g If you are in
@@ -768,7 +747,7 @@ function RuntimeConfig({
                 type="text"
                 value={runtimeConfig.defaultUploadDir}
                 name="defaultUploadDir"
-                className="form-control"
+                className="w-full border rounded px-2 py-1 bg-transparent"
                 onChange={handleChange}
               />
             </div>
@@ -779,7 +758,7 @@ function RuntimeConfig({
         {/* Behaviour file explorer for unauthorized people */}
         <div className="form-group">
           <h6 className="h6">Upload Files without Authorization</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             Controls wether Users that are not logged in can upload files
             through FSdiscover to your computer
             <div className="">
@@ -787,7 +766,7 @@ function RuntimeConfig({
                 type="text"
                 value={runtimeConfig.noAuthFsWrite}
                 name="noAuthFsWrite"
-                className="form-control"
+                className="w-full border rounded px-2 py-1 bg-transparent"
                 onChange={(e) => {
                   handleChange(e);
                 }}
@@ -802,7 +781,7 @@ function RuntimeConfig({
 
         <div className="form-group">
           <h6 className="h6">Access Files without Authorization</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             Controls wether Users that are not logged in can Access file through
             FSdiscover
             <div className="">
@@ -810,7 +789,7 @@ function RuntimeConfig({
                 type="text"
                 value={runtimeConfig.noAuthFsRead}
                 name="noAuthFsRead"
-                className="form-control"
+                className="w-full border rounded px-2 py-1 bg-transparent"
                 onChange={(e) => {
                   handleChange(e);
                 }}
@@ -825,7 +804,7 @@ function RuntimeConfig({
 
         <div className="form-group">
           <h6 className="h6">Automatic Updates</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             Controls wether FSdiscover automatically checks for updates and
             stacks them for implementation during the next session
             <div className="">
@@ -833,7 +812,7 @@ function RuntimeConfig({
                 type="text"
                 value={runtimeConfig.autoUpdate}
                 name="autoUpdate"
-                className="form-control"
+                className="w-full border rounded px-2 py-1 bg-transparent"
                 onChange={(e) => {
                   handleChange(e);
                 }}
@@ -849,7 +828,7 @@ function RuntimeConfig({
         {/* Publicly available Directory */}
         <div className="form-group">
           <h6 className="h6">Session Max Age</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             This controls how long untill a user's authorization expires, then
             they will have to log in again. The default is 1 hour. This value is
             in milliseconds. (1000 milliseconds make one second, 1 hour is
@@ -859,7 +838,7 @@ function RuntimeConfig({
                 type="number"
                 value={runtimeConfig.sessionMaxAge}
                 name="sessionMaxAge"
-                className="form-control"
+                className="w-full border rounded px-2 py-1 bg-transparent"
                 onChange={handleChange}
               />
             </div>
@@ -870,7 +849,7 @@ function RuntimeConfig({
         {/* Allowed Modules */}
         <div className="form-group">
           <h6 className="h6">Allowed Services</h6>
-          <div className="small text-muted ">
+          <div className="text-sm text-gray-400">
             Allowed Services display on the home screen of FSdiscover, if you
             unselect a service, it will not be displayed on the home screen and
             fsdiscover will not start the service on next launch.
@@ -878,7 +857,7 @@ function RuntimeConfig({
               {runtimeConfig?.apps?.length} Services Selected
             </div>
             <div
-              className="d-flex"
+              className="flex"
               key={"$appBar" + runtimeConfig?.apps?.length}
             >
               {apps.map((app, i) => {
@@ -894,7 +873,7 @@ function RuntimeConfig({
                       cursor: "pointer",
                       outline: isAllowed && "3px solid steelblue",
                     }}
-                    className={`active p-1 shadow rounded cursor-pointer me-3`}
+                    className={`active p-1 shadow rounded cursor-pointer mr-3`}
                     onClick={() => {
                       if (isAllowed) {
                         setRuntimeConfig((prev) => ({
@@ -916,7 +895,7 @@ function RuntimeConfig({
                         className="img-fluid rounded"
                       />
                     </div>
-                    <div className="small text-truncate">{app?.name}</div>
+                    <div className="text-sm text-truncate">{app?.name}</div>
                   </div>
                 );
               })}
@@ -965,16 +944,16 @@ function ActiveSessions({}) {
   }, []);
   return (
     <>
-      <div className="paper p-4 shadow">
+      <div className="paper p-4 shadow-lg">
         <h3 className="fw-bold">Active Connections</h3>
         <div
           id=""
-          className="row active p-3 fw-bold"
+          className="flex flex-wrap -mx-2 active p-3 fw-bold"
           data-aos="fade-up"
           data-aos-delay="200"
         >
-          <div className="py-2 col-lg-3">Type/IP_Address</div>
-          <div className="py-2 col-lg-3">User_Agent</div>
+          <div className="py-2 lg:w-1/4 px-2">Type/IP_Address</div>
+          <div className="py-2 lg:w-1/4 px-2">User_Agent</div>
           <div className="py-2 col-lg-2">Last_Access</div>
           <div className="py-2 col-lg-2">First_Access</div>
           <div className="py-2 col-lg-2">Action</div>
@@ -983,14 +962,12 @@ function ActiveSessions({}) {
           <div
             id=""
             key={"v" + u?.addr + u?.agent}
-            className={`row ${
-              forbidden.find((v) => u?.addr == v.addr && u.agent == v.agent) &&
-              "d-none"
+            className={`row ${ forbidden.find((v) => u?.addr == v.addr && u.agent == v.agent) &&"d-none"
             } ${i % 2 !== 0 && "active"} p-3 fw-bold`}
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            <div className="py-2 col-lg-3">
+            <div className="py-2 lg:w-1/4 px-2">
               <div>
                 {getDeviceType(u.agent) == "mobile" ? (
                   <FaMobile />
@@ -1000,12 +977,12 @@ function ActiveSessions({}) {
               </div>
             { u.socketid} / {u?.addr}
             </div>
-            <div className="py-2 col-lg-3">{u?.agent} </div>
+            <div className="py-2 lg:w-1/4 px-2">{u?.agent} </div>
             <div className="py-2 col-lg-2">{u?.lastAccess.split("(")[0]}</div>
             <div className="py-2 col-lg-2">{u?.date.split("(")[0]}</div>
             <div className="py-2 col-lg-2">
               <button
-                className="btn btn-danger"
+                className="bg-red-600 text-white hover:bg-red-700"
                 onClick={() => {
                   forbid(u);
                 }}

@@ -9,22 +9,22 @@ const MainHeader = () => {
   return (
     <>
       <nav
-        className="navbar flex-column gap-2 navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm"
+        className="navbar flex flex-col gap-2 navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm"
         style={{ position: "sticky", top: 0, zIndex: 1 }}
       >
-        <div className="w-100 nav">
+        <div className="w-full nav">
           {
-            <h2 className="h4 mt-auto slideUp mx-4 ms-4  pb-2 mb-4 border-bottom d-flex">
-              <Link to={"/"} className="text-light mt-auto  fw-bold fs-5">
+            <h2 className="h4 mt-auto slideUp mx-4 ml-4 pb-2 mb-4 border-bottom flex">
+              <Link to={"/"} className="text-white mt-auto fw-bold text-xl">
                 {hostname}
               </Link>
-              <div className="mt-auto ms-2"> - Device Manager</div>
+              <div className="mt-auto ml-2"> - Device Manager</div>
             </h2>
           }
           {window.innerWidth < 400 && (
             <>
               <div
-                className="ms-auto w-auto d-flex my-auto  p-1 form-group border rounded me-2"
+                className="ml-auto w-auto flex my-auto p-1 form-group border rounded mr-2"
                 style={{
                   maxWidth: "98vw",
                 }}
@@ -43,7 +43,7 @@ const MainHeader = () => {
                   />
                 )}
                 <button
-                  className="themebg border-0 border-start px-2 border my-auto text-light"
+                  className="themebg border-0 border-start px-2 border my-auto text-white"
                   onClick={() => {
                     setIsSearching((prev) => !prev);
                     setKey("");
@@ -52,27 +52,27 @@ const MainHeader = () => {
                   <BiSearch />
                 </button>
               </div>
-              <div className="me-1"></div>
+              <div className="mr-1"></div>
             </>
           )}
         </div>
         <div className="container-fluid">
           <div
-            className={`w-100 d-flex ${false ? "d-none" : ""}`}
+            className={`w-full d-flex ${false ?"d-none" : ""}`}
             id="navbarNav"
           >
             <a
-              className="nav-link my-auto fs-3 border-end px-2 pe-3"
+              className="nav-link my-auto fs-3 border-end px-2 pr-3"
               onClick={() => navigate(-1)}
             >
               <BiLeftArrowCircle className="icon" />
             </a>
-            <div className="ps-2 ps-md-3 my-auto">
+            <div className="pl-2 ps-md-3 my-auto">
               {sessions.length} Connected devices
             </div>
-            <div className="d-flex ms-auto">
+            <div className="flex ml-auto">
               {window.innerWidth >= 400 && (
-                <div className="d-flex p-1 form-group border rounded me-2">
+                <div className="flex p-1 form-group border rounded mr-2">
                   {isSearching && (
                     <input
                       autoFocus
@@ -87,7 +87,7 @@ const MainHeader = () => {
                     />
                   )}
                   <button
-                    className="themebg border-0 border-start px-2 border text-light"
+                    className="themebg border-0 border-start px-2 border text-white"
                     onClick={() => {
                       setIsSearching((prev) => !prev);
                       setKey("");

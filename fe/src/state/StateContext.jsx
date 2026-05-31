@@ -262,11 +262,11 @@ const StateContext = ({ children }) => {
                 }}
               ></div>
             );
-          if (err.response.status == 401) {
+          if (err?.response?.status == 401) {
             !("" + err.response.data).startsWith("<") &&
               toast.error("ERROR: Authoraization Error... Login to continue");
+            localStorage.access = "";
             navigate("/login");
-            localStorage.access == "";
           }
         })();
     }
@@ -413,7 +413,7 @@ const StateContext = ({ children }) => {
         <a id="url-mounter" href=""></a>
         {modal && (
           <div
-            className="d-flex"
+            className="flex"
             style={{
               position: "fixed",
               top: 0,
@@ -426,16 +426,16 @@ const StateContext = ({ children }) => {
             onClick={() => setModal("")}
           >
             <div
-              className="rounded m-auto p-2 d-flex slideUp flex-column"
+              className="rounded m-auto p-2 flex slideUp flex flex-col"
               style={{
                 backgroundColor: "#283344ff",
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="d-flex pb-2">
-                <div className=" text-light">{modalTitle}</div>
+              <div className="flex pb-2">
+                <div className="text-white">{modalTitle}</div>
                 <button
-                  className="active ms-auto fs-6 p-0 px-2 my-auto rounded"
+                  className="active ml-auto text-lg p-0 px-2 my-auto rounded"
                   onClick={() => setModal("")}
                 >
                   <FaTimes className="icon" />

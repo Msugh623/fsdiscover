@@ -5,6 +5,42 @@ const dirname = require("../dirname");
 const { UseLogger } = require("./logger");
 const { logger } = new UseLogger();
 const crypto = require("node:crypto");
+const { exec } = require("node:child_process");
+
+// helpers
+const parseBool = (v, fallback) => {
+  if (v === undefined || v === null) return fallback;
+  if (typeof v === "boolean") return v;
+  if (typeof v === "number") return v !== 0;
+  if (typeof v === "string") {
+    const s = v.toLowerCase().trim();
+    if (s === "true" || s === "1") return true;
+    if (s === "false" || s === "0") return false;
+  }
+  return fallback;
+};
+
+const parseNumber = (v, fallback) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const parseArray = (v, fallback) => {
+  if (v === undefined || v === null) return fallback;
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string") {
+    try {
+      // allow JSON array string or comma separated
+      const maybe = JSON.parse(v);
+      if (Array.isArray(maybe)) return maybe;
+    } catch (e) {}
+    return v
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return fallback;
+};
 
 class RuntimeConfig {
   constructor() {
@@ -14,6 +50,7 @@ class RuntimeConfig {
       true: true,
     };
     this.sessions = [];
+    this.firstlaunch = false;
     try {
       const persistConf = fs.readFileSync(
         path.join(dirname(), "runtime.config.json"),
@@ -28,6 +65,12 @@ class RuntimeConfig {
       );
       this.config = conf;
       this.saveConfig();
+      this.firstlaunch = true;
+      setTimeout(() => {
+        exec(
+          `open "${process.localUrl || "http://127.0.0.1:3000"}/init" || explorer "${process.localUrl || "http://127.0.0.1:3000"}/init"`,
+        );
+      }, 1200);
     } finally {
       this.config.sessionUID = crypto.randomUUID();
     }
@@ -115,10 +158,33 @@ class RuntimeConfig {
       const mergeConf = {
         ...this.config,
         ...newConf,
-        noAuthFsRead: this.strbool[newConf.noAuthFsRead],
-        noAuthFsWrite: this.strbool[newConf.noAuthFsWrite],
-        autoUpdate: this.strbool[newConf.autoUpdate],
-        sessionMaxAge: Number(newConf.sessionMaxAge),
+        noAuthFsRead: parseBool(newConf.noAuthFsRead, this.config.noAuthFsRead),
+        noAuthFsWrite: parseBool(
+          newConf.noAuthFsWrite,
+          this.config.noAuthFsWrite,
+        ),
+        autoUpdate: parseBool(newConf.autoUpdate, this.config.autoUpdate),
+        sessionMaxAge: parseNumber(
+          newConf.sessionMaxAge,
+          this.config.sessionMaxAge,
+        ),
+        publicDir:
+          typeof newConf.publicDir === "string"
+            ? newConf.publicDir
+            : this.config.publicDir,
+        defaultUploadDir:
+          typeof newConf.defaultUploadDir === "string"
+            ? newConf.defaultUploadDir
+            : this.config.defaultUploadDir,
+        userspace:
+          typeof newConf.userspace === "string"
+            ? newConf.userspace
+            : this.config.userspace,
+        nodeType:
+          typeof newConf.nodeType === "string"
+            ? newConf.nodeType
+            : this.config.nodeType,
+        apps: parseArray(newConf.apps, this.config.apps),
       };
       this.config = {
         ...this.config,

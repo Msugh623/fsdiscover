@@ -225,7 +225,7 @@ const AppWindow = ({ app }) => {
   return (
     <div
       id={`window-${app.id}`}
-      className={`rounded   ${app.zIndex == 3 ? "shadow-lg" : "shadow-md"} ${
+      className={`rounded ${app.zIndex == 3 ?"shadow-lg" : "shadow-md"} ${
         app.isMini && "d-none"
       } d-flex`}
       onMouseEnter={() => {
@@ -280,7 +280,7 @@ const AppWindow = ({ app }) => {
         )}
         <header
           id={`window-header-${app.id}`}
-          className="d-flex window-header text-light border border-bottom-0"
+          className="flex window-header text-white border border-bottom-0"
         >
           <div
             className=""
@@ -291,12 +291,12 @@ const AppWindow = ({ app }) => {
           >
             {isAbouting ? (
               <BiArrowBack
-                className="fs-5 slideUp aniFast"
+                className="text-xl slideUp aniFast"
                 onClick={() => setIsAbouting((prev) => !prev)}
               />
             ) : (
               <AiOutlineInfoCircle
-                className="fs-5 slideUp aniFast"
+                className="text-xl slideUp aniFast"
                 onClick={() => setDd((prev) => !prev)}
               />
             )}
@@ -335,7 +335,7 @@ const AppWindow = ({ app }) => {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             style={{ width: "40px", height: "10px" }}
-            className="btn p-0 d-flex m-auto rounded my-auto shadow-sm me-1 btn-light"
+            className="p-0 flex m-auto rounded my-auto shadow-sm mr-1 bg-white text-gray-800"
           ></button>
           <button
             onClick={(e) => {
@@ -343,7 +343,7 @@ const AppWindow = ({ app }) => {
               killWindow(app.id);
             }}
             style={{ width: "16px", height: "16px" }}
-            className="btn p-0 icon d-flex text-light m-auto rounded-circle text-center my-auto shadow-sm me-0 active "
+            className="p-0 icon flex text-white m-auto rounded-full text-center my-auto shadow-sm mr-0 active"
           >
             <FaX
               className="m-auto"
@@ -355,8 +355,7 @@ const AppWindow = ({ app }) => {
         </header>
         <iframe
           src={app.href || app.location}
-          className={
-            (isAbouting ? "d-none" : "") + "window-inner border border-top-0"
+          className={(isAbouting ?"d-none" : "") + "window-inner border border-top-0"
           }
           draggable="false"
           id={"iframe-" + app.id}
@@ -406,7 +405,7 @@ export default AppWindow;
 
 const AppAbout = ({ app = {} }) => {
   return (
-    <div className="w-100 darkTheme p-3 bg-dark" id="window-inner">
+    <div className="w-full darkTheme p-3 bg-gray-900" id="window-inner">
       <div className="slideUp aniFast">
         <h3 className="mb-1">
           {" "}
@@ -425,7 +424,7 @@ const AppAbout = ({ app = {} }) => {
             {app.location}
           </a>
         </div>
-        <div className="shadow-sm btn btn-dark rounded p-1 pt-0 d-inline">
+        <div className="shadow-sm bg-gray-800 text-white rounded p-1 pt-0 inline-block">
           <BiCategory className="icon" /> {app?.category}
         </div>
         <pre
@@ -451,15 +450,15 @@ const AppDropDown = ({ app, abouter, ddSetter }) => {
       style={{ position: "fixed", left: app.x + "px", top: app.y + "px" }}
     >
       <div
-        className="rounded shadow-lg p-3 panel "
+        className="rounded shadow-lg p-3 panel"
         style={{
           width: "220px",
           zIndex: app.zIndex + 10,
         }}
       >
-        <div className="d-flex">
+        <div className="flex">
           <BiArrowBack
-            className="fs-5 my-auto"
+            className="text-xl my-auto"
             onClick={() => {
               ddSetter((prev) => !prev);
               navigate(-1);
@@ -471,10 +470,10 @@ const AppDropDown = ({ app, abouter, ddSetter }) => {
             src={app.icon}
             width={"30px"}
             draggable={false}
-            className="rounded my-auto me-1"
+            className="rounded my-auto mr-1"
           />{" "}
           <div
-            className="ms-auto mb-auto"
+            className="ml-auto mb-auto"
             onClick={() => {
               ddSetter((prev) => !prev);
             }}
@@ -496,8 +495,8 @@ const AppDropDown = ({ app, abouter, ddSetter }) => {
               window.open(app.href || app.location, "_blank");
             }}
           >
-            <div className="d-flex">
-              <BiLinkExternal className="text-dark my-auto me-1" /> Run in
+            <div className="flex">
+              <BiLinkExternal className="text-dark my-auto mr-1" /> Run in
               browser
             </div>
           </div>

@@ -10,12 +10,12 @@ const Contact = () => {
 
     return (
 
-        <section id="contact" className="contact section pt-0 darkTheme  m-0 h-100" style={{ minHeight: '100vh' }}>
+        <section id="contact" className="contact section pt-0 darkTheme m-0 h-100" style={{ minHeight: '100vh' }}>
             {/* <!-- Section Title --> */}
-            <div className="container section-title pt-4 growIn" data-aos="fade-up">
+            <div className="max-w-4xl mx-auto px-4 section-title pt-4 growIn" data-aos="fade-up">
                 <div className="">
                     <h2 className='mb-0 slideUp d-flex'>
-                        <div className="mx-auto row">
+                        <div className="mx-auto flex flex-wrap -mx-2">
                             <div className="col-md-5">
                                 <LazyLoadImage effect='opacity' placeholder={<PlaceHolder />} src={'https://res.cloudinary.com/dqbgai7xd/image/upload/v1736547841/IMG_20250108_220759_005_wuzxgh.webp'} height={'250px'} alt="" className='icon rounded slideUp' />
                             </div>
@@ -46,11 +46,11 @@ const Contact = () => {
 
                 </div>
             </div>
-            <div className="container section-title d-flex" data-aos="fade" data-aos-delay="100">
-                <div className="col-10 social mx-auto text-sm-center panContainer  mt-0 pt-0">
+            <div className="max-w-4xl mx-auto px-4 section-title flex" data-aos="fade" data-aos-delay="100">
+                <div className="col-10 social mx-auto text-sm-center panContainer mt-0 pt-0">
                     <Delay inline={true} delay={1500}>
-                        <a target='_blank' className='shadow panel hovShade me-2 slideIn' href="https://github.com/Msugh623">
-                            <span className="bi bi-twitter "> <FaGithub className='icon fs-4' />
+                        <a target='_blank' className='shadow panel hovShade mr-2 slideIn' href="https://github.com/Msugh623">
+                            <span className="bi bi-twitter"> <FaGithub className='icon text-2xl' />
                                 <div className="text">Github
                                 </div>
                             </span>
@@ -58,7 +58,7 @@ const Contact = () => {
                     </Delay>
 
                     <Delay inline={true} delay={2000}>
-                        <a target='_blank' className='shadow panel hovShade me-2 slideRight' href="mailto:iternenge469@gmail.com"><span className="bi bi-twitter"> <BiEnvelope className='icon fs-4' />
+                        <a target='_blank' className='shadow panel hovShade mr-2 slideRight' href="mailto:iternenge469@gmail.com"><span className="bi bi-twitter"> <BiEnvelope className='icon text-2xl' />
                             <div className="text">
                                 Email
                             </div>
@@ -67,7 +67,7 @@ const Contact = () => {
                     </Delay>
 
                     <Delay inline={true} delay={2100}>
-                        <a target='_blank' className='shadow panel hovShade me-2 slideRight' href="https://wa.me/2348121667177"><span className="bi bi-facebook"> < FaWhatsapp className='icon fs-4' />
+                        <a target='_blank' className='shadow panel hovShade mr-2 slideRight' href="https://wa.me/2348121667177"><span className="bi bi-facebook"> < FaWhatsapp className='icon text-2xl' />
                             <div className="text">
                                 Whatsapp
                             </div>
@@ -75,7 +75,7 @@ const Contact = () => {
                     </Delay>
 
                     <Delay inline={true} delay={2200}>
-                        <a target='_blank' className='shadow panel hovShade me-2 slideRight' href="https://ng.linkedin.com/in/chia-ernest-b923962a9"><span className="bi bi-instagram"><FaLinkedin className='fs-4 icon' />
+                        <a target='_blank' className='shadow panel hovShade mr-2 slideRight' href="https://ng.linkedin.com/in/chia-ernest-b923962a9"><span className="bi bi-instagram"><FaLinkedin className='text-2xl icon' />
                             <div className="text">
                                 Linkedin
                             </div>
@@ -85,7 +85,7 @@ const Contact = () => {
                     {/* <br />
 
                     <Delay inline={true} delay={1300}>
-                        <a target='_blank' className='shadow hovShade me-2 slideIn' href="https://x.com/ChiaCollin34870?t=L4TBnTrV0yJPHvw8ciPYDQ&s=09"><span className="bi bi-twitter"> <PiXLogo className='icon fs-4' />
+                        <a target='_blank' className='shadow hovShade mr-2 slideIn' href="https://x.com/ChiaCollin34870?t=L4TBnTrV0yJPHvw8ciPYDQ&s=09"><span className="bi bi-twitter"> <PiXLogo className='icon text-2xl' />
                             <div className="text">
                                 X
                             </div>
@@ -93,7 +93,7 @@ const Contact = () => {
                     </Delay >
 
                     <Delay inline={true} delay={1400}>
-                        <a target='_blank' className='shadow hovShade me-2 slideIn' href="https://www.tiktok.com/@collinscuts?_t=8omOEFxDeUw&_r=1"><span className="bi bi-linkedin"><PiTiktokLogoBold className='icon fs-4' />
+                        <a target='_blank' className='shadow hovShade mr-2 slideIn' href="https://www.tiktok.com/@collinscuts?_t=8omOEFxDeUw&_r=1"><span className="bi bi-linkedin"><PiTiktokLogoBold className='icon text-2xl' />
                             <div className="text">
                                 Tiktok
                             </div>

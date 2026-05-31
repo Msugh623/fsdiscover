@@ -8,14 +8,16 @@ import { useStateContext } from "../../state/StateContext";
 
 const Login = () => {
   const navigate = useNavigate();
-  const {hostname}=useStateContext()
+  const { hostname } = useStateContext();
 
   const [data, setData] = useState({
-    email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInput = ({ target }) => {
+    setError("");
     setData((prev) => ({
       ...prev,
       [target.name]: target.value,
@@ -24,83 +26,98 @@ const Login = () => {
 
   const login = async (e) => {
     e.preventDefault();
-    const tst = toast("logging in...", {
-      autoClose: false,
-    });
+    setLoading(true);
+    const toastId = toast.loading("Logging in...");
     try {
-      const cred = (await api.post("/rq/login", data))?.data;
-      localStorage.access = cred.token;
-      api.defaults.headers.common["Authorization"] = cred.token;
-      const state = localStorage.go;
-      localStorage.go = "";
-      state ? location.replace(state) : location.replace("/");
+     const cred = (await api.post("/rq/login", data))?.data;
+     localStorage.access = cred.token;
+     api.defaults.headers.common["Authorization"] = cred.token;
+     const state = localStorage.go;
+     localStorage.go = "";
+     state ? location.replace(state) : location.replace("/");
     } catch (err) {
-      toast.error(
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `${err?.response?.data || err.message || "" + err}`,
-          }}
-        ></div>
-      );
+      const message = err?.response?.data || err.message || "Login failed";
+      setError(message);
+      toast.update(toastId, {
+        render: message,
+        type: "error",
+        isLoading: false,
+        autoClose: 5000,
+      });
     } finally {
-      toast.dismiss(tst);
+      setLoading(false);
+      toast.dismiss(toastId);
     }
   };
 
   return (
-    <div className="container pt-5 darkTheme">
-      <div className="row">
-        <form
-          onSubmit={login}
-          className="col-10 col-sm-9 col-md-7 col-lg-5 shadow-md panel rounded mx-auto slideUp"
-        >
-          <div className="d-flex">
-            <h3 className="m-auto my-3 text-center">
-              <Link to={"/"}>
-                <LazyLoadImage
-                  effect="opacity"
-                  placeholder={<PlaceHolder />}
-                  src="icon.png"
-                  className="rounded"
-                  height={"60px"}
-                  alt=""
-                />{" "}
-                <div> Login to {"\""+(hostname||"FSdiscover")+"\""}</div>
-              </Link>
-            </h3>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-10">
+      <form
+        onSubmit={login}
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-[#070808] p-8 shadow-2xl shadow-black/60"
+      >
+        <div className="flex flex-col items-center gap-4 mb-6 text-center">
+          <LazyLoadImage
+            effect="opacity"
+            placeholder={<PlaceHolder />}
+            src="/icon.png"
+            className="h-16 w-16 rounded-2xl bg-white/5 p-2"
+            alt="SprintET Logo"
+          />
+          <div>
+            <h1 className="text-xl font-semibold text-white">
+              Login to {hostname || "FSdiscover"}
+            </h1>
+            <p className="text-sm text-white/60">
+              Enter your FSdiscover password to continue.
+            </p>
           </div>
-          {/* <div className="form-group mb-3">
-            <input
-              type="email"
-              className="form-control border"
-              name="email"
-              onChange={handleInput}
-              value={data.email}
-              required
-              placeholder="Email"
-            />
-          </div> */}
-          <small className="text-center mb-3 d-block">
-            Enter your "FSdiscover" password to login. To check your FSdiscover
-            password <br /> open the terminal and type "fsdiscover --config" to
-            see your password
-          </small>
-          <div className="form-group">
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-white/70 mb-2">Password</label>
             <input
               type="password"
               name="password"
-              className="form-control border"
-              onChange={handleInput}
               value={data.password}
+              onChange={handleInput}
               required
+              autoFocus
+              className="w-full rounded-2xl border border-white/10 bg-black/80 px-4 py-3 text-white outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10"
               placeholder="Password"
             />
           </div>
-          <button className="readmore custom-navmenu text-light growIn my-3">
-            Login
-          </button>
-        </form>
-      </div>
+          {error && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {typeof error === "string"
+                ? error
+                : "Login failed. Please try again."}
+            </div>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-6 w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        <p className="mt-5 text-center text-sm text-white/50">
+          To check your FSdiscover password, open the terminal and type
+          <span className="block mt-2 rounded-2xl bg-white/5 px-3 py-2 text-xs text-white/80">
+            fsdiscover --config
+          </span>
+        </p>
+
+        <div className="mt-6 text-center text-sm text-white/50">
+          <Link to="/" className="text-white/80 hover:text-white">
+            Back to home
+          </Link>
+        </div>
+      </form>
     </div>
   );
 };

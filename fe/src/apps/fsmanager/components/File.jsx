@@ -6,13 +6,16 @@ const File = ({ data }) => {
   const prn = data?.name.substring(0, maxL - 5);
   return (
     <a
-      className="text-light d-block w-100 p-2"
+      className="flex items-center gap-2 text-white text-sm font-medium rounded-3xl px-2 py-2 transition"
+      onClick={(e)=>e.stopPropagation()}
       style={{ maxWidth: "100%" }}
       href={location.pathname + "/" + data?.name}
       target="_blank"
+      rel="noreferrer"
+      title={data?.name}
     >
-      <BiFile />{" "}
-      <span className="text-truncate">
+      <BiFile />
+      <span className="truncate">
         {data?.name.length > maxL
           ? prn +
             "..." +

@@ -95,13 +95,13 @@ const ConnectedDevice = ({ socketid }) => {
   }
 
   return (
-    <div className="container p-2">
-      <div className="paper text-light shadow p-3">
-        <h3 className="text-light fw-bold mb-4">Device Details</h3>
-        <div className="row mb-4">
-          <div className="col-lg-6">
-            <div className="d-flex align-items-center mb-3">
-              <div className="pe-3 fs-1 icon">
+    <div className="max-w-4xl mx-auto px-4 p-2">
+      <div className="paper text-white shadow-lg p-3">
+        <h3 className="text-white fw-bold mb-4">Device Details</h3>
+        <div className="flex flex-wrap -mx-2 mb-4">
+          <div className="lg:w-1/2 px-2">
+            <div className="flex items-center mb-3">
+              <div className="pr-3 fs-1 icon">
                 {getDeviceType(device?.agent) === "mobile" ? (
                   <FaMobile />
                 ) : (
@@ -109,28 +109,28 @@ const ConnectedDevice = ({ socketid }) => {
                 )}
               </div>
               <div>
-                <h5 className="text-light mb-0">
+                <h5 className="text-white mb-0">
                   {device.addr == "127.0.0.1"
                     ? "HOST - " + device.addr
                     : device.addr}
                 </h5>
-                <div className="text-muted">{device.type}</div>
+                <div className="text-gray-400">{device.type}</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="row mb-4">
-          <div className="col-lg-6 px-4 pb-4">
-            <div className="paper shadow row p-3 px-2">
-              <h5 className="text-light mb-3">Running Activities</h5>
+        <div className="flex flex-wrap -mx-2 mb-4">
+          <div className="lg:w-1/2 px-2 px-4 pb-4">
+            <div className="paper shadow-lg flex flex-wrap -mx-2 p-3 px-2">
+              <h5 className="text-white mb-3">Running Activities</h5>
               {activities.map((activity) => (
                 <>
                   <div
-                    className="paper shadow mb-2 p-3"
+                    className="paper shadow-lg mb-2 p-3"
                     onClick={()=>toggleActivity(activity)}
                   >
-                    <div className="d-flex">
+                    <div className="flex">
                       <img
                         src={activity.icon}
                         alt=""
@@ -140,11 +140,11 @@ const ConnectedDevice = ({ socketid }) => {
                           height: "40px",
                         }}
                       />
-                      <div className="my-auto d-flex ps-2 fs-4 fw-bold w-100">
-                        <div className="fs-6">
+                      <div className="my-auto flex pl-2 text-2xl fw-bold w-full">
+                        <div className="text-lg">
                           {" "}
                           {activity.name}
-                          <div className="small">
+                          <div className="text-sm">
                             <small>
                               {(activity?.href || "").replace(
                                 "/fsexplorer",
@@ -154,7 +154,7 @@ const ConnectedDevice = ({ socketid }) => {
                           </div>
                         </div>
                         <button
-                          className="btn p-1 py-0 ms-auto my-auto fs-5 btn-danger"
+                          className="p-1 py-0 ml-auto my-auto text-xl bg-red-600 text-white hover:bg-red-700"
                           onClick={(e) => {
                             e.stopPropagation()
                             closeActivity(activity);
@@ -173,11 +173,11 @@ const ConnectedDevice = ({ socketid }) => {
               </div>
             </div>
           </div>
-          <div className="col-lg-6 ">
-            <div className="paper shadow p-3 mb-4">
-              <h5 className="text-light mb-3">Actions</h5>
+          <div className="lg:w-1/2 px-2">
+            <div className="paper shadow-lg p-3 mb-4">
+              <h5 className="text-white mb-3">Actions</h5>
               <div
-                className="paper shadow mb-2 p-1 me-1 "
+                className="paper shadow-lg mb-2 p-1 mr-1"
                 style={{
                   width: "fit-content",
                 }}
@@ -196,9 +196,9 @@ const ConnectedDevice = ({ socketid }) => {
                   navigate("/fsexplorer");
                 }}
               >
-                <div className="d-flex flex-column">
+                <div className="flex flex flex-col">
                   <div>
-                    <button className="btn p-1 py-0 ms-auto my-auto fs-5 py-1 btn-primary">
+                    <button className="p-1 py-0 ml-auto my-auto text-xl py-1 bg-blue-600 text-white hover:bg-blue-700">
                       <FaFileWaveform
                         alt=""
                         className="rounded fs-1 my-auto"
@@ -208,14 +208,14 @@ const ConnectedDevice = ({ socketid }) => {
                       />
                     </button>
                   </div>
-                  <div className="small">
+                  <div className="text-sm">
                     <small>Open a file</small>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="paper shadow p-3">
-              <h5 className="text-light mb-3">User Information</h5>
+            <div className="paper shadow-lg p-3">
+              <h5 className="text-white mb-3">User Information</h5>
               <div className="mb-2">
                 <strong>Address:</strong> {device?.addr}
               </div>
@@ -223,8 +223,8 @@ const ConnectedDevice = ({ socketid }) => {
                 <strong>User Agent:</strong> {device?.agent}
               </div>
             </div>
-            <div className="paper shadow mt-4 p-3">
-              <h5 className="text-light mb-3">Session Information</h5>
+            <div className="paper shadow-lg mt-4 p-3">
+              <h5 className="text-white mb-3">Session Information</h5>
               <div className="mb-2">
                 <strong>Type:</strong> {getDeviceType(device?.user?.agent)}
               </div>
@@ -237,7 +237,7 @@ const ConnectedDevice = ({ socketid }) => {
         </div>
 
         <div className="mt-4">
-          <button className="btn btn-danger" onClick={ejectDevice}>
+          <button className="bg-red-600 text-white hover:bg-red-700" onClick={ejectDevice}>
             Eject Device
           </button>
         </div>

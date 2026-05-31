@@ -13,6 +13,7 @@ const { UseLogger } = require("./logger");
 const { UseRuntimeConfig } = require("./useRuntimeConfig");
 const { logger } = new UseLogger();
 const crypto = require("node:crypto");
+const schemas = require("./schemas");
 
 const { platform } = os;
 function homedir() {
@@ -51,11 +52,14 @@ const forbiddenChars = [
 ];
 class Handlers {
   header = (_, res) => {
-    res.send("Heartbeat Live");
+    res.status(200).send(`sysnet-v${process.currentVersion}`);
   };
   getHost = (_, res) => {
     const hn = os.hostname();
     res.send(hn);
+  };
+  isfirststart = (_, res) => {
+    return res.status(200).json(runtimeConfig.firstlaunch ? 1 : 0);
   };
   sendUi = async (_, res) => {
     const boilerplate = await readFileSync(
@@ -442,6 +446,49 @@ class AuthHandler {
 
   config = { ...config };
 
+  init = (req, res) => {
+    if (!`${req?.headers?.host}`.includes("127.0.0.1")) {
+      return res.status(401).send("forbidden");
+    }
+    if (!runtimeConfig.firstlaunch) {
+      return res.status(403).send("Initializer forbidden");
+    }
+    const { body } = req;
+    const initData = schemas.initData;
+    initData.password = String(body.password);
+    initData.userspace = String(body.userspace);
+    initData.nodeType = String(body.nodeType);
+    initData.autoUpdate = Boolean(body.autoUpdate);
+    initData.defaultUploadDir = String(body.defaultUploadDir);
+    initData.noAuthFsRead = Boolean(body.noAuthFsRead);
+    initData.noAuthFsWrite = Boolean(body.noAuthFsWrite);
+    initData.safeMode = Boolean(body.safeMode);
+    initData.publicDir = String(body.publicDir);
+    if (!initData.password || !initData.user || !initData.nodeType) {
+      return res.status(400).send("Missing password field");
+    }
+    const newRuntimeConfig = {
+      ...schemas.runtimeConfData,
+      userspace: initData.userspace,
+      nodeType: initData.nodeType,
+      autoUpdate: initData.autoUpdate,
+      defaultUploadDir: initData.defaultUploadDir,
+      noAuthFsRead: initData.noAuthFsRead,
+      noAuthFsWrite: initData.noAuthFsWrite,
+      safeMode: initData.safeMode,
+      publicDir: initData.publicDir,
+      apps: schemas.runtimeConfData.apps,
+    };
+    this.config.password = initData.password;
+    const { runtimeConfig } = new UseRuntimeConfig();
+    runtimeConfig.config = {
+      ...newRuntimeConfig,
+    };
+    runtimeConfig.firstlaunch = false;
+    runtimeConfig.saveConfig();
+    this.saveConfig();
+    res.status(200).send("Initialization succesful");
+  };
   checkAuth = async (req, res, next) => {
     const { headers, socket } = req;
     const uInfo = {

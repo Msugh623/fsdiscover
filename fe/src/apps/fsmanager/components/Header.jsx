@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFsContext } from "../../../state/FsContext";
 import { FaBars, FaUpload } from "react-icons/fa6";
 import { BiLeftArrowCircle, BiSearch, BiSelectMultiple } from "react-icons/bi";
@@ -15,7 +15,14 @@ const Header = () => {
   const [uProgres, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
-  const [isSearching, setIsSearching] = useState(window.innerWidth > 1280);
+  const [isSearching, setIsSearching] = useState(window.innerWidth > 768);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    if (isSearching && searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, [isSearching]);
 
   const uploadFiles = async (fsd) => {
     if (files.length > 0 || (fsd || []).length > 0) {
@@ -46,7 +53,7 @@ const Header = () => {
             dangerouslySetInnerHTML={{
               __html: `${err?.response?.data || err.message || "" + err}`,
             }}
-          ></div>
+          ></div>,
         );
       } finally {
         setIsUploading(false);
@@ -57,201 +64,144 @@ const Header = () => {
   return (
     <>
       <nav
-        className="navbar flex-column gap-2 navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm"
-        style={{ position: "sticky", top: 0, zIndex: 1 }}
+        className="navbar flex flex-col gap-3 navbar-expand-lg w-full mb-0 navbar-dark ani slideIn"
+        style={{ position: "sticky", top: 12, zIndex: 50 }}
       >
-        <div className="w-100 nav">
-          {isHidden && !isSearching && window.innerWidth < 400 && (
-            <h2 className="h4 mt-auto slideUp mx-4 ms-4  pb-2 mb-4 border-bottom d-flex">
-              <Link to={"/"} className="text-light mt-auto  fw-bold fs-5">
-                {hostname}
-              </Link>
-              <div className="mt-auto ms-2"> - File Manager</div>
-            </h2>
-          )}
-          {window.innerWidth < 400 && (
-            <>
-              <div
-                className="ms-auto w-auto d-flex my-auto  p-1 form-group border rounded me-2"
-                style={{
-                  maxWidth: "98vw",
-                }}
+        <div className="w-full mx-auto px-4">
+          <div className="bg-[#111] rounded-3xl border border-white/10 shadow-2xl p-4 flex flex-col sm:flex-row lg:items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                className="rounded-full border border-white/10 p-2 text-white/80 hover:text-white hover:bg-white/10"
+                onClick={() => navigate(-1)}
+                type="button"
               >
-                {isSearching && (
-                  <input
-                    type="search"
-                    autoFocus
-                    value={key}
-                    className="rounded input px-1 no-dec bg-none themebg"
-                    onChange={({ target }) => setKey(target.value)}
-                    style={{
-                      border: "none",
-                      outline: "none",
-                    }}
-                  />
-                )}
-                <button
-                  className="themebg border-0 border-start px-2 border my-auto text-light"
-                  onClick={() => {
-                    setIsSearching((prev) => !prev);
-                    setKey("");
-                  }}
-                >
-                  <BiSearch />
-                </button>
+                <BiLeftArrowCircle className="icon" />
+              </button>
+              <div className="overflow-hidden" onClick={() => navigate("")}>
+                <div className="text-xs uppercase tracking-[0.3em] text-gray-500">
+                  sprintet
+                </div>
+                <div className="text-sm font-semibold text-white truncate">
+                  File Manager
+                </div>
               </div>
-              <div className="me-1"></div>
-            </>
-          )}
-        </div>
-        <div className="container-fluid">
-          <div
-            className={`w-100 d-flex ${false ? "d-none" : ""}`}
-            id="navbarNav"
-          >
-            <a
-              className="nav-link my-auto fs-3 border-end px-2 pe-3"
-              onClick={() => navigate(-1)}
-            >
-              <BiLeftArrowCircle className="icon" />
-            </a>
-            {localStorage.access || runtimeConfig?.noAuthFsWrite ? (
-              <a
-                className="nav-link my-auto ms-2 p-2"
-                style={{
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  if(isUploading){
-                    return;
-                  }
-                  if (!files.length) {
-                    document.getElementById("filer").click();
-                  } else {
-                    confirm(
-                      `Press "Okay" to upload ${files.length} files to ${hostname}'s computer!`
-                    )
-                      ? uploadFiles()
-                      : toast(
-                          "Operation requires user permission which has been denied"
-                        );
-                  }
-                }}
-              >
-                <FaUpload className="icon" />{" "}
-                {window.innerWidth > 600 || !files.length ? (
-                  <span style={{ pointerEvents: "none", zIndex: -1 }}>
-                    Upload
-                  </span>
-                ) : (
-                  ""
-                )}{" "}
-                {files.length ? files.length + " files" : ""}
-                {files?.length ? (
-                  <span
-                    title="Change selection"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      document.getElementById("filer").click();
-                    }}
-                    className="rounded ms-2"
-                  >
-                    <BiSelectMultiple className="icon fs-4" />
-                  </span>
-                ) : (
-                  ""
-                )}
-                {files?.length ? (
-                  <span
-                    title="Cancel Selection"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      confirm("Do you want to Unselect all selected Files?") &&
-                        setFiles([]);
-                    }}
-                    className=" rounded fs-5 ms-2"
-                  >
-                    <FaTimes className="icon" />
-                  </span>
-                ) : (
-                  ""
-                )}
-              </a>
-            ) : (
-              <>
-                <Link
-                  to={!localStorage.access ? `/login` : "/admin"}
-                  className="rounded shadow-lg p-3 ms-3 py-2 border border-dashed readmore custom-navmenu text-light"
-                >
-                  authorize to upload
-                </Link>
-              </>
-            )}
-            <input
-              type="file"
-              name="files"
-              id="filer"
-              multiple
-              style={{ opacity: "0", width: "0px", height: "0px" }}
-              onChange={({ target }) => {
-                setFiles(target.files);
-                confirm(
-                  `Press "Okay" to upload ${target.files.length} files to ${hostname}`
-                )
-                  ? uploadFiles(target.files)
-                  : toast(
-                      "Operation requires user permission which has been denied"
-                    );
-              }}
-            />
-            <div className="d-flex ms-auto">
-              {window.innerWidth >= 400 && (
-                <div className="d-flex p-1 form-group border rounded me-2">
-                  {isSearching && (
+            </div>
+
+            <div className="flex flex-1 items-center sm:ms-auto gap-3 min-w-0">
+              <div className="flex-1 min-w-0">
+                <div className="relative bg-[#0f0f14] border border-white/10 rounded-3xl overflow-hidden w-full max-w-[24rem]">
+                  {isSearching ? (
                     <input
-                      autoFocus
+                      ref={searchRef}
                       type="search"
                       value={key}
-                      className="rounded input px-1 no-dec bg-none themebg"
+                      className="w-full bg-transparent text-white placeholder:text-white/40 px-4 py-3 focus:outline-none"
                       onChange={({ target }) => setKey(target.value)}
-                      style={{
-                        border: "none",
-                        outline: "none",
-                      }}
+                      placeholder="Search files or folders"
                     />
+                  ) : (
+                    <button
+                      className="flex w-full items-center gap-2 px-4 py-3 text-white/70 hover:text-white"
+                      onClick={() => setIsSearching(true)}
+                      type="button"
+                    >
+                      <BiSearch className="icon" />
+                      <span className="inline">Search</span>
+                    </button>
                   )}
-                  <button
-                    className="themebg border-0 border-start px-2 border text-light"
-                    onClick={() => {
-                      setIsSearching((prev) => !prev);
-                      setKey("");
-                    }}
-                  >
-                    <BiSearch />
-                  </button>
+                  {isSearching ? (
+                    <button
+                      className="absolute right-2 px-1 top-1/2 -translate-y-1/2 text-white/80 hover:text-white"
+                      type="button"
+                      onClick={() => {
+                        setIsSearching((prev) => !prev);
+                        if (isSearching) setKey("");
+                      }}
+                    >
+                      <BiSearch />
+                    </button>
+                  ) : null}
                 </div>
+              </div>
+              {(localStorage.access || runtimeConfig?.noAuthFsWrite) && (
+                <button
+                  className="rounded-3xl bg-white/5 border border-white/10 px-4 py-2 text-white hover:bg-white/10 flex items-center gap-2"
+                  type="button"
+                  onClick={() => {
+                    if (isUploading) {
+                      return;
+                    }
+                    if (!files.length) {
+                      document.getElementById("filer").click();
+                    } else {
+                      confirm(
+                        `Press "Okay" to upload ${files.length} files to ${hostname}'s computer!`,
+                      )
+                        ? uploadFiles()
+                        : toast(
+                            "Operation requires user permission which has been denied",
+                          );
+                    }
+                  }}
+                >
+                  <FaUpload className="icon" />
+                  <span>Upload</span>
+                </button>
               )}
-              <button
-                className="btn btn-outline-light"
-                type="submit"
-                onClick={() => setIsHidden((prev) => !prev)}
-              >
-                <FaBars className="icon" />
-              </button>
+              <div className="flex items-center gap-2">
+                {!(localStorage.access || runtimeConfig?.noAuthFsWrite) && (
+                  <Link
+                    to={!localStorage.access ? `/login` : "/admin"}
+                    className="rounded-3xl border border-dashed border-white/10 bg-white/5 px-4 py-2 text-white hover:bg-white/10 transition"
+                  >
+                    authorize to upload
+                  </Link>
+                )}
+                <button
+                  className="border border-white/10 rounded-3xl p-2 text-white/80 hover:text-white hover:bg-white/10"
+                  type="button"
+                  onClick={() => setIsHidden((prev) => !prev)}
+                >
+                  <FaBars className="icon" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        <input
+          type="file"
+          name="files"
+          id="filer"
+          multiple
+          style={{ opacity: "0", width: "0px", height: "0px" }}
+          onChange={({ target }) => {
+            setFiles(target.files);
+            confirm(
+              `Press "Okay" to upload ${target.files.length} files to ${hostname}`,
+            )
+              ? uploadFiles(target.files)
+              : toast(
+                  "Operation requires user permission which has been denied",
+                );
+          }}
+        />
       </nav>
       {isUploading && (
-        <progress
-          className="w-100 mt-0 sticky-top"
-          style={{
-            position: "relative",
-            bottom: "5px",
-          }}
-          value={uProgres}
-          max={100}
-        ></progress>
+        <div className="w-full sticky top-26 z-10 px-4 mt-3">
+          <div className="max-w-6xl mx-auto rounded-3xl border border-white/10 bg-[#0d0d11] p-3 shadow-2xl">
+            <div className="flex items-center justify-between gap-3 text-xs text-white/70 mb-3">
+              <span>Uploading files</span>
+              <span>{uProgres}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-linear-to-r from-sky-400 via-blue-500 to-violet-500 transition-all duration-300"
+                style={{ width: `${uProgres}%` }}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

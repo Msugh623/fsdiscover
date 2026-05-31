@@ -43,97 +43,79 @@ const Menu = ({ hasDivider }) => {
   }, []);
   return (
     <>
-      <div className="menu-panel small">
-        <div className="mx-auto col-12 col-sm-10 col-md-8 col-xl-9">
-          {hasPannel && (
-            <div
+      <div
+        className={`fixed inset-0 z-[5000] ${hasPannel ? "block" : "hidden"}`}
+      >
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={() => setHasPannel(false)}
+        />
+        <div className="relative mx-auto mt-20 max-w-3xl rounded-3xl border border-white/10 bg-[#070809] text-white shadow-2xl shadow-black/50 overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-black/80 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <LazyLoadImage
+                effect="opacity"
+                src="/sprintetS.png"
+                draggable={false}
+                placeholder={<PlaceHolder />}
+                className="w-10 h-10 rounded-2xl bg-white/5 p-1"
+                alt="Sprintet Logo"
+              />
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Sprintet Menu
+                </p>
+                <p className="text-xs text-white/50">
+                  Quick access to your apps
+                </p>
+              </div>
+            </div>
+            <button
               onClick={() => setHasPannel(false)}
-              className=""
-              style={{
-                position: "fixed",
-                left: "0",
-                right: "0",
-                top: "0",
-                bottom: "0",
-              }}
-            ></div>
-          )}
-          <div
-            className={`inner rounded shadow-lg p-3 text-light bg-dark text-left slideUp ${panelClassName}`}
-            style={{
-              zIndex: 5000,
-            }}
-          >
-            <div
-              className="row ani"
-              style={{
-                minHeight: "140px",
-                height: "20vh",
-                maxHeight: "800vh",
-              }}
+              className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10 transition-colors"
             >
-              {
-                <div
-                  className={`scrollbs ani ${page == "apps" && "d-none"}`}
-                  style={{
-                    height: "100%",
-                    overflowY: "auto",
-                  }}
-                >
-                  <div className="d-flex ">
-                    {
-                      <div
-                        className="my-auto "
-                        onClick={() => navigate("/") || setHasPannel(false)}
-                      >
-                        <div
-                          className="p-1 active "
-                          style={{ borderRadius: "3px" }}
-                        >
-                          {true ? (
-                            <span className="slideLeft aniFast pe-2 small">
-                              <BiChevronLeft className="fs-5 icon" />
-                              <span className="">All Services</span>
-                            </span>
-                          ) : (
-                            ""
-                          )}
-                        </div>
-                      </div>
-                    }
-                  </div>
-                  <div className="mt-3 mb-3">
-                    {apps.map((app) => (
-                      <PinnedIcons
-                        key={app?.id||app?.location}
-                        app={app}
-                        handleClick={() => setHasPannel(false)}
-                      />
-                    ))}
-                  </div>
-                  <div className="d-flex flex-column h-auto">
-                    Sprintet is a dynamic programming startup dedicated to
-                    delivering cutting-edge software solutions that drive
-                    business growth. We specialize in agile development
-                    methodologies, ensuring efficient project execution,
-                    high-quality results, and continuous improvement.
-                    <div className="mt-3">
-                      <Link
-                        to={"/about"}
-                        title="Learn more"
-                        aria-label="About Us - Learn more about Sprintet"
-                        onClick={() => {
-                          setHasPannel(false);
-                        }}
-                        className="p-2 active d-inline btn"
-                        style={{ borderRadius: "3px" }}
-                      >
-                        Learn More
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              }
+              Close
+            </button>
+          </div>
+          <div className="p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+              <button
+                onClick={() => {
+                  navigate("/");
+                  setHasPannel(false);
+                }}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+              >
+                <BiChevronLeft className="text-lg" />
+                All Services
+              </button>
+              <span className="text-sm text-white/50">
+                Drag the menu icon to reposition it.
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {apps.map((app) => (
+                <PinnedIcons
+                  key={app?.id || app?.location}
+                  app={app}
+                  handleClick={() => setHasPannel(false)}
+                />
+              ))}
+            </div>
+            <div className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+              <p className="mb-3 text-white font-medium">Sprintet</p>
+              <p>
+                Sprintet is a dynamic programming startup dedicated to
+                delivering cutting-edge software solutions that drive business
+                growth.
+              </p>
+              <Link
+                to="/about"
+                onClick={() => setHasPannel(false)}
+                className="mt-4 inline-flex rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-gray-100"
+              >
+                Learn More
+              </Link>
             </div>
           </div>
         </div>
@@ -142,16 +124,13 @@ const Menu = ({ hasDivider }) => {
         id="start"
         draggable
         title="Sprintet Menu"
-        className={`app my-auto p-1 btn fs-5 ${hasPannel && "active"}`}
+        className={`app my-auto p-2 rounded-2xl border border-white/10 bg-white/10 text-white shadow-lg backdrop-blur-md transition-all duration-300 ${hasPannel ? "ring-2 ring-white/20" : "hover:bg-white/15"}`}
         onClick={() => setHasPannel((prev) => !prev)}
         style={{
-          transition:"all, 0.4s",
           position: "fixed",
           left: menuPos.x + "px",
           top: menuPos.y + "px",
           zIndex: 5000,
-          background: "#a5cde441",
-          backdropFilter: "blur(10px)",
         }}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -210,7 +189,7 @@ const Menu = ({ hasDivider }) => {
           src="/sprintetS.png"
           draggable={false}
           placeholder={<PlaceHolder />}
-          height={40}
+          className={`h-[40px] relative top-[2px]`}
           alt="Sprintet Logo"
           about="Sprintet Logo Image"
           onContextMenu={(e) => {
@@ -219,12 +198,6 @@ const Menu = ({ hasDivider }) => {
           style={{}}
         />
       </div>
-      {hasDivider !== false && (
-        <div
-          className="divider my-auto mx-2"
-          style={{ width: "1px", background: "#efefef60", height: "80%" }}
-        ></div>
-      )}
     </>
   );
 };

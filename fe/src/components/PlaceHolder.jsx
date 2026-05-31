@@ -2,7 +2,7 @@ import React from 'react'
 
 const PlaceHolder = () => {
     return (
-        <div className='rounded w-100 active h-100'>
+        <div className='rounded w-full active h-100'>
             bg-
         </div>
     )

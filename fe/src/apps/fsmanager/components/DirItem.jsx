@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Folder from "./Folder";
 import File from "./File";
 import { FaDownload, FaEllipsisVertical, FaFileZipper } from "react-icons/fa6";
@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import ConnectedDevice from "../../deviceManager/ConnectedDevice";
 import { useNavigate } from "react-router-dom";
 
-const DirItem = ({ item }) => {
+const DirItem = ({ item, viewMode = "grid" }) => {
   const { key, getFs } = useFsContext();
   const navigate = useNavigate();
   const { forbidroute, sessions, setModal, setModalTitle } = useStateContext();
@@ -31,24 +31,21 @@ const DirItem = ({ item }) => {
     modifiedAt: "",
     url,
   };
-  const [pos, setPos] = useState({ x: 0, y: 0 });
   const [hasDd, setHasDd] = useState(false);
+  const btnRef = useRef(null);
+  const [ddPos, setDdPos] = useState({ top: 0, left: 0 });
 
   const dropDownContent = (
     <div
-      className=" p-1 small themebg rounded inner"
+      className="space-y-1"
       onClick={() => {
         setHasDd(false);
       }}
-      style={{
-        position: "relative",
-      }}
     >
       {type == "file" ? (
-        <div
-          className="p-1 rounded active"
+        <button
+          className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
           title="Download File"
-          style={{ cursor: "pointer" }}
           onClick={() => {
             const a = document.createElement("a");
             a.href = location.pathname + "/" + psr?.name;
@@ -56,13 +53,13 @@ const DirItem = ({ item }) => {
             a.click();
           }}
         >
-          <FaDownload className="icon" /> Download File
-        </div>
+          <FaDownload className="text-sm" />
+          <span>Download File</span>
+        </button>
       ) : (
-        <div
-          className="p-1 rounded active"
+        <button
+          className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
           title="Download as compressed ZIP"
-          style={{ cursor: "pointer" }}
           onClick={() => {
             const a = document.createElement("a");
             a.href =
@@ -73,113 +70,150 @@ const DirItem = ({ item }) => {
             a.click();
           }}
         >
-          <FaFileZipper className="icon" /> Download ZIP
-        </div>
+          <FaFileZipper className="text-sm" />
+          <span>Download ZIP</span>
+        </button>
       )}
       {!localStorage.access && (
-        <div
-          className="p-1 mt-1 text-center rounded active"
-          title="Download as compressed ZIP"
-          style={{ cursor: "pointer" }}
+        <button
+          className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
+          title="Login for more options"
           onClick={() => {
             localStorage.go = location.pathname;
             navigate("/login");
           }}
         >
-          Login for more
-        </div>
+          <span className="text-rose-400">⚠</span>
+          <span>Login for more</span>
+        </button>
       )}
       {localStorage.access && (
-        <div
-          className="p-1 mt-1 rounded active"
-          title="Download as compressed ZIP"
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            const path = location.pathname + "/" + item;
-            const data = {
-              action: "open",
-              pathname: path,
-              device: "",
-            };
-            setModal(<OpenWith data={data} sessions={sessions} />);
-            setModalTitle(<h5 className="text-light">Choose a device</h5>);
-          }}
-        >
-          <BiDevices className="icon" /> Open With
-        </div>
-      )}
-      {localStorage.access && (
-        <div
-          className="p-1 mt-1 rounded active"
-          title="Download as compressed ZIP"
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            const path = location.pathname.replace("/fsexplorer", "");
-            forbidroute(url.replace("fs/", ""));
-            getFs(path);
-          }}
-        >
-          <BiLock className="icon" /> Protect Route
-        </div>
+        <>
+          <button
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
+            title="Open With"
+            onClick={() => {
+              const path = location.pathname + "/" + item;
+              const data = {
+                action: "open",
+                pathname: path,
+                device: "",
+              };
+              setModal(<OpenWith data={data} sessions={sessions} />);
+              setModalTitle(<h5 className="text-white">Choose a device</h5>);
+            }}
+          >
+            <BiDevices className="text-sm" />
+            <span>Open With</span>
+          </button>
+          <button
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
+            title="Protect Route"
+            onClick={() => {
+              const path = location.pathname.replace("/fsexplorer", "");
+              forbidroute(url.replace("fs/", ""));
+              getFs(path);
+            }}
+          >
+            <BiLock className="text-sm" />
+            <span>Protect Route</span>
+          </button>
+        </>
       )}
     </div>
   );
 
   return name.toLowerCase().includes(key.toLowerCase()) ||
     key.toLowerCase().includes(name.toLowerCase()) ? (
-    <div className="fs-5 my-1 d-flex active ">
-      {type == "folder" ? <Folder data={psr} /> : <File data={psr} />}
-      <div className="">
-        <div>
-          <div
-            className="pe-2 m-2"
-            title="Download File"
-            style={{ cursor: "pointer" }}
+    <>
+      <div
+        className={`relative bg-[#111] rounded-3xl border border-white/10 shadow-2xl overflow-hidden transition hover:-translate-y-1 hover:shadow-2xl duration-200 slideUp ${viewMode === "list" ? "flex flex-col gap-0" : ""}`}
+        onClick={() => {
+          if (hasDd) {
+            setHasDd(false);
+            return;
+          }
+          if (type === "folder") {
+            navigate(location.pathname + "/" + item);
+          } else {
+            window.open(location.pathname + "/" + item, "_blank");
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && hasDd) {
+            e.preventDefault();
+            setHasDd(false);
+            return;
+          }
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            if (type === "folder") {
+              navigate(location.pathname + "/" + item);
+            } else {
+              window.open(location.pathname + "/" + item, "_blank");
+            }
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <div
+          className={`flex ${viewMode === "list" ? "flex-col sm:flex-row sm:items-center" : "items-center justify-between"} gap-3 p-3 `}
+        >
+          <div className="min-w-0 w-full">
+            {type == "folder" ? <Folder data={psr} /> : <File data={psr} />}
+            {viewMode !== "list" ? (
+              <div className="text-xs px-2 text-gray-400 mt-1">
+                {detailedType}
+              </div>
+            ) : null}
+          </div>
+          <button
+            ref={btnRef}
+            type="button"
+            className="rounded-full  p-2 active text-gray-200 hover:bg-white/10 transition"
+            title="More actions"
             onClick={(e) => {
+              e.stopPropagation();
+              const opening = !hasDd;
+              if (opening) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setDdPos({
+                  top: rect.bottom + 8,
+                  left: rect.left,
+                  right: window.innerWidth - rect.right,
+                });
+              }
               setHasDd((prev) => !prev);
-              setPos({
-                x: e.clientX,
-                y: e.clientY,
-              });
             }}
           >
             <FaEllipsisVertical className="icon" />
-          </div>
+          </button>
         </div>
-        {hasDd && (
-          <>
-            <div
-              className=""
-              onClick={(e) => {
-                e.stopPropagation();
-                setHasDd(false);
-              }}
-              style={{
-                position: "fixed",
-                top: 0 + "px",
-                bottom: 0 + "px",
-                left: "0px",
-                right: "0px",
-                // background: '#0e0e030',
-                zIndex: "5",
-              }}
-            ></div>
-            <div
-              className="themebg small rounded"
-              style={{
-                width: "150px",
-                position: "fixed",
-                top: pos.y + "px",
-                left: pos.x - 150 + "px",
-                zIndex: 6,
-              }}
-            >
-              <div className="active rounded p-1">{dropDownContent}</div>
-            </div>
-          </>
-        )}
       </div>
-    </div>
+
+      {hasDd && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={(e) => {
+              e.stopPropagation();
+              setHasDd(false);
+            }}
+          />
+          <div
+            className="fixed z-50 rounded-3xl border border-white/10 bg-[#0d0d11] shadow-2xl slideUp min-w-55 max-w-xs"
+            style={{
+              top: `${ddPos.top}px`,
+              left: ddPos.right < 300 ? "auto" : `${ddPos.left}px`,
+              right: ddPos.right < 300 ? `${ddPos.right}px` : "auto",
+            }}
+          >
+            <div className="rounded-3xl p-3">{dropDownContent}</div>
+          </div>
+        </>
+      )}
+    </>
   ) : (
     false
   );
@@ -189,7 +223,7 @@ export default DirItem;
 
 function OpenWith({ data }) {
   const { setModal, setModalTitle } = useStateContext();
-  const {sessions}=useStateContext()
+  const { sessions } = useStateContext();
   async function handleSelect(id) {
     const meta = {
       ...data,
@@ -204,7 +238,8 @@ function OpenWith({ data }) {
       document.toastId && toast.dismiss(document.toastId);
     } catch (error) {
       toast.error(
-        "Open failed with message: " + (error?.response?.data || error?.message)
+        "Open failed with message: " +
+          (error?.response?.data || error?.message),
       );
     }
   }
@@ -212,7 +247,7 @@ function OpenWith({ data }) {
   return (
     <>
       <div
-        className="container p-3 px-4 "
+        className="max-w-4xl mx-auto px-4 p-3 px-4"
         style={{
           maxWidth: "90vw",
           maxHeight: "80vh",
@@ -222,7 +257,7 @@ function OpenWith({ data }) {
         {!sessions.find((sess) => sess?.addr == "127.0.0.1") ? (
           <div
             key={"host-base-system="}
-            className="active p-1 d-flex rounded c-pointer mb-2 row"
+            className="active p-1 flex rounded c-pointer mb-2 flex flex-wrap -mx-2"
             onClick={() => {
               handleSelect("host");
             }}
@@ -233,11 +268,11 @@ function OpenWith({ data }) {
             <div className="icon col-sm-1 mb-2 mt-1">
               <FaDesktop />
             </div>
-            <div className="ps-2 col-sm-2 mb-2 mt-1">HOST</div>
-            <div className="ps-2 col-sm-5 mb-2 mt-1">
+            <div className="pl-2 col-sm-2 mb-2 mt-1">HOST</div>
+            <div className="pl-2 sm:w-5/12 px-2 mb-2 mt-1">
               Open "
               {(data?.pathname || "").slice(
-                (data?.pathname || "").lastIndexOf("/") + 1
+                (data?.pathname || "").lastIndexOf("/") + 1,
               )}
               " with the host computer running fsdiscover{" "}
             </div>
@@ -250,7 +285,7 @@ function OpenWith({ data }) {
           .map((device, i) => (
             <div
               key={device.addr + device.agent + i}
-              className="active p-1 d-flex rounded c-pointer mb-2 row"
+              className="active p-1 flex rounded c-pointer mb-2 flex flex-wrap -mx-2"
               onClick={() => {
                 handleSelect(device.socketid);
               }}
@@ -265,14 +300,16 @@ function OpenWith({ data }) {
                   <FaDesktop />
                 )}
               </div>
-              <div className="ps-2 col-sm-2 mb-2 mt-1">
+              <div className="pl-2 col-sm-2 mb-2 mt-1">
                 {device.addr == "127.0.0.1"
                   ? "HOST - " + device.addr
                   : device.addr}
               </div>
-              <div className="ps-2 col-sm-5 mb-2 mt-1">{device.agent} </div>
-              <div className="ps-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
-              <div className="ps-2 col-sm-2 mb-2 mt-1">
+              <div className="pl-2 sm:w-5/12 px-2 mb-2 mt-1">
+                {device.agent}{" "}
+              </div>
+              <div className="pl-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
+              <div className="pl-2 col-sm-2 mb-2 mt-1">
                 {device.lastAccess.split("GMT")[0]}{" "}
               </div>
             </div>
@@ -282,7 +319,7 @@ function OpenWith({ data }) {
           .map((device, i) => (
             <div
               key={device.addr + device.agent + i}
-              className="active p-1 d-flex rounded c-pointer mb-2 row"
+              className="active p-1 flex rounded c-pointer mb-2 flex flex-wrap -mx-2"
               onClick={() => {
                 handleSelect(device.socketid);
               }}
@@ -297,12 +334,14 @@ function OpenWith({ data }) {
                   <FaDesktop />
                 )}
               </div>
-              <div className="ps-2 col-sm-2 mb-2 mt-1">
+              <div className="pl-2 col-sm-2 mb-2 mt-1">
                 {device.addr == "127.0.0.1" ? "HOST" : device.addr}
               </div>
-              <div className="ps-2 col-sm-5 mb-2 mt-1">{device.agent} </div>
-              <div className="ps-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
-              <div className="ps-2 col-sm-2 mb-2 mt-1">
+              <div className="pl-2 sm:w-5/12 px-2 mb-2 mt-1">
+                {device.agent}{" "}
+              </div>
+              <div className="pl-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
+              <div className="pl-2 col-sm-2 mb-2 mt-1">
                 {device.lastAccess.split("GMT")[0]}{" "}
               </div>
             </div>

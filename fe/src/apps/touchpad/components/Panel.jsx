@@ -185,14 +185,13 @@ const Panel = () => {
 
   return (
     <div
-      className="d-flex"
+      className="flex w-full"
       style={{
         overflow: "hidden",
-        maxWidth: "99vw",
       }}
     >
       <div
-        className={`active rounded btn p-1 px-2`}
+        className={`active flex rounded-2xl p-1 px-2`}
         style={{
           position: "fixed",
           top: "1.2rem",
@@ -217,7 +216,7 @@ const Panel = () => {
         {socket.connected ? (
           ""
         ) : (
-          <small className="bg-warning text-dark" style={{ zIndex: 10 }}>
+          <small className="bg-warning mx-2 text-dark" style={{ zIndex: 10 }}>
             Not Connected
           </small>
         )}
@@ -225,7 +224,7 @@ const Panel = () => {
       <div
         className="mt-auto mx-auto"
         style={{
-          border: "50%",
+          border: "10%",
           backgroundColor: mouseDownHold
             ? "green"
             : touchConfig.mouseDown
@@ -246,15 +245,21 @@ const Panel = () => {
           minWidth: "110vw",
         }}
       ></div>
-      <canvas
-        id="tp"
-        className="border"
-        style={{
-          height: "100vh",
-          position: "fixed",
-          width: "99.99vw",
-        }}
-      ></canvas>
+      <div className="flex " style={{ width: "100%"}}>
+        <canvas
+          id="tp"
+          className="border xl:mt-10 mx-auto border-white/10 rounded-2xl"
+          style={{
+            height: "84vh",
+            position: "relative",
+            width: "100%",
+            maxWidth: "1200px",
+            backgroundColor: "#060606",
+            borderRadius: "12px",
+            boxSizing: "border-box",
+          }}
+        ></canvas>
+      </div>
       {!didInit &&
         (() => {
           init(document.getElementById("tp"));
@@ -289,10 +294,10 @@ function ToastModel({ data, next, done }) {
       <div
         dangerouslySetInnerHTML={{ __html: data || localStorage.toastData }}
       ></div>
-      <div className="d-flex mt-1">
-        <div className="me-auto">
+      <div className="flex mt-1">
+        <div className="mr-auto">
           <button
-            className="btn-primary p-1 px-2 btn-small btn"
+            className="bg-blue-600 text-white hover:bg-blue-700 p-1 px-2 text-sm px-2 py-1"
             onClick={() => {
               toast.dismiss(localStorage.lastToast);
               next();

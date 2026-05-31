@@ -3,11 +3,10 @@ import { toast } from "react-toastify";
 import { keyMap } from "../assets/keymap";
 import { useStateContext } from "./StateContext";
 
-
 const context = createContext();
 
 const InputConext = ({ children }) => {
-  const {socket}=useStateContext()
+  const { socket } = useStateContext();
   const [touchConfig, setTouchConfig] = useState({
     dispX: 0,
     dispY: 0,
@@ -135,7 +134,7 @@ const InputConext = ({ children }) => {
           mouseIsMoving: false,
           click: false,
         }));
-      }, 400)
+      }, 400),
     );
   }
 
@@ -382,18 +381,18 @@ const InputConext = ({ children }) => {
       }}
     >
       {" "}
-      <pre
-        className="small p-5 fixed-top "
+      <div
+        className="text-sm pt-14 p-5 py-6 justify-center left-0 right-0 fixed  z-20"
         style={{
           whiteSpace: "pre-wrap",
           wordWrap: "break-word",
           pointerEvents: "none",
         }}
       >
-        {err && <div className="slideUp d-flex text-center">{err}</div>}
+        {err && <div className="slideUp w-full flex text-center"> {err}</div>}
         <br />
-        <div className="small">{status}</div>
-      </pre>
+        <div className="text-sm w-full text-center ">{status}</div>
+      </div>
       {children}
     </context.Provider>
   );

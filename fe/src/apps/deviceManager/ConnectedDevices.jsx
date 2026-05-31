@@ -16,9 +16,9 @@ const ConnectedDevices = () => {
         minWidth: "300px",
       }}
     >
-      <div className="d-flex w-100">
+      <div className="flex w-full">
         <div
-          className="w-100 bg-dark"
+          className="w-full bg-gray-900"
           style={{
             minWidth: window.innerWidth < 500 ? "100vw" : "",
           }}
@@ -26,7 +26,7 @@ const ConnectedDevices = () => {
           <MainHeader />
           <>
             <div
-              className="container p-3 px-4 "
+              className="max-w-4xl mx-auto px-4 p-3 px-4"
               style={{
                 maxWidth: "90vw",
                 maxHeight: "80vh",
@@ -42,7 +42,7 @@ const ConnectedDevices = () => {
                 .map((device, i) => (
                   <div
                     key={"$d-" + device.addr + device.agent + i}
-                    className="active p-1 d-flex rounded c-pointer mb-2 row"
+                    className="active p-1 flex rounded c-pointer mb-2 flex flex-wrap -mx-2"
                     onClick={() => {
                       setModal(<ConnectedDevice socketid={device.socketid} />);
                     }}
@@ -50,8 +50,8 @@ const ConnectedDevices = () => {
                       overflow: "auto",
                     }}
                   >
-                    <div className="ps-2 col-sm-2 mb-2 mt-1">
-                      <div className="icon mb-2 fs-4 mt-1">
+                    <div className="pl-2 col-sm-2 mb-2 mt-1">
+                      <div className="icon mb-2 text-2xl mt-1">
                         {getDeviceType(device.agent) == "mobile" ? (
                           <FaMobile />
                         ) : (
@@ -62,13 +62,13 @@ const ConnectedDevices = () => {
                         ? "HOST - " + device.addr
                         : device.addr}
                     </div>
-                    <div className="ps-2 mt-auto col-sm-5 mb-2 mt-1">
+                    <div className="pl-2 mt-auto sm:w-5/12 px-2 mb-2 mt-1">
                       {device.agent}{" "}
                     </div>
-                    <div className="ps-2 mt-auto col-sm-3 mb-2 mt-1">
+                    <div className="pl-2 mt-auto col-sm-3 mb-2 mt-1">
                       {device.socketid}{" "}
                     </div>
-                    <div className="ps-2 mt-auto col-sm-2 mb-2 mt-1">
+                    <div className="pl-2 mt-auto col-sm-2 mb-2 mt-1">
                       {device.lastAccess.split("GMT")[0]}{" "}
                     </div>
                   </div>

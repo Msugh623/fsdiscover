@@ -13,26 +13,26 @@ const Loader = ({ animate }) => {
 
     return (
       <div
-        className="w-100"
+        className="w-full"
         style={{
           position: "fixed",
           top: "45vh",
         }}
       >
-        <div className="d-flex">
+        <div className="flex">
           <div className="mx-auto">
             <h1 className="">
               <div className="p-3"></div>
               {animate && (
                 <Delay delay={300}>
-                  <FaSpinner className="spinner icon mt-5 text-light" />
+                  <FaSpinner className="spinner icon mt-5 text-white" />
                 </Delay>
               )}
               {!rm && (
                 <Delay delay={!animate ? 50 : 0}>
                   <div className="img">
                     <div
-                      className="fixed-top d-flex w-100"
+                      className="fixed-top flex w-full"
                       style={{
                         height: "90%",
                       }}

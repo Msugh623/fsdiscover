@@ -9,18 +9,11 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
 import { FaGear } from "react-icons/fa6";
 
-const AdminIndex = () => {
-  const {
-    apps,
-    fetchSrc,
-    categories,
-    hostname,
-    runtimeConfig,
-    profile,
-    setMenuPos,
-  } = useStateContext();
+export default function AdminIndex() {
+  const { apps, fetchSrc, hostname, runtimeConfig, profile, setMenuPos } =
+    useStateContext();
   const [prs, setPrs] = useState(apps);
-  const [category, setCategory] = useState("All");
+  const [category, _] = useState("All");
 
   useEffect(() => {
     category == "All"
@@ -28,18 +21,18 @@ const AdminIndex = () => {
           apps.filter(
             (a) =>
               runtimeConfig?.apps?.includes(a?.location) ||
-              a?.location.includes("devices")
-          )
+              a?.location.includes("devices"),
+          ),
         )
       : setPrs(
           apps
             .filter((cr) => cr.category == category)
-            .filter((a) => runtimeConfig?.apps?.includes(a?.location))
+            .filter((a) => runtimeConfig?.apps?.includes(a?.location)),
         );
   }, [category, apps, runtimeConfig?.apps]);
 
   useEffect(() => {
-    document.title = "Sprintet Fsdiscover  - " + hostname;
+    document.title = "SprintET FSdiscover - " + hostname;
     fetchSrc();
     setMenuPos({
       x: 40,
@@ -48,137 +41,97 @@ const AdminIndex = () => {
   }, []);
 
   return (
-    <main id="main">
-      <section className="section site-portfolio py-5 darkTheme">
-        <div className="container">
-          <div className="row mb-5">
-            <div
-              className="d-flex flex-column flex-md-row slideIn mb-4 mb-lg-0"
-              data-aos="fade-up"
-            >
-              <h2 className="">
-                <Link to={"/"}>
+    <main
+      id="main"
+      className="bg-black min-h-screen text-white antialiased selection:bg-white/20"
+    >
+      <section className="py-12">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-start justify-between pb-8  gap-6">
+            <div className="flex flex-col text-[13px] text-white/50 font-mono tracking-tight gap-1 bg-[#111] border border-white/10 rounded-2xl p-5 w-full shadow-lg">
+              <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-3">
+                <div className="font-sans flex gap-x-2 text-white">
                   <LazyLoadImage
                     effect="opacity"
                     placeholder={<PlaceHolder />}
-                    src="/sprintetName.png"
-                    height={"100px"}
-                    alt=""
+                    src="/icon.png"
+                    height={"48px"}
+                    className="h-12  w-auto object-contain rounded-xl"
+                    alt="fsdiscover"
                   />
-                </Link>
-              </h2>
-              <div className="ms-0 ms-md-auto">
-                <div className="d-flex pb-2">
-                  <Link
-                    to={!localStorage.access ? `/login` : "/admin"}
-                    className="rounded shadow-lg p-3 ms-auto py-2 border border-dashed readmore custom-navmenu text-light"
-                  >
-                  <FaGear className="fs-6"/>  SETTINGS
-                  </Link>
+                  <div>
+                    <h1 className="text-[1.7em] icon font-bold">FSdiscover</h1>
+                    <div className="text-[0.7em]">
+                      Your computer in the palm of your hands
+                    </div>
+                  </div>
                 </div>
-                <span className="text-primary">Host:</span> {hostname} <br />
-                <span className="text-primary">Profile: </span>
-                {profile.addr} <br />
-                <span className="text-primary">UUID: </span> {profile.uuid}
-              </div>
-            </div>
-            <div
-              className="text-start text-lg-end mt-3"
-              data-aos="fade-up"
-              data-aos-delay="100"
-            >
-              <div
-                id="categories"
-                className="ms-auto py-2 categories d-flex slideLeft"
-                style={{
-                  maxWidth: "98vw",
-                  overflow: "auto",
-                }}
-              >
-                <a
-                  href="#All"
-                  data-category="*"
-                  className={
-                    "p-1 mx-1 shadow rounded" +
-                    (category == "All" && "active rounded border")
-                  }
-                  onClick={() => setCategory("All")}
+                <Link
+                  to={!localStorage.access ? `/login` : "/admin"}
+                  className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
                 >
-                  All{" "}
-                </a>
-                {categories.map((flt) => (
-                  <a
-                    key={flt}
-                    href={`#${flt}`}
-                    data-category="*"
-                    className={
-                      "p-1 border-bottom mx-1 shadow rounded me-1" +
-                      (category == flt && "active border ")
-                    }
-                    onClick={() => setCategory("" + flt)}
-                  >
-                    {flt}
-                  </a>
-                ))}
+                  <FaGear className="text-xs text-white/50" /> Settings
+                </Link>
+              </div>
+              <div>
+                <span className="text-white/80">host:</span> {hostname}
+              </div>
+              <div>
+                <span className="text-white/80">profile:</span> {profile.addr}
+              </div>
+              <div className="truncate">
+                <span className="text-white/80">uuid:</span> {profile.uuid}
               </div>
             </div>
           </div>
+
           <div
             id="portfolio-grid"
-            className="row"
-            data-aos="fade-up"
-            data-aos-delay="200"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5"
           >
-            {prs.map((app, i) => {
-              return <AppCard key={"" + app.id + i} app={app} />;
-            })}
+            {prs.map((app, i) => (
+              <AppCard key={"" + app.id + i} app={app} />
+            ))}
           </div>
         </div>
       </section>
     </main>
   );
-};
-
-export default AdminIndex;
+}
 
 const AppCard = ({ app }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="col-6 col-md-4 col-lg-3 py-3">
-      <div
-        onClick={() =>
-          app.location.includes("http")
-            ? (location.href = app.location)
-            : navigate(app.location)
-        }
-      >
-        <div className="p-2 active rounded fadeIn">
-          {app?.pinned && (
-            <div className="d-flex" style={{ position: "absolute" }}>
-              <div className="p-1 btn btn-primary shadow rounded"></div>
-            </div>
-          )}
-          <div
-            className="row"
-            style={{
-              minHeight: "90px",
-            }}
-          >
-            <div className="col-sm-5 my-auto">
-              <LazyLoadImage
-                effect="opacity"
-                placeholder={<PlaceHolder />}
-                src={app.icon}
-                className="my-auto img-fluid rounded"
-                alt=""
-              />
-            </div>
-            <div className="col-sm-7">
-              <h4 className="text-ligt mb-1">{app?.name}</h4>
-              <div>{app?.category}</div>
-            </div>
-          </div>
+    <div
+      onClick={() =>
+        app.location.includes("http")
+          ? (location.href = app.location)
+          : navigate(app.location)
+      }
+      className="group relative cursor-pointer bg-[#111] border border-white/10 hover:border-white/20 rounded-2xl p-4 transition-all duration-300 hover:scale-[1.02] hover:bg-[#161616]"
+    >
+      {app?.pinned && (
+        <span className="absolute top-3 right-3 w-2 h-2 bg-white rounded-full ring-4 ring-white/10" />
+      )}
+
+      <div className="flex flex-col gap-4">
+        <div className="w-12 h-12 rounded-xl overflow-hidden bg-black flex items-center justify-center border border-white/10 p-2">
+          <LazyLoadImage
+            effect="opacity"
+            placeholder={<PlaceHolder />}
+            src={app.icon}
+            className="w-full h-full object-contain rounded-md"
+            alt=""
+          />
+        </div>
+        <div>
+          <h4 className="text-[14px] font-semibold text-white truncate mb-1">
+            {app?.name}
+          </h4>
+          <span className="text-[12px] font-medium text-white/50 tracking-wide">
+            {app?.category}
+          </span>
         </div>
       </div>
     </div>
@@ -188,27 +141,16 @@ const AppCard = ({ app }) => {
 const AppDetails = ({ app }) => {
   const { setPop, fetchSrc } = useStateContext();
   const [isEdit, setIsEdit] = useState("");
-
-  const [editData, setEditData] = useState({
-    ...app,
-  });
+  const [editData, setEditData] = useState({ ...app });
 
   const handleSubmit = async () => {
     const tst = toast("updating...", { autoClose: false });
     try {
-      const _ = await api.put("/rq/app/" + app.id, {
-        ...editData,
-      });
+      await api.put("/rq/app/" + app.id, { ...editData });
       fetchSrc();
       setIsEdit("");
     } catch (err) {
-      toast.error(
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `${err?.response?.data || err.message || "" + err}`,
-          }}
-        ></div>
-      );
+      toast.error(<div>{err?.response?.data || err.message || "" + err}</div>);
     } finally {
       toast.dismiss(tst);
     }
@@ -226,145 +168,88 @@ const AppDetails = ({ app }) => {
   }, []);
 
   return (
-    <div className="col-12 col-sm-11 col-md-8 col-lg-6 mb-4 mx-auto mt-3 mt-sm-5 ">
-      <div className="item-wrap rounded shadow growUp darkTheme">
-        <div
-          className="p-2 p-sm-3"
-          style={{
-            maxHeight: "80vh",
-            overflowY: "auto",
-          }}
-        >
-          <h5 className="d-flex">
-            {app?.name}
-            <Link
-              className="readmore custom-navmenu bg-danger text-light growIn ms-auto"
+    <div className="w-full max-w-xl mx-auto mt-16 p-4">
+      <div className="bg-[#111] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.8)] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-[#0a0a0a]">
+          <h5 className="text-[15px] font-semibold text-white">
+            {app?.name || "App Configurations"}
+          </h5>
+          <div className="flex items-center gap-3">
+            <button
+              className="p-2 text-white/50 hover:text-red-500 bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
               onClick={() => {
-                confirm("Delete ?") &&
+                if (confirm("Delete structural app mapping?")) {
                   (async () => {
                     const tst = toast("deleting...", { autoClose: false });
                     try {
-                      const _ = await api.delete("/rq/app/" + app?.id);
+                      await api.delete("/rq/app/" + app?.id);
                       setPop("");
                     } catch (err) {
                       toast.error(
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: `${
-                              err?.response?.data || err.message || "" + err
-                            }`,
-                          }}
-                        ></div>
+                        <div>
+                          {err?.response?.data || err.message || "" + err}
+                        </div>,
                       );
                     } finally {
                       toast.dismiss(tst);
                     }
                   })();
+                }
               }}
             >
-              <FaTrash className="fs-6" />
-            </Link>
-            <Link
-              className="readmore custom-navmenu bg-primary text-light growIn ms-1"
-              onClick={() => {
-                setPop("");
-              }}
+              <FaTrash className="text-sm" />
+            </button>
+            <button
+              className="p-2 text-white/50 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
+              onClick={() => setPop("")}
             >
-              <BiX className="fs-5" />
-            </Link>
-          </h5>
-          <div className="row align-items-stretch">
-            <div className="col-sm-5 " data-aos="fade-up">
+              <BiX className="text-xl" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 max-h-[75vh] overflow-y-auto space-y-6">
+          <div className="flex gap-5 items-start border-b border-white/10 pb-6">
+            <div className="w-20 h-20 rounded-2xl bg-black border border-white/10 p-3 flex-shrink-0">
               <LazyLoadImage
                 effect="opacity"
                 placeholder={<PlaceHolder />}
                 src={app.icon}
-                className="img-fluid"
+                className="w-full h-full object-contain"
                 alt=""
               />
-              <div className="p-1 panel mb-3">
-                {isEdit == "icon" ? (
-                  <div>
+            </div>
+
+            <div className="flex-1 space-y-2 mt-1">
+              <div className="text-[13px]">
+                <span className="text-white/50 block mb-2 font-medium">
+                  App Identifier
+                </span>
+                {isEdit === "name" ? (
+                  <div className="flex gap-2">
                     <input
                       type="text"
-                      className="form-control"
-                      autoFocus
-                      value={editData.icon}
-                      name="icon"
+                      className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-[14px] text-white focus:outline-none focus:border-white/30"
+                      value={editData.name}
+                      name="name"
                       onChange={handleInput}
+                      autoFocus
                     />
                     <button
-                      className="shadow-sm ms-auto fs-4 border-0"
-                      onClick={() =>
-                        setIsEdit((prev) => (prev == "icon" ? "" : "icon"))
-                      }
-                    >
-                      <BiX />
-                    </button>
-                    <button
-                      className=" shadow-sm ms-auto bg-primary border-0 text-light"
                       onClick={handleSubmit}
+                      className="bg-white text-black px-4 py-2 rounded-xl font-medium"
                     >
-                      <BiSync className="fs-4 icon" />
+                      <BiSync className="text-lg" />
                     </button>
                   </div>
                 ) : (
-                  <div className="d-flex">
-                    <div
-                      className="text-truncate"
-                      style={{ whiteSpace: "pre-wrap" }}
-                    >
-                      {editData?.icon}
-                    </div>
+                  <div className="flex justify-between items-center bg-white/5 px-3 py-2 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+                    <span className="font-semibold text-white text-[14px]">
+                      {editData?.name}
+                    </span>
                     <button
-                      className="btn shadow-sm ms-auto"
-                      onClick={() =>
-                        setIsEdit((prev) => (prev == "icon" ? "" : "icon"))
-                      }
-                    >
-                      <BiPencil />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="mb-4 p-1 panel">
-                {isEdit == "location" ? (
-                  <div>
-                    <input
-                      type="text"
-                      className="form-control"
-                      autoFocus
-                      value={editData.location}
-                      name="location"
-                      onChange={handleInput}
-                    />
-                    <button
-                      className="shadow-sm ms-auto fs-4 border-0"
-                      onClick={() =>
-                        setIsEdit((prev) =>
-                          prev == "location" ? "" : "location"
-                        )
-                      }
-                    >
-                      <BiX />
-                    </button>
-                    <button
-                      className=" shadow-sm ms-auto bg-primary border-0 text-light"
-                      onClick={handleSubmit}
-                    >
-                      <BiSync className="fs-4 location" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="d-flex">
-                    {editData?.location}{" "}
-                    <button
-                      className="btn shadow-sm ms-auto"
-                      onClick={() =>
-                        setIsEdit((prev) =>
-                          prev == "location" ? "" : "location"
-                        )
-                      }
+                      onClick={() => setIsEdit("name")}
+                      className="text-white/50 hover:text-white"
                     >
                       <BiPencil />
                     </button>
@@ -372,175 +257,149 @@ const AppDetails = ({ app }) => {
                 )}
               </div>
             </div>
-            <div
-              className="col-sm-7 ml-auto mt-3 mt-sm-0"
-              data-aos="fade-up"
-              data-aos-delay="100"
-            >
-              <div className="sticky-content">
-                <h3 className="h3 p-2 panel mb-3">
-                  {isEdit == "name" ? (
-                    <div>
-                      <input
-                        type="text"
-                        className="form-control"
-                        autoFocus
-                        value={editData.name}
-                        name="name"
-                        onChange={handleInput}
-                      />
-                      <button
-                        className="shadow-sm ms-auto fs-4 border-0"
-                        onClick={() =>
-                          setIsEdit((prev) => (prev == "name" ? "" : "name"))
-                        }
-                      >
-                        <BiX />
-                      </button>
-                      <button
-                        className=" shadow-sm ms-auto bg-primary border-0 text-light"
-                        onClick={handleSubmit}
-                      >
-                        <BiSync className="fs-4 icon" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="d-flex">
-                      {editData?.name}{" "}
-                      <button
-                        className="btn shadow-sm ms-auto"
-                        onClick={() =>
-                          setIsEdit((prev) => (prev == "name" ? "" : "name"))
-                        }
-                      >
-                        <BiPencil />
-                      </button>
-                    </div>
-                  )}
-                </h3>
+          </div>
 
-                <div className="p-1 panel mb-3">
-                  {isEdit == "category" ? (
-                    <div>
-                      <input
-                        type="text"
-                        className="form-control"
-                        autoFocus
-                        value={editData.category}
-                        name="category"
-                        onChange={handleInput}
-                      />
-                      <button
-                        className="shadow-sm ms-auto fs-4 border-0"
-                        onClick={() =>
-                          setIsEdit((prev) =>
-                            prev == "category" ? "" : "category"
-                          )
-                        }
-                      >
-                        <BiX />
-                      </button>
-                      <button
-                        className=" shadow-sm ms-auto bg-primary border-0 text-light"
-                        onClick={handleSubmit}
-                      >
-                        <BiSync className="fs-4 icon" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="d-flex">
-                      {editData?.category}{" "}
-                      <button
-                        className="btn shadow-sm ms-auto"
-                        onClick={() =>
-                          setIsEdit((prev) =>
-                            prev == "category" ? "" : "category"
-                          )
-                        }
-                      >
-                        <BiPencil />
-                      </button>
-                    </div>
-                  )}
+          <div className="space-y-5 text-[13px]">
+            <div>
+              <span className="text-white/50 block mb-2 font-medium">
+                Category
+              </span>
+              {isEdit === "category" ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white/30"
+                    value={editData.category}
+                    name="category"
+                    onChange={handleInput}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-white text-black px-4 rounded-xl font-medium"
+                  >
+                    <BiSync className="text-lg" />
+                  </button>
                 </div>
+              ) : (
+                <div className="flex justify-between items-center bg-white/5 px-3 py-2 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+                  <span className="text-white">{editData?.category}</span>
+                  <button
+                    onClick={() => setIsEdit("category")}
+                    className="text-white/50 hover:text-white"
+                  >
+                    <BiPencil />
+                  </button>
+                </div>
+              )}
+            </div>
 
-                <div className="panel mb-3">
-                  <label className="px-2">Is Pinned</label>
-                  <hr className="m-0" />
-                  <div className="d-flex">
-                    <select
-                      type="text"
-                      name="pinned"
-                      value={editData.pinned}
+            <div>
+              <span className="text-white/50 block mb-2 font-medium">
+                Routing Target
+              </span>
+              {isEdit === "location" ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white/30"
+                    value={editData.location}
+                    name="location"
+                    onChange={handleInput}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-white text-black px-4 rounded-xl font-medium"
+                  >
+                    <BiSync className="text-lg" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center bg-white/5 px-3 py-2 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+                  <span className="font-mono text-white/70 truncate max-w-[340px]">
+                    {editData?.location}
+                  </span>
+                  <button
+                    onClick={() => setIsEdit("location")}
+                    className="text-white/50 hover:text-white"
+                  >
+                    <BiPencil />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <span className="text-white/50 block mb-2 font-medium">
+                Pin Status
+              </span>
+              <div className="flex gap-2 bg-white/5 p-2 rounded-xl border border-white/5">
+                <select
+                  name="pinned"
+                  value={editData.pinned}
+                  onChange={handleInput}
+                  className="flex-1 bg-transparent text-white border-0 outline-none px-2 cursor-pointer appearance-none"
+                >
+                  <option value="" className="bg-black">
+                    False
+                  </option>
+                  <option value="true" className="bg-black">
+                    True
+                  </option>
+                </select>
+                <button
+                  onClick={handleSubmit}
+                  className="bg-white text-black px-4 py-1.5 rounded-lg font-medium flex items-center gap-2"
+                >
+                  <BiSync /> Apply
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-white/50 block mb-2 font-medium">
+                Description
+              </span>
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors">
+                {isEdit === "about" ? (
+                  <div className="space-y-3">
+                    <textarea
+                      className="w-full bg-black border border-white/10 rounded-xl p-3 text-white text-[13px] focus:outline-none focus:border-white/30 resize-none"
+                      value={editData.about}
+                      rows="4"
+                      name="about"
                       onChange={handleInput}
-                      className="form-control shadow-sm"
-                      required
-                    >
-                      <option value={""}>false</option>
-                      <option value={true}>true</option>
-                    </select>
+                      autoFocus
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => setIsEdit("")}
+                        className="bg-transparent text-white px-4 py-2 rounded-lg font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmit}
+                        className="bg-white text-black px-4 py-2 rounded-lg font-medium flex items-center gap-2"
+                      >
+                        <BiSync /> Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-start gap-4">
+                    <p className="text-white/80 whitespace-pre-wrap leading-relaxed m-0 flex-1">
+                      {editData?.about || "No description provided."}
+                    </p>
                     <button
-                      className=" shadow-sm ms-auto bg-primary border-0 text-light"
-                      onClick={handleSubmit}
+                      onClick={() => setIsEdit("about")}
+                      className="text-white/50 hover:text-white"
                     >
-                      <BiSync className="fs-4 icon" />
+                      <BiPencil />
                     </button>
                   </div>
-                </div>
-
-                <div className="mb-5 panel">
-                  <div
-                    className=" p-2"
-                    onDoubleClick={() =>
-                      setIsEdit((prev) => (prev == "about" ? "" : "about"))
-                    }
-                  >
-                    {isEdit == "about" ? (
-                      <div>
-                        <textarea
-                          type="text"
-                          className="form-control"
-                          value={editData.about}
-                          rows="6"
-                          name="about"
-                          autoFocus
-                          onChange={handleInput}
-                        ></textarea>
-                        <button
-                          className="shadow-sm ms-auto fs-4 border-0"
-                          onClick={() =>
-                            setIsEdit((prev) =>
-                              prev == "about" ? "" : "about"
-                            )
-                          }
-                        >
-                          <BiX />
-                        </button>
-                        <button
-                          className=" shadow-sm ms-auto bg-primary border-0 text-light"
-                          onClick={handleSubmit}
-                        >
-                          <BiSync className="fs-4 icon" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="d-flex">
-                        {" "}
-                        {editData?.about}{" "}
-                        <button
-                          className="btn shadow-sm ms-auto"
-                          onClick={() =>
-                            setIsEdit((prev) =>
-                              prev == "about" ? "" : "about"
-                            )
-                          }
-                        >
-                          <BiPencil />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

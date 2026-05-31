@@ -2,8 +2,7 @@ import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 const App = lazy(() => import('./App.jsx'))
 import 'react-lazy-load-image-component/src/effects/opacity.css'
-import './css/bootstrap.css'
-import './css/toastify.css'
+import "react-toastify/ReactToastify.css"
 import './css/index.css'
 import Loader from './components/Loader'
 

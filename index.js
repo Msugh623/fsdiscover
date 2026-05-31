@@ -289,6 +289,9 @@ app.post(
       );
   },
 );
+
+app.post("/init", authHandler.init);
+app.get("/isfirstlaunch",handlers.isfirststart)
 app.use("/admin", authHandler.enforceAuth, adminRouter);
 app.get("/profile", authHandler.getProfile);
 app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
@@ -297,6 +300,7 @@ app.get("/fsexplorer*", handlers.sendUi);
 app.get("/hostname", handlers.getHost);
 app.get("/zipper*", handlers.zipDir);
 app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
+app.get("/heartbeat", handlers.header);
 app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
 
@@ -369,7 +373,9 @@ async function getNewLocalPort(port) {
 getNewPort(port);
 getNewLocalPort(port);
 
-// TUI composition starts here
+/* *********** TUI composition starts here ********** *
+
+*/
 const logo = `SprintET FSdiscover`;
 async function refresh() {
   const urlLine = "URL: \x1b[36m" + process.netUrl + "\x1b[39m ";
@@ -473,6 +479,7 @@ netProb.fallback = refresh;
 process.refreshCompositor = refresh;
 refresh();
 update();
+
 function getDeviceType(userAgent) {
   const mobileRegex =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
@@ -484,4 +491,10 @@ process.currentVersion = fs.readFileSync(path.join(dirname(), "version"), {
 
 setInterval(() => {
   netProb.heartbeat && networkStatusFlag == "Disconnected" ? refresh() : null;
+  if (
+    process.stdout.rows + process.stdout.columns !==
+    compositor.height + compositor.width
+  ) {
+    refresh();
+  }
 }, 5000);
