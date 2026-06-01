@@ -29,12 +29,12 @@ const Login = () => {
     setLoading(true);
     const toastId = toast.loading("Logging in...");
     try {
-     const cred = (await api.post("/rq/login", data))?.data;
-     localStorage.access = cred.token;
-     api.defaults.headers.common["Authorization"] = cred.token;
-     const state = localStorage.go;
-     localStorage.go = "";
-     state ? location.replace(state) : location.replace("/");
+      const cred = (await api.post("/rq/login", data))?.data;
+      localStorage.access = cred.token;
+      api.defaults.headers.common["Authorization"] = cred.token;
+      const state = localStorage.go;
+      localStorage.go = "";
+      state ? location.replace(state) : location.replace("/");
     } catch (err) {
       const message = err?.response?.data || err.message || "Login failed";
       setError(message);

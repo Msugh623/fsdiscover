@@ -61,6 +61,17 @@ class Handlers {
   isfirststart = (_, res) => {
     return res.status(200).json(runtimeConfig.firstlaunch ? 1 : 0);
   };
+  isInSafeMode = (_, res) => {
+    return res.status(200).json(runtimeConfig.config?.safeMode ? 1 : 0);
+  };
+  getSafeModeUploadDir = (_, res) => {
+    const dir =
+      runtimeConfig.config?.safemodeUploadDir ||
+      runtimeConfig.config?.defaultUploadDir ||
+      runtimeConfig.config?.publicDir ||
+      "";
+    return res.status(200).json(dir);
+  };
   sendUi = async (_, res) => {
     const boilerplate = await readFileSync(
       path.join(dirname(), "public", "client", "index.html"),
@@ -447,6 +458,7 @@ class AuthHandler {
   config = { ...config };
 
   init = (req, res) => {
+    const { runtimeConfig } = new UseRuntimeConfig();
     if (!`${req?.headers?.host}`.includes("127.0.0.1")) {
       return res.status(401).send("forbidden");
     }
@@ -460,12 +472,13 @@ class AuthHandler {
     initData.nodeType = String(body.nodeType);
     initData.autoUpdate = Boolean(body.autoUpdate);
     initData.defaultUploadDir = String(body.defaultUploadDir);
+    initData.safemodeUploadDir = String(body.safemodeUploadDir || "");
     initData.noAuthFsRead = Boolean(body.noAuthFsRead);
     initData.noAuthFsWrite = Boolean(body.noAuthFsWrite);
     initData.safeMode = Boolean(body.safeMode);
-    initData.publicDir = String(body.publicDir);
-    if (!initData.password || !initData.user || !initData.nodeType) {
-      return res.status(400).send("Missing password field");
+    initData.publicDir = String(body.publicDir || os.homedir());
+    if (!initData.password || !initData.userspace || !initData.nodeType) {
+      return res.status(400).send("incomplete data");
     }
     const newRuntimeConfig = {
       ...schemas.runtimeConfData,
@@ -476,11 +489,11 @@ class AuthHandler {
       noAuthFsRead: initData.noAuthFsRead,
       noAuthFsWrite: initData.noAuthFsWrite,
       safeMode: initData.safeMode,
+      safemodeUploadDir: initData.safemodeUploadDir,
       publicDir: initData.publicDir,
       apps: schemas.runtimeConfData.apps,
     };
     this.config.password = initData.password;
-    const { runtimeConfig } = new UseRuntimeConfig();
     runtimeConfig.config = {
       ...newRuntimeConfig,
     };

@@ -1,8 +1,8 @@
 {
   "name": "FSdiscover Client",
   "short_name": "FSdiscover",
-  "description": "Lightweight cross-platform remote control and file sharing client by Sprintet.",
-  "id": "com.sprintet.fsdiscover.client",
+  "description": "Lightweight cross-platform remote control and file sharing client by SprintET.",
+  "id": "com.SprintET.fsdiscover.client",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",

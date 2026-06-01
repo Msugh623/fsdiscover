@@ -291,7 +291,9 @@ app.post(
 );
 
 app.post("/init", authHandler.init);
-app.get("/isfirstlaunch",handlers.isfirststart)
+app.get("/safemode", handlers.isInSafeMode);
+app.get("/safemode-upload-dir", handlers.getSafeModeUploadDir);
+app.get("/isfirstlaunch", handlers.isfirststart);
 app.use("/admin", authHandler.enforceAuth, adminRouter);
 app.get("/profile", authHandler.getProfile);
 app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);

@@ -178,7 +178,7 @@ const Panel = () => {
 
   useEffect(() => {
     setMenuPos({
-      x: window.innerWidth - 60,
+      x: window.innerWidth - 70,
       y: 15,
     });
   }, []);

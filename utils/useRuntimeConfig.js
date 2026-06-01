@@ -59,6 +59,12 @@ class RuntimeConfig {
       const toJson =
         persistConf.length > 10 ? JSON.parse(persistConf) : this.config;
       this.config = { ...conf, ...toJson };
+      this.firstlaunch = Boolean(!this.config?.userspace);
+      this.firstlaunch && setTimeout(() => {
+        exec(
+          `open "${process.localUrl || "http://127.0.0.1:3000"}/init" || explorer "${process.localUrl || "http://127.0.0.1:3000"}/init"`,
+        );
+      }, 1200);
     } catch (err) {
       logger.log(
         "RuntimeConfig: Failed to mount non-existent or curropted runtime.config.json... Cleaning and regenerating",
@@ -176,6 +182,10 @@ class RuntimeConfig {
           typeof newConf.defaultUploadDir === "string"
             ? newConf.defaultUploadDir
             : this.config.defaultUploadDir,
+        safemodeUploadDir:
+          typeof newConf.safemodeUploadDir === "string"
+            ? newConf.safemodeUploadDir
+            : this.config.safemodeUploadDir,
         userspace:
           typeof newConf.userspace === "string"
             ? newConf.userspace

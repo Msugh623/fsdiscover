@@ -10,8 +10,15 @@ import PlaceHolder from "../components/PlaceHolder";
 import { FaGear } from "react-icons/fa6";
 
 export default function AdminIndex() {
-  const { apps, fetchSrc, hostname, runtimeConfig, profile, setMenuPos } =
-    useStateContext();
+  const {
+    apps,
+    fetchSrc,
+    hostname,
+    runtimeConfig,
+    profile,
+    setMenuPos,
+    setSafeMode
+  } = useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, _] = useState("All");
 
@@ -33,10 +40,19 @@ export default function AdminIndex() {
 
   useEffect(() => {
     document.title = "SprintET FSdiscover - " + hostname;
+    (async () => {
+      try {
+        const res = await api.get("/safemode");
+        const v = res?.data;
+        setSafeMode(Boolean(Number(v)));
+      } catch {
+        // ignore
+      }
+    })();
     fetchSrc();
     setMenuPos({
       x: 40,
-      y: window.innerHeight - 80,
+      y: window.innerHeight - 90,
     });
   }, []);
 
@@ -56,12 +72,12 @@ export default function AdminIndex() {
                     placeholder={<PlaceHolder />}
                     src="/icon.png"
                     height={"48px"}
-                    className="h-12  w-auto object-contain rounded-xl"
+                    className="h-12 min-w-12 object-cover rounded-xl"
                     alt="fsdiscover"
                   />
                   <div>
                     <h1 className="text-[1.7em] icon font-bold">FSdiscover</h1>
-                    <div className="text-[0.7em]">
+                    <div className="text-[0.55em] sm:text-[0.7em]">
                       Your computer in the palm of your hands
                     </div>
                   </div>

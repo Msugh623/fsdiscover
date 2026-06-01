@@ -8,7 +8,7 @@ import { FaFileWaveform, FaSpinner } from "react-icons/fa6";
 
 const ConnectedDevice = ({ socketid }) => {
   const [socketId, setsocketId] = useState();
-  const { sessions, setModal } = useStateContext();
+  const { sessions, setModal, setModalTitle } = useStateContext();
   const [device, setDevice] = useState(null);
   const [loading, setLoading] = useState(true);
   const activities = device?.activities || [];
@@ -22,6 +22,7 @@ const ConnectedDevice = ({ socketid }) => {
       setsocketId(foundDevice.socketid);
     }
     setDevice(foundDevice);
+    setModalTitle("Connected Device");
   }, [socketid, sessions]);
 
   const getDeviceType = (userAgent) => {
@@ -61,7 +62,7 @@ const ConnectedDevice = ({ socketid }) => {
       navigate("/admin");
     } catch (err) {
       toast.error(
-        err?.response?.data || err.message || "Failed to eject device"
+        err?.response?.data || err.message || "Failed to eject device",
       );
     }
   };
@@ -76,111 +77,59 @@ const ConnectedDevice = ({ socketid }) => {
     return (
       <div className="my-auto p-4 fadeIn">
         {loading ? (
-          <>
-            <div className="text-center pt-4 px-5 mt-4">
-              <FaSpinner className="spinner fs-1" />
-            </div>
-          </>
+          <div className="text-center pt-4 px-5 mt-4">
+            <FaSpinner className="spinner fs-1 text-white" />
+          </div>
         ) : (
-          <>
-            <h3 className="text-danger">Device not found</h3>
-            <p>
+          <div className="rounded-3xl border border-white/10 bg-[#111] p-6 text-white shadow-2xl">
+            <h3 className="text-white mb-2">Device not found</h3>
+            <p className="text-white/80">
               The device with ID or Address {socketId || socketid} could not be
               found.
             </p>
-          </>
+          </div>
         )}
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 p-2">
-      <div className="paper text-white shadow-lg p-3">
-        <h3 className="text-white fw-bold mb-4">Device Details</h3>
-        <div className="flex flex-wrap -mx-2 mb-4">
-          <div className="lg:w-1/2 px-2">
-            <div className="flex items-center mb-3">
-              <div className="pr-3 fs-1 icon">
+    <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="rounded-3xl border border-white/10 bg-[#111] shadow-2xl text-white overflow-hidden">
+        <div className="bg-[#0c0c10] border-b border-white/10 px-4 py-4 sm:px-6 sm:py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-start gap-4 min-w-0">
+              <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-[#070708] text-3xl text-white">
                 {getDeviceType(device?.agent) === "mobile" ? (
                   <FaMobile />
                 ) : (
                   <FaDesktop />
                 )}
               </div>
-              <div>
-                <h5 className="text-white mb-0">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">
+                  Connected device
+                </p>
+                <h3 className="text-2xl font-semibold text-white truncate">
                   {device.addr == "127.0.0.1"
-                    ? "HOST - " + device.addr
+                    ? `HOST - ${device.addr}`
                     : device.addr}
-                </h5>
-                <div className="text-gray-400">{device.type}</div>
+                </h3>
+                <p className="text-sm text-white/60 truncate">{device.type}</p>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex flex-wrap -mx-2 mb-4">
-          <div className="lg:w-1/2 px-2 px-4 pb-4">
-            <div className="paper shadow-lg flex flex-wrap -mx-2 p-3 px-2">
-              <h5 className="text-white mb-3">Running Activities</h5>
-              {activities.map((activity) => (
-                <>
-                  <div
-                    className="paper shadow-lg mb-2 p-3"
-                    onClick={()=>toggleActivity(activity)}
-                  >
-                    <div className="flex">
-                      <img
-                        src={activity.icon}
-                        alt=""
-                        className="rounded my-auto"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                        }}
-                      />
-                      <div className="my-auto flex pl-2 text-2xl fw-bold w-full">
-                        <div className="text-lg">
-                          {" "}
-                          {activity.name}
-                          <div className="text-sm">
-                            <small>
-                              {(activity?.href || "").replace(
-                                "/fsexplorer",
-                                ""
-                              ) || activity?.location}
-                            </small>
-                          </div>
-                        </div>
-                        <button
-                          className="p-1 py-0 ml-auto my-auto text-xl bg-red-600 text-white hover:bg-red-700"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            closeActivity(activity);
-                          }}
-                        >
-                          <FaTimes className="icon" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ))}
-              <div className="px-3">
-                {" "}
-                {!activities?.length ? "No running activities" : ""}
-              </div>
-            </div>
-          </div>
-          <div className="lg:w-1/2 px-2">
-            <div className="paper shadow-lg p-3 mb-4">
-              <h5 className="text-white mb-3">Actions</h5>
-              <div
-                className="paper shadow-lg mb-2 p-1 mr-1"
-                style={{
-                  width: "fit-content",
-                }}
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <button
+                type="button"
+                className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition"
+                onClick={() => setModal("")}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition"
                 onClick={() => {
                   document.toastId = toast.info(
                     `Choose a file you want to open with ${
@@ -188,58 +137,194 @@ const ConnectedDevice = ({ socketid }) => {
                         ? "HOST - " + device.addr
                         : device.addr
                     }`,
-                    {
-                      autoClose: false,
-                    }
+                    { autoClose: false },
                   );
                   setModal("");
                   navigate("/fsexplorer");
                 }}
               >
-                <div className="flex flex flex-col">
-                  <div>
-                    <button className="p-1 py-0 ml-auto my-auto text-xl py-1 bg-blue-600 text-white hover:bg-blue-700">
-                      <FaFileWaveform
-                        alt=""
-                        className="rounded fs-1 my-auto"
-                        style={{
-                          width: "50px",
-                        }}
-                      />
-                    </button>
-                  </div>
-                  <div className="text-sm">
-                    <small>Open a file</small>
-                  </div>
-                </div>
-              </div>
+                Open file
+              </button>
+              <button
+                type="button"
+                className="rounded-3xl border border-white/10 bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 transition"
+                onClick={ejectDevice}
+              >
+                Eject device
+              </button>
             </div>
-            <div className="paper shadow-lg p-3">
-              <h5 className="text-white mb-3">User Information</h5>
-              <div className="mb-2">
-                <strong>Address:</strong> {device?.addr}
-              </div>
-              <div className="mb-2">
-                <strong>User Agent:</strong> {device?.agent}
-              </div>
-            </div>
-            <div className="paper shadow-lg mt-4 p-3">
-              <h5 className="text-white mb-3">Session Information</h5>
-              <div className="mb-2">
-                <strong>Type:</strong> {getDeviceType(device?.user?.agent)}
-              </div>
-              <div className="mb-2">
-                <strong>Connected Since:</strong>{" "}
-                {new Date(device.lastAccess).toLocaleString()}
-              </div>
-            </div>
+          </div>
+
+          <div className="mt-4 grid gap-2 lg:hidden">
+            {[
+              { id: "activities", label: "Activities" },
+              { id: "info", label: "User Info" },
+              { id: "session", label: "Session" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  document
+                    .getElementById(item.id)
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="w-full rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-left text-sm text-white/80 hover:bg-white/10 transition"
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="mt-4">
-          <button className="bg-red-600 text-white hover:bg-red-700" onClick={ejectDevice}>
-            Eject Device
-          </button>
+        <div className="grid gap-4 lg:grid-cols-[220px_1fr] p-4 sm:p-6">
+          <aside className="hidden lg:block space-y-4">
+            <div className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-3">
+                Navigate
+              </p>
+              {[
+                { id: "activities", label: "Activities" },
+                { id: "info", label: "User Info" },
+                { id: "session", label: "Session" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    document
+                      .getElementById(item.id)
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="w-full rounded-2xl px-4 py-3 text-left text-sm text-white/80 hover:bg-white/10 transition"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-3">
+                Device summary
+              </p>
+              <div className="space-y-3 text-sm text-white/70">
+                <div>
+                  <span className="text-white/60">Socket ID:</span>
+                  <div className="break-all">{socketId || socketid}</div>
+                </div>
+                <div>
+                  <span className="text-white/60">Address:</span> {device?.addr}
+                </div>
+                <div>
+                  <span className="text-white/60">Type:</span> {device?.type}
+                </div>
+                <div>
+                  <span className="text-white/60">Connected:</span>{" "}
+                  {new Date(device.lastAccess).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <div className="space-y-4">
+            <section
+              id="activities"
+              className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h5 className="text-lg font-semibold text-white">
+                    Running Activities
+                  </h5>
+                  <p className="text-sm text-white/60">
+                    Tap an activity to toggle its state.
+                  </p>
+                </div>
+                <span className="text-sm text-white/50">
+                  {activities.length} active
+                </span>
+              </div>
+
+              {activities.length ? (
+                <div className="grid gap-3 mt-4">
+                  {activities.map((activity) => (
+                    <button
+                      key={activity.id || activity.href}
+                      type="button"
+                      onClick={() => toggleActivity(activity)}
+                      className="w-full rounded-3xl border border-white/10 bg-[#111] p-4 text-left transition hover:border-white/20 hover:bg-white/10"
+                    >
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={activity.icon}
+                          alt=""
+                          className="h-10 w-10 rounded-xl object-cover"
+                        />
+                        <div className="flex-1">
+                          <div className="text-lg font-semibold text-white">
+                            {activity.name}
+                          </div>
+                          <div className="text-sm text-white/60">
+                            {(activity?.href || "").replace(
+                              "/fsexplorer",
+                              "",
+                            ) || activity?.location}
+                          </div>
+                        </div>
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white/80">
+                          <FaTimes />
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 text-white/60">No running activities</div>
+              )}
+            </section>
+
+            <section
+              id="info"
+              className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4"
+            >
+              <h5 className="text-lg font-semibold text-white mb-3">
+                User Information
+              </h5>
+              <div className="grid gap-3 text-sm text-white/80">
+                <div className="rounded-2xl bg-[#111] p-4">
+                  <div className="text-white/60">Address</div>
+                  <div className="mt-2 text-white">{device?.addr}</div>
+                </div>
+                <div className="rounded-2xl bg-[#111] p-4">
+                  <div className="text-white/60">User Agent</div>
+                  <div className="mt-2 text-white">{device?.agent}</div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              id="session"
+              className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4"
+            >
+              <h5 className="text-lg font-semibold text-white mb-3">
+                Session Information
+              </h5>
+              <div className="grid gap-3 text-sm text-white/80">
+                <div className="rounded-2xl bg-[#111] p-4">
+                  <div className="text-white/60">Type</div>
+                  <div className="mt-2 text-white">
+                    {getDeviceType(device?.user?.agent)}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-[#111] p-4">
+                  <div className="text-white/60">Connected Since</div>
+                  <div className="mt-2 text-white">
+                    {new Date(device.lastAccess).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>

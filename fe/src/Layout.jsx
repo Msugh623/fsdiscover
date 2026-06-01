@@ -8,12 +8,11 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { useStateContext } from "./state/StateContext";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
 import { ToastContainer } from "react-toastify";
 import Admin from "./pages/Admin";
 import AdminIndex from "./pages/AdminIndex";
 import Login from "./pages/authPages/Login";
+import SafeMode from "./pages/SafeMode";
 import FileManager from "./apps/fsmanager/FileManager";
 import FsContext from "./state/FsContext";
 import MainSection from "./apps/fsmanager/MainSection";
@@ -26,7 +25,7 @@ import Init from "./pages/Init";
 const TouchPad = lazy(() => import("./apps/touchpad/Index"));
 
 const Layout = () => {
-  const { pop, openApp } = useStateContext();
+  const { pop, openApp, safeMode, fetching } = useStateContext();
   const location = useLocation();
   const navigate = useNavigate();
   const [params, _] = useSearchParams();
@@ -40,6 +39,15 @@ const Layout = () => {
     }
   }, []);
 
+  // If safe mode is active and the user is not logged in, force frontend-only
+  // navigation to the login page. Wait until fetching completes to avoid
+  // redirecting while auth/safeMode state is still loading.
+  useEffect(() => {
+    if (!fetching && safeMode && !localStorage?.access) {
+      if (location.pathname !== "/login") navigate("/");
+    }
+  }, [safeMode, fetching, navigate, location.pathname]);
+
   return (
     <>
       <Opened />
@@ -47,9 +55,6 @@ const Layout = () => {
       <Routes>
         <Route path="/init" element={<Init />} />
         <Route path="/login" element={<Login />} />
-
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
 
         {/* File Explorer */}
         <Route
@@ -90,7 +95,18 @@ const Layout = () => {
 
         {/* Home */}
         <Route path="/" element={<Admin />}>
-          <Route index element={<AdminIndex />} />
+          <Route
+            index
+            element={
+              fetching ? (
+                <Loader animate={true} />
+              ) : safeMode && !localStorage?.access ? (
+                <SafeMode />
+              ) : (
+                <AdminIndex />
+              )
+            }
+          />
         </Route>
       </Routes>
 

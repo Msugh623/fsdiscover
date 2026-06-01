@@ -11,70 +11,59 @@ const ConnectedDevices = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        minWidth: "300px",
-      }}
-    >
-      <div className="flex w-full">
-        <div
-          className="w-full bg-gray-900"
-          style={{
-            minWidth: window.innerWidth < 500 ? "100vw" : "",
-          }}
-        >
+    <div className="min-w-75 bg-[#070809] text-gray-200">
+      <div className="w-full">
+        <div className="w-full p-3">
           <MainHeader />
-          <>
-            <div
-              className="max-w-4xl mx-auto px-4 p-3 px-4"
-              style={{
-                maxWidth: "90vw",
-                maxHeight: "80vh",
-                overflowY: "auto",
-              }}
-            >
-              {sessions
-                .filter((sess) =>
-                  (JSON.stringify(sess) + getDeviceType(sess.agent))
-                    .toLocaleLowerCase()
-                    .includes(key)
-                )
-                .map((device, i) => (
-                  <div
-                    key={"$d-" + device.addr + device.agent + i}
-                    className="active p-1 flex rounded c-pointer mb-2 flex flex-wrap -mx-2"
-                    onClick={() => {
-                      setModal(<ConnectedDevice socketid={device.socketid} />);
-                    }}
-                    style={{
-                      overflow: "auto",
-                    }}
-                  >
-                    <div className="pl-2 col-sm-2 mb-2 mt-1">
-                      <div className="icon mb-2 text-2xl mt-1">
-                        {getDeviceType(device.agent) == "mobile" ? (
-                          <FaMobile />
-                        ) : (
-                          <FaDesktop />
-                        )}
+          <div className="mx-auto w-full max-w-6xl px-3 py-4 sm:px-4">
+            <div className="rounded-3xl border border-white/10 bg-[#111] shadow-2xl overflow-hidden">
+              <div className="p-4 sm:p-6">
+                <div className="grid gap-3 max-h-[80vh] overflow-y-auto">
+                  {sessions
+                    .filter((sess) =>
+                      (JSON.stringify(sess) + getDeviceType(sess.agent))
+                        .toLocaleLowerCase()
+                        .includes(key),
+                    )
+                    .map((device, i) => (
+                      <div
+                        key={"$d-" + device.addr + device.agent + i}
+                        className="group flex flex-wrap items-center gap-3 rounded-3xl border border-white/10 bg-[#0d0d11] p-4 transition hover:border-white/20 hover:bg-white/10 cursor-pointer"
+                        onClick={() => {
+                          setModal(
+                            <ConnectedDevice socketid={device.socketid} />,
+                          );
+                        }}
+                      >
+                        <div className="flex min-w-37.5 items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-3xl border border-white/10 bg-[#111] text-2xl text-white">
+                            {getDeviceType(device.agent) == "mobile" ? (
+                              <FaMobile />
+                            ) : (
+                              <FaDesktop />
+                            )}
+                          </div>
+                          <div className="text-sm font-medium text-white">
+                            {device.addr == "127.0.0.1"
+                              ? "HOST - " + device.addr
+                              : device.addr}
+                          </div>
+                        </div>
+                        <div className="min-w-40 flex-1 text-sm text-white/80">
+                          {device.agent}
+                        </div>
+                        <div className="min-w-40 text-sm text-white/80">
+                          {device.socketid}
+                        </div>
+                        <div className="min-w-40 text-sm text-white/60">
+                          {device.lastAccess.split("GMT")[0]}
+                        </div>
                       </div>
-                      {device.addr == "127.0.0.1"
-                        ? "HOST - " + device.addr
-                        : device.addr}
-                    </div>
-                    <div className="pl-2 mt-auto sm:w-5/12 px-2 mb-2 mt-1">
-                      {device.agent}{" "}
-                    </div>
-                    <div className="pl-2 mt-auto col-sm-3 mb-2 mt-1">
-                      {device.socketid}{" "}
-                    </div>
-                    <div className="pl-2 mt-auto col-sm-2 mb-2 mt-1">
-                      {device.lastAccess.split("GMT")[0]}{" "}
-                    </div>
-                  </div>
-                ))}
+                    ))}
+                </div>
+              </div>
             </div>
-          </>
+          </div>
         </div>
       </div>
     </div>

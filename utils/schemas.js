@@ -16,6 +16,7 @@ const initData = {
   nodeType: String(nodeTypes.CHILD || nodeTypes.parent),
   publicDir: String(os.homedir()),
   defaultUploadDir: String(""),
+  safemodeUploadDir: String(""),
   noAuthFsRead: Boolean(true),
   noAuthFsWrite: Boolean(true),
   safeMode: Boolean(false),
@@ -28,11 +29,13 @@ const runtimeConfData = {
   defaultUploadDir: String(""),
   noAuthFsRead: Boolean(true),
   noAuthFsWrite: Boolean(true),
+  safemodeUploadDir: String(""),
   autoUpdate: Boolean(true),
   sessionMaxAge: Number(60 * 60 * 1000),
   userspace: String(
     userspaces.INDIVIDUAL || userspaces.ORGANIZATION || userspaces.PUBLIC_SPACE,
   ),
+  safeMode: Boolean(false),
   nodeType: String(nodeTypes.CHILD || nodeTypes.parent),
   apps: [
     "https://sprintet.onrender.com/fsdiscover",

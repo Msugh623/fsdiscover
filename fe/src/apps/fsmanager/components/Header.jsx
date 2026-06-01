@@ -79,7 +79,7 @@ const Header = () => {
               </button>
               <div className="overflow-hidden" onClick={() => navigate("")}>
                 <div className="text-xs uppercase tracking-[0.3em] text-gray-500">
-                  sprintet
+                  SprintET
                 </div>
                 <div className="text-sm font-semibold text-white truncate">
                   File Manager
