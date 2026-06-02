@@ -8,7 +8,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { useStateContext } from "./state/StateContext";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer } from "material-react-toastify";
 import Admin from "./pages/Admin";
 import AdminIndex from "./pages/AdminIndex";
 import Login from "./pages/authPages/Login";
@@ -51,7 +51,7 @@ const Layout = () => {
   return (
     <>
       <Opened />
-      <ToastContainer progressStyle={{ opacity: "0" }} />
+      <ToastContainer position="top-center" progressStyle={{ opacity: "0" }} />
       <Routes>
         <Route path="/init" element={<Init />} />
         <Route path="/login" element={<Login />} />

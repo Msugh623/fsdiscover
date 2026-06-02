@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useStateContext } from "../state/StateContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import {
   FaCompress,
   FaDesktop,

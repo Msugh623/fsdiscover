@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import api from "../../axios/api";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 
 const context = createContext();
 
@@ -27,7 +27,7 @@ const FsContext = ({ children }) => {
       setErr(
         "" + err?.status == "404"
           ? "No such file or directory"
-          : err?.response?.data || err.message || "" + err
+          : err?.response?.data || err.message || "" + err,
       );
     } finally {
       setIsFetching(false);

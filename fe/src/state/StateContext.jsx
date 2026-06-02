@@ -1,5 +1,5 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../../axios/api";
 import { io } from "socket.io-client";

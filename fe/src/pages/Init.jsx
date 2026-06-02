@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../axios/api";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
 import {

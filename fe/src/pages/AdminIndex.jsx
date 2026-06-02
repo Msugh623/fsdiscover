@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useStateContext } from "../state/StateContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { FaTrash } from "react-icons/fa";
 import { BiPencil, BiSync, BiX } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
@@ -17,7 +17,7 @@ export default function AdminIndex() {
     runtimeConfig,
     profile,
     setMenuPos,
-    setSafeMode
+    setSafeMode,
   } = useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, _] = useState("All");

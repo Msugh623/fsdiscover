@@ -1,5 +1,5 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { keyMap } from "../assets/keymap";
 import { useStateContext } from "./StateContext";
 

@@ -4,7 +4,7 @@ import { FaBars, FaUpload } from "react-icons/fa6";
 import { BiLeftArrowCircle, BiSearch, BiSelectMultiple } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../../../axios/api";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { FaTimes } from "react-icons/fa";
 import { useStateContext } from "../../../state/StateContext";
 

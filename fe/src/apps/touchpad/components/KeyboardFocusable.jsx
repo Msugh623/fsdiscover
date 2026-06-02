@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { BiVolumeLow, BiX } from "react-icons/bi";
 import Delay from "../../../components/Delay";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 
 const KeyboardFocusable = ({ hasDivider }) => {
   const [panelClassName, setPanelClassName] = useState("hidden");

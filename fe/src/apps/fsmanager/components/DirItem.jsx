@@ -7,7 +7,7 @@ import { BiDevices, BiLock } from "react-icons/bi";
 import { useStateContext } from "../../../state/StateContext";
 import { FaDesktop, FaMobile } from "react-icons/fa";
 import api from "../../../../axios/api";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import ConnectedDevice from "../../deviceManager/ConnectedDevice";
 import { useNavigate } from "react-router-dom";
 

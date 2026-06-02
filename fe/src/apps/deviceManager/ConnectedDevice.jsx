@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../../state/StateContext";
 import { FaDesktop, FaMobile, FaTimes } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import api from "../../../axios/api";
 import { FaFileWaveform, FaSpinner } from "react-icons/fa6";
 

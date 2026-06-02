@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useInputContext } from "../../../state/InputContext";
 import { BiInfoCircle } from "react-icons/bi";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { useStateContext } from "../../../state/StateContext";
 
 const Panel = () => {
@@ -35,8 +35,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(1)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -50,8 +50,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(2)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("tp");
@@ -67,8 +67,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(3)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("mouseBarInner");
@@ -85,8 +85,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(4)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("scrollBar");
@@ -103,8 +103,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(5)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("start");
@@ -121,8 +121,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(6)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -136,8 +136,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(7)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -151,8 +151,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(8)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -167,7 +167,7 @@ const Panel = () => {
               null;
             }}
           />
-        )))
+        ))),
       );
     },
   ];
@@ -228,12 +228,12 @@ const Panel = () => {
           backgroundColor: mouseDownHold
             ? "green"
             : touchConfig.mouseDown
-            ? touchConfig.mouseDownHold
-              ? "green"
-              : "red"
-            : touchConfig.scollDown
-            ? "yellow"
-            : "#efefef",
+              ? touchConfig.mouseDownHold
+                ? "green"
+                : "red"
+              : touchConfig.scollDown
+                ? "yellow"
+                : "#efefef",
           pointerEvents: "none",
           height: "2px",
           position: "fixed",
@@ -245,7 +245,7 @@ const Panel = () => {
           minWidth: "110vw",
         }}
       ></div>
-      <div className="flex " style={{ width: "100%"}}>
+      <div className="flex " style={{ width: "100%" }}>
         <canvas
           id="tp"
           className="border xl:mt-10 mx-auto border-white/10 rounded-2xl"
@@ -272,10 +272,10 @@ const Panel = () => {
           backgroundColor: mouseDownHold
             ? "green"
             : touchConfig.mouseDown
-            ? touchConfig.mouseDownHold
-              ? "green"
-              : "red"
-            : "steelblue",
+              ? touchConfig.mouseDownHold
+                ? "green"
+                : "red"
+              : "steelblue",
           position: "fixed",
           top: touchConfig.mouseY - 3,
           left: touchConfig.mouseX - 3,

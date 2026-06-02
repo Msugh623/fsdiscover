@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import api from "../../../axios/api";
 import { Link, useNavigate } from "react-router-dom";
 import PlaceHolder from "../../components/PlaceHolder";

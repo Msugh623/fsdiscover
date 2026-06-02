@@ -388,8 +388,11 @@ async function refresh() {
     : "\x1b[31mDisconnected\x1b[39m";
   const ifaceText =
     (() => {
-      if (!networkInterface || networkInterface == "lo") {
-        return "\x1b[31mNo Network Detected\x1b[39m";
+      if (
+        (!networkInterface || networkInterface == "lo") &&
+        netFace.address.includes("127.0.0.1")
+      ) {
+        return `\x1b[31mNo Network Detected\x1b[39m`;
       }
       if (networkInterface == "wlan0") {
         return "\x1b[32mWiFi\x1b[39m";
@@ -397,6 +400,7 @@ async function refresh() {
       if (networkInterface) {
         return `\x1b[32m${networkInterface}\x1b[39m`;
       }
+      return `\x1b[32mUnidentified Network\x1b[39m`;
     })() + ` - ${networkStatus}`;
   try {
     compositor.init();
