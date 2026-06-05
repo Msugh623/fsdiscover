@@ -1,507 +1,89 @@
-import React, { useEffect, useState } from "react";
-import { FaMaximize, FaX } from "react-icons/fa6";
+import React, { useState } from "react";
+import { FaX } from "react-icons/fa6";
 import { useStateContext } from "../state/StateContext";
 import { AiOutlineInfoCircle } from "react-icons/ai";
-import { BiArrowBack, BiCategory, BiLinkExternal } from "react-icons/bi";
-import { useNavigate } from "react-router-dom";
+import { BiLinkExternal } from "react-icons/bi";
+import { FaTimes } from "react-icons/fa";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "./PlaceHolder";
-import { FaTimes } from "react-icons/fa";
 
 const AppWindow = ({ app }) => {
-  const { upDateWindow, killWindow, defaults, setToTop } = useStateContext();
-  const location  = app?.id;
-  const [lastMsDown, setLastMsDown] = useState({
-    x: 0,
-    y: 0,
-    diffX: 0,
-    diffY: 0,
-  });
-  const [prev, setPrev] = useState({ x: app.x, y: app.y });
-  const [isAbouting, setIsAbouting] = useState(false);
-  const defVal = defaults();
+  const { killWindow } = useStateContext();
   const [dd, setDd] = useState(false);
 
-  const handleMiniMax = (e) => {
-    e.stopPropagation();
-    app.x &&
-      setPrev((prev) => ({
-        ...prev,
-        x: app.x,
-      }));
-    app.y &&
-      setPrev((prev) => ({
-        ...prev,
-        y: app.y,
-      }));
-    if (app.width == window.innerWidth && app.height == window.innerHeight) {
-      upDateWindow(
-        location,
-        "height",
-        Number(localStorage.getItem("h-" + app.id)) || defVal.height
-      );
-      upDateWindow(
-        location,
-        "width",
-        Number(localStorage.getItem("w-" + app.id)) || defVal.width
-      );
-      upDateWindow(location, "x", prev.x);
-      upDateWindow(location, "y", prev.y);
-    } else {
-      upDateWindow(location, "y", 0);
-      upDateWindow(location, "x", 0);
-      upDateWindow(location, "width", window.innerWidth);
-      upDateWindow(location, "height", window.innerHeight);
-    }
-  };
-
-  function handleDrag(e, end) {
-    end == "start" && (e.target.style.opacity = "0");
-    end == "start" &&
-      setTimeout(() => {
-        e.target.style.opacity = "1";
-      }, 0);
-
-    const xcurr = e.clientX || e.touches[0].clientX;
-    const ycurr = e.clientY || e.touches[0].clientY;
-    let appX = xcurr;
-    let appY = ycurr;
-
-    upDateWindow(location, "x", appX - lastMsDown.diffX);
-    upDateWindow(location, "y", appY);
-
-    if (appY <= 5 || appY >= window.innerHeight - 5) {
-      upDateWindow(location, "x", 0);
-      upDateWindow(location, "y", 0);
-      upDateWindow(location, "height", window.innerHeight - 75);
-      upDateWindow(location, "width", window.innerWidth);
-      setTimeout(() => {
-        upDateWindow(location, "width", window.innerWidth);
-      }, 20);
-    } else if (appY > 5 && appY < window.innerHeight - 5) {
-      upDateWindow(
-        location,
-        "height",
-        Number(localStorage.getItem("h-" + app.id)) || defVal.height
-      );
-    }
-    if (appX <= 5 || appX >= window.innerWidth - 5) {
-      upDateWindow(location, "x", 0);
-      upDateWindow(location, "y", 0);
-      upDateWindow(location, "height", window.innerHeight - 75);
-      upDateWindow(location, "width", window.innerWidth);
-    } else if (appX > 5 && appX < window.innerWidth - 5) {
-      if (appY > 0 && appY < window.innerHeight) {
-        upDateWindow(
-          location,
-          "width",
-          Number(localStorage.getItem("w-" + app.id)) || defVal.width
-        );
-      }
-    }
-  }
-
-  const changeKey = (key, val) => {
-    const swap = ["w", "s"].includes(key);
-    const prevVal = Number(localStorage.getItem(key + "-" + app.id)) || 0;
-    const diff = !swap ? prevVal - val : val - prevVal;
-    setTimeout(() => localStorage.setItem(key + "-" + app.id, val), 0);
-    return diff < 100 && diff > -100 ? diff : 0;
-  };
-
-  function handleTouchStart(e) {
-    const touch = e.touches[0];
-
-    // handleDrag({
-    //   clientX: touch.clientX,
-    //   clientY: touch.clientY,
-    // }, 'start');
-  }
-
-  function handleTouchMove(e) {
-    const touch = e.touches[0];
-    handleDrag({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-    });
-  }
-
-  function handleTouchEnd(e) {
-    handleDrag(
-      {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-      },
-      "end"
-    );
-  }
-
-  const Handlers = (clientX, clientY) => {
-    const prevWidth = app.width;
-    const prevHeight = app.height;
-    return {
-      n: () => {
-        const diff = changeKey("n", clientY);
-        const newHeight = prevHeight + diff;
-        newHeight > 200 &&
-          (() => {
-            localStorage.setItem("h-" + app.id, "" + newHeight);
-            upDateWindow(location, "height", newHeight);
-            upDateWindow(location, "y", clientY);
-          })();
-      },
-      s: () => {
-        const diff = changeKey("s", clientY);
-        const newHeight = prevHeight + diff;
-        newHeight > 200 &&
-          (() => {
-            localStorage.setItem("h-" + app.id, "" + newHeight);
-            upDateWindow(location, "height", newHeight);
-          })();
-      },
-      e: () => {
-        const diff = changeKey("e", clientX);
-        const newWidth = prevWidth + diff;
-        newWidth > 100 &&
-          (() => {
-            localStorage.setItem("w-" + app.id, "" + newWidth);
-            upDateWindow(location, "width", newWidth);
-            upDateWindow(location, "x", clientX);
-          })();
-      },
-      w: () => {
-        const diff = changeKey("w", clientX);
-        const newWidth = prevWidth + diff;
-        newWidth > 100 &&
-          (() => {
-            localStorage.setItem("w-" + app.id, "" + newWidth);
-            upDateWindow(location, "width", newWidth);
-          })();
-      },
-    };
-  };
-
-  async function handleResize(e, end) {
-    end == "start" && (e.target.style.opacity = "0");
-    end == "start" &&
-      setTimeout(() => {
-        e.target.style.opacity = "1";
-      }, 50);
-    const { title } = e.target;
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
-    const handlers = Handlers(clientX, clientY);
-    handlers[title]();
-  }
-
-  // useEffect(() => {
-  //   upDateWindow(
-  //     location,
-  //     "height",
-  //     Number(localStorage.getItem("h-" + app.id)) || defVal.height
-  //   );
-  //   upDateWindow(
-  //     location,
-  //     "width",
-  //     Number(localStorage.getItem("w-" + app.id)) || defVal.width
-  //   );
-  //   // return () => localStorage.clear()
-  //   localStorage.setItem("focused", app.id);
-  //   setToTop(app.id);
-  // }, []);
-
-  useEffect(() => {
-    app.height > 0 &&
-      app.height < window.innerHeight &&
-      localStorage.setItem(
-        "h-" + app.id,
-        "" + app.height || defVal.height
-      );
-    app.width > 0 &&
-      app.width < window.innerWidth &&
-      localStorage.setItem("w-" + app.id, "" + app.width || defVal.width);
-  }, [app.width, app.height]);
+  if (app.isMini) return null;
 
   return (
-    <div
-      id={`window-${app.id}`}
-      className={`rounded ${app.zIndex == 3 ?"shadow-lg" : "shadow-md"} ${
-        app.isMini && "d-none"
-      } d-flex`}
-      onMouseEnter={() => {
-        localStorage.setItem("focused", app.id);
-        setToTop(app.id);
-      }}
-      style={{
-        position: "fixed",
-        width: app.width + "px",
-        height: app.height + "px",
-        top: app.y + "px",
-        left: window.innerWidth > 640 ? app.x : 0 + "px",
-        zIndex: 10 + app.zIndex,
-        transition: "all, .1s",
-      }}
-    >
-      {Boolean(window.innerWidth > 640) && (
-        <div
-          className="divider my-auto h-100 resizeHr"
-          title="e"
-          onDragStart={(e) => handleResize(e, "start")}
-          onDrag={(e) => handleResize(e)}
-          onDragEnd={(e) => handleResize(e, true)}
-          onTouchStart={(e) => handleResize(e, "start")}
-          onTouchMove={(e) => handleResize(e)}
-          onTouchEnd={(e) => handleResize(e, true)}
-          draggable="true"
-          style={{
-            width: "2px",
-            background: "#0e0e0e",
-            height: "80%",
-            cursor: "w-resize",
-          }}
-        ></div>
-      )}
-      <div
-        className="growIn"
-        style={{ width: "calc(100% - 4px)", borderRadius: "14px" }}
-      >
-        {Boolean(window.innerWidth > 640) && (
-          <hr
-            className="m-0 bg-light border-light resizeHr resN"
-            title="n"
-            onDragStart={(e) => handleResize(e, "start")}
-            onDrag={(e) => handleResize(e)}
-            onDragEnd={(e) => handleResize(e, true)}
-            onTouchStart={(e) => handleResize(e, "start")}
-            onTouchMove={(e) => handleResize(e)}
-            onTouchEnd={(e) => handleResize(e, true)}
-            draggable="true"
-          />
-        )}
-        <header
-          id={`window-header-${app.id}`}
-          className="flex window-header text-white border border-bottom-0"
-        >
-          <div
-            className=""
-            style={{
-              position: "relative",
-              bottom: "9px",
-            }}
-          >
-            {isAbouting ? (
-              <BiArrowBack
-                className="text-xl slideUp aniFast"
-                onClick={() => setIsAbouting((prev) => !prev)}
-              />
-            ) : (
-              <AiOutlineInfoCircle
-                className="text-xl slideUp aniFast"
-                onClick={() => setDd((prev) => !prev)}
-              />
-            )}
-          </div>
-          <button
-            draggable
-            onClick={(e) => {
-              e.stopPropagation();
-              upDateWindow(app.id, "isMini", !app.isMini);
-            }}
-            onMouseDown={(e) => {
-              const appOtherEnd = app.width / 2 + e.clientX;
-              const xDiff = appOtherEnd - e.clientX;
-              setLastMsDown({
-                x: e.clientX,
-                y: e.clientY,
-                diffX: xDiff,
-                diffY: e.screenY - e.clientY,
-              });
-            }}
-            onDoubleClick={handleMiniMax}
-            onDragStart={(e) => handleDrag(e, "start")}
-            onDrag={(e) => handleDrag(e, "mid")}
-            onDragEnd={(e) => handleDrag(e, "end")}
-            onTouchStart={(e) => {
-              const appOtherEnd = app.width / 2 + e.touches[0].clientX;
-              const xDiff = appOtherEnd - e.clientX;
-              setLastMsDown({
-                x: e.clientX,
-                y: e.clientY,
-                diffX: xDiff,
-                diffY: e.screenY - e.clientY,
-              });
-              handleTouchStart(e);
-            }}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{ width: "40px", height: "10px" }}
-            className="p-0 flex m-auto rounded my-auto shadow-sm mr-1 bg-white text-gray-800"
-          ></button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              killWindow(app.id);
-            }}
-            style={{ width: "16px", height: "16px" }}
-            className="p-0 icon flex text-white m-auto rounded-full text-center my-auto shadow-sm mr-0 active"
-          >
-            <FaX
-              className="m-auto"
-              style={{
-                fontSize: "12px",
-              }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-3">
+      <div className="w-[98vw] h-[98vh] sm:w-[96vw] sm:h-[96vh] bg-[#111] text-white rounded-2xl shadow-2xl border border-white/10 flex flex-col overflow-hidden relative">
+        <header className="flex items-center px-3 py-1 border-b border-white/8 bg-[#0f1114]">
+          <div className="flex items-center gap-2 min-w-0">
+            <LazyLoadImage
+              placeholder={<PlaceHolder />}
+              src={app.icon}
+              width={20}
+              height={20}
+              className="rounded"
             />
-          </button>
+            <span className="text-xs font-medium truncate max-w-[65vw]">
+              {app.name}
+            </span>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <AiOutlineInfoCircle
+              className="text-sm cursor-pointer text-gray-300 hover:text-white transition"
+              onClick={() => setDd((prev) => !prev)}
+            />
+            <button
+              onClick={() => killWindow(app.id)}
+              className="text-gray-400 hover:text-white transition bg-transparent border-none outline-none cursor-pointer"
+              aria-label="Close window"
+            >
+              <FaX size={12} />
+            </button>
+          </div>
         </header>
         <iframe
           src={app.href || app.location}
-          className={(isAbouting ?"d-none" : "") + "window-inner border border-top-0"
-          }
-          draggable="false"
-          id={"iframe-" + app.id}
+          className="flex-1 w-full bg-white"
+          frameBorder="0"
         />
-        {
-          <hr
-            className="m-0 bg-light border-light resizeHr resS"
-            draggable="true"
-            title="s"
-            onDragStart={(e) => handleResize(e, "start")}
-            onDrag={(e) => handleResize(e)}
-            onDragEnd={(e) => handleResize(e, true)}
-            onTouchStart={(e) => handleResize(e, "start")}
-            onTouchMove={(e) => handleResize(e)}
-            onTouchEnd={(e) => handleResize(e, true)}
-            style={{ zIndex: 5, position: "relative", bottom: "8px" }}
-          />
-        }
-        {dd && (
-          <AppDropDown app={app} abouter={setIsAbouting} ddSetter={setDd} />
-        )}
+        {dd && <AppDropDown app={app} ddSetter={setDd} />}
       </div>
-      {Boolean(window.innerWidth > 640) && (
-        <div
-          className="divider my-auto h-100 resizeHr"
-          draggable="true"
-          title="w"
-          onDragStart={(e) => handleResize(e, "start")}
-          onDrag={(e) => handleResize(e)}
-          onDragEnd={(e) => handleResize(e, true)}
-          onTouchStart={(e) => handleResize(e, "start")}
-          onTouchMove={(e) => handleResize(e)}
-          onTouchEnd={(e) => handleResize(e, true)}
-          style={{
-            width: "2px",
-            background: "#0e0e0e",
-            height: "80%",
-            cursor: "e-resize",
-          }}
-        ></div>
-      )}
+    </div>
+  );
+};
+
+const AppDropDown = ({ app, ddSetter }) => {
+  return (
+    <div className="absolute top-14 left-4 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl w-56 p-3 z-50">
+      <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+        <div className="flex items-center gap-2">
+          <LazyLoadImage
+            placeholder={<PlaceHolder />}
+            src={app.icon}
+            width="24px"
+            className="rounded"
+          />
+          <span className="text-sm font-medium truncate">{app.name}</span>
+        </div>
+        <FaTimes
+          className="cursor-pointer text-gray-400 hover:text-white"
+          onClick={() => ddSetter(false)}
+        />
+      </div>
+      <div
+        className="flex items-center gap-2 text-sm p-2 hover:bg-white/10 rounded cursor-pointer transition"
+        onClick={() => {
+          ddSetter(false);
+          window.open(app.href || app.location, "_blank");
+        }}
+      >
+        <BiLinkExternal /> Run in browser
+      </div>
     </div>
   );
 };
 
 export default AppWindow;
-
-const AppAbout = ({ app = {} }) => {
-  return (
-    <div className="w-full darkTheme p-3 bg-gray-900" id="window-inner">
-      <div className="slideUp aniFast">
-        <h3 className="mb-1">
-          {" "}
-          <LazyLoadImage
-            effect="opacity"
-            placeholder={<PlaceHolder />}
-            src={app.icon}
-            height={"30px"}
-            alt=""
-            className="icon"
-          />{" "}
-          {app.name}
-        </h3>
-        <div className="">
-          <a target="_blank" href={app.location}>
-            {app.location}
-          </a>
-        </div>
-        <div className="shadow-sm bg-gray-800 text-white rounded p-1 pt-0 inline-block">
-          <BiCategory className="icon" /> {app?.category}
-        </div>
-        <pre
-          className="mt-3 pre"
-          style={{
-            whiteSpace: "pre-wrap",
-            fontFamily: "inherit",
-            fontSize: "inherit",
-          }}
-        >
-          {app?.about || ""}
-        </pre>
-      </div>
-    </div>
-  );
-};
-
-const AppDropDown = ({ app, abouter, ddSetter }) => {
-  const navigate = useNavigate();
-  return (
-    <div
-      className="darkTheme rounded"
-      style={{ position: "fixed", left: app.x + "px", top: app.y + "px" }}
-    >
-      <div
-        className="rounded shadow-lg p-3 panel"
-        style={{
-          width: "220px",
-          zIndex: app.zIndex + 10,
-        }}
-      >
-        <div className="flex">
-          <BiArrowBack
-            className="text-xl my-auto"
-            onClick={() => {
-              ddSetter((prev) => !prev);
-              navigate(-1);
-            }}
-          />
-          <LazyLoadImage
-            effect="opacity"
-            placeholder={<PlaceHolder />}
-            src={app.icon}
-            width={"30px"}
-            draggable={false}
-            className="rounded my-auto mr-1"
-          />{" "}
-          <div
-            className="ml-auto mb-auto"
-            onClick={() => {
-              ddSetter((prev) => !prev);
-            }}
-          >
-            <FaTimes />
-          </div>
-        </div>
-        <div className="rounded pt-1">
-          {/* <div className="border p-1 rounded c-pointer" onClick={() => {
-          ddSetter(prev => !prev);
-          abouter(prev => !prev)
-        }}>
-          <AiOutlineInfoCircle className='text-dark icon' /> App info
-        </div> */}
-          <div
-            className="border p-1 mt-1 rounded c-pointer"
-            onClick={() => {
-              ddSetter((prev) => !prev);
-              window.open(app.href || app.location, "_blank");
-            }}
-          >
-            <div className="flex">
-              <BiLinkExternal className="text-dark my-auto mr-1" /> Run in
-              browser
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};

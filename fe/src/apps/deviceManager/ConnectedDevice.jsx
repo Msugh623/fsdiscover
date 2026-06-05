@@ -94,11 +94,11 @@ const ConnectedDevice = ({ socketid }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4">
-      <div className="rounded-3xl border border-white/10 bg-[#111] shadow-2xl text-white overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto px-0 py-0">
+      <div className="rounded-3xl border border-white/10 bg-[#111] shadow-2xl text-white overflow-hidden max-h-[85vh]">
         <div className="bg-[#0c0c10] border-b border-white/10 px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-4 min-w-0">
+            <div className="flex items-start gap-4 min-w-0 w-full">
               <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-[#070708] text-3xl text-white">
                 {getDeviceType(device?.agent) === "mobile" ? (
                   <FaMobile />
@@ -106,11 +106,11 @@ const ConnectedDevice = ({ socketid }) => {
                   <FaDesktop />
                 )}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 overflow-hidden">
                 <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">
                   Connected device
                 </p>
-                <h3 className="text-2xl font-semibold text-white truncate">
+                <h3 className="text-2xl font-semibold text-white truncate max-w-full">
                   {device.addr == "127.0.0.1"
                     ? `HOST - ${device.addr}`
                     : device.addr}
@@ -119,7 +119,7 @@ const ConnectedDevice = ({ socketid }) => {
               </div>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full min-w-0">
               <button
                 type="button"
                 className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition"
@@ -129,7 +129,7 @@ const ConnectedDevice = ({ socketid }) => {
               </button>
               <button
                 type="button"
-                className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition"
+                className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition min-w-0"
                 onClick={() => {
                   document.toastId = toast.info(
                     `Choose a file you want to open with ${
@@ -147,7 +147,7 @@ const ConnectedDevice = ({ socketid }) => {
               </button>
               <button
                 type="button"
-                className="rounded-3xl border border-white/10 bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 transition"
+                className="rounded-3xl border border-white/10 bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 transition min-w-0"
                 onClick={ejectDevice}
               >
                 Eject device
@@ -210,7 +210,9 @@ const ConnectedDevice = ({ socketid }) => {
               <div className="space-y-3 text-sm text-white/70">
                 <div>
                   <span className="text-white/60">Socket ID:</span>
-                  <div className="break-all">{socketId || socketid}</div>
+                  <div className="break-all max-w-full">
+                    {socketId || socketid}
+                  </div>
                 </div>
                 <div>
                   <span className="text-white/60">Address:</span> {device?.addr}
@@ -229,7 +231,7 @@ const ConnectedDevice = ({ socketid }) => {
           <div className="space-y-4">
             <section
               id="activities"
-              className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4"
+              className="rounded-3xl pb-5 border border-white/10 bg-[#0d0d11] p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -254,24 +256,24 @@ const ConnectedDevice = ({ socketid }) => {
                       onClick={() => toggleActivity(activity)}
                       className="w-full rounded-3xl border border-white/10 bg-[#111] p-4 text-left transition hover:border-white/20 hover:bg-white/10"
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
                         <img
                           src={activity.icon}
                           alt=""
-                          className="h-10 w-10 rounded-xl object-cover"
+                          className="h-10 w-10 rounded-xl object-cover flex-shrink-0"
                         />
-                        <div className="flex-1">
-                          <div className="text-lg font-semibold text-white">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-lg font-semibold text-white truncate">
                             {activity.name}
                           </div>
-                          <div className="text-sm text-white/60">
+                          <div className="text-sm text-white/60 truncate break-words max-w-full">
                             {(activity?.href || "").replace(
                               "/fsexplorer",
                               "",
                             ) || activity?.location}
                           </div>
                         </div>
-                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white/80">
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white/80 flex-shrink-0">
                           <FaTimes />
                         </span>
                       </div>
