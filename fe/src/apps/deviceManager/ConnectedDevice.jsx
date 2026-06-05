@@ -40,10 +40,12 @@ const ConnectedDevice = ({ socketid }) => {
         href: activity.href,
         id: activity.id,
       });
+      toast.success("Activity closed")
     } catch (err) {
       toast.error(err?.response?.data || err.message || "Something went wrong");
     }
   };
+
   const toggleActivity = async (activity) => {
     try {
       await api.post("/admin/rq/exec", {
@@ -53,6 +55,7 @@ const ConnectedDevice = ({ socketid }) => {
         href: activity.href,
         id: activity.id,
       });
+      toast.success("Activity minimized")
     } catch (err) {
       toast.error(err?.response?.data || err.message || "Something went wrong");
     }
@@ -75,17 +78,16 @@ const ConnectedDevice = ({ socketid }) => {
 
   if (!device) {
     return (
-      <div className="my-auto p-4 fadeIn">
+      <div className="my-auto p-4 w-full h-full flex items-center justify-center">
         {loading ? (
-          <div className="text-center pt-4 px-5 mt-4">
-            <FaSpinner className="spinner fs-1 text-white" />
+          <div className="text-center">
+            <FaSpinner className="animate-spin text-4xl text-white" />
           </div>
         ) : (
-          <div className="rounded-3xl border border-white/10 bg-[#111] p-6 text-white shadow-2xl">
-            <h3 className="text-white mb-2">Device not found</h3>
-            <p className="text-white/80">
-              The device with ID or Address {socketId || socketid} could not be
-              found.
+          <div className="rounded-2xl border border-white/10 bg-[#111] p-6 text-white shadow-2xl w-full max-w-sm text-center">
+            <h3 className="text-white font-bold mb-2">Device not found</h3>
+            <p className="text-white/60 text-sm break-all">
+              ID: {socketId || socketid}
             </p>
           </div>
         )}
@@ -94,51 +96,48 @@ const ConnectedDevice = ({ socketid }) => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-0 py-0">
-      <div className="rounded-3xl border border-white/10 bg-[#111] shadow-2xl text-white overflow-hidden max-h-[85vh]">
-        <div className="bg-[#0c0c10] border-b border-white/10 px-4 py-4 sm:px-6 sm:py-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-4 min-w-0 w-full">
-              <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-[#070708] text-3xl text-white">
+    <div className="w-full max-w-4xl mx-auto p-2 sm:p-4 h-full max-h-[90vh] overflow-y-auto">
+      <div className="rounded-2xl border border-white/10 bg-[#111] shadow-2xl text-white">
+        <div className="bg-[#0c0c10] border-b border-white/10 p-4 rounded-t-2xl sticky top-0 z-10">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#070708] text-2xl sm:text-3xl text-white">
                 {getDeviceType(device?.agent) === "mobile" ? (
                   <FaMobile />
                 ) : (
                   <FaDesktop />
                 )}
               </div>
-              <div className="min-w-0 overflow-hidden">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs uppercase tracking-widest text-white/50 mb-1">
                   Connected device
                 </p>
-                <h3 className="text-2xl font-semibold text-white truncate max-w-full">
-                  {device.addr == "127.0.0.1"
-                    ? `HOST - ${device.addr}`
+                <h3 className="text-lg sm:text-2xl font-bold text-white truncate">
+                  {device.addr === "127.0.0.1"
+                    ? `HOST : ${device.addr}`
                     : device.addr}
                 </h3>
-                <p className="text-sm text-white/60 truncate">{device.type}</p>
+                <p className="text-xs sm:text-sm text-white/60 truncate">
+                  {device.type}
+                </p>
               </div>
             </div>
 
-            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full min-w-0">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 w-full">
               <button
                 type="button"
-                className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition"
+                className="rounded-xl border border-white/10 bg-[#1a1a1a] p-3 text-xs sm:text-sm font-semibold text-white hover:bg-white/10 transition active:scale-95"
                 onClick={() => setModal("")}
               >
                 Close
               </button>
               <button
                 type="button"
-                className="rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition min-w-0"
+                className="rounded-xl border border-white/10 bg-[#1a1a1a] p-3 text-xs sm:text-sm font-semibold text-white hover:bg-white/10 transition active:scale-95"
                 onClick={() => {
-                  document.toastId = toast.info(
-                    `Choose a file you want to open with ${
-                      device.addr == "127.0.0.1"
-                        ? "HOST - " + device.addr
-                        : device.addr
-                    }`,
-                    { autoClose: false },
-                  );
+                  document.toastId = toast.info("Choose a file to open", {
+                    autoClose: false,
+                  });
                   setModal("");
                   navigate("/fsexplorer");
                 }}
@@ -147,183 +146,131 @@ const ConnectedDevice = ({ socketid }) => {
               </button>
               <button
                 type="button"
-                className="rounded-3xl border border-white/10 bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 transition min-w-0"
+                className="col-span-2 lg:col-span-1 rounded-xl border border-red-500/20 bg-red-600/10 p-3 text-xs sm:text-sm font-semibold text-red-500 hover:bg-red-600/20 transition active:scale-95"
                 onClick={ejectDevice}
               >
                 Eject device
               </button>
             </div>
           </div>
-
-          <div className="mt-4 grid gap-2 lg:hidden">
-            {[
-              { id: "activities", label: "Activities" },
-              { id: "info", label: "User Info" },
-              { id: "session", label: "Session" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  document
-                    .getElementById(item.id)
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-                className="w-full rounded-3xl border border-white/10 bg-[#111] px-4 py-3 text-left text-sm text-white/80 hover:bg-white/10 transition"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[220px_1fr] p-4 sm:p-6">
-          <aside className="hidden lg:block space-y-4">
-            <div className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-3">
-                Navigate
-              </p>
-              {[
-                { id: "activities", label: "Activities" },
-                { id: "info", label: "User Info" },
-                { id: "session", label: "Session" },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    document
-                      .getElementById(item.id)
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                  className="w-full rounded-2xl px-4 py-3 text-left text-sm text-white/80 hover:bg-white/10 transition"
-                >
-                  {item.label}
-                </button>
-              ))}
+        <div className="flex flex-col lg:flex-row gap-4 p-4">
+          <aside className="w-full lg:w-[240px] flex flex-col gap-4">
+            <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
+              <button
+                onClick={() =>
+                  document
+                    .getElementById("activities")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="rounded-xl border border-white/10 bg-[#1a1a1a] p-2 text-xs text-white/80 hover:bg-white/10 text-center lg:text-left font-bold"
+              >
+                Activities
+              </button>
+              <button
+                onClick={() =>
+                  document
+                    .getElementById("info")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="rounded-xl border border-white/10 bg-[#1a1a1a] p-2 text-xs text-white/80 hover:bg-white/10 text-center lg:text-left font-bold"
+              >
+                User Info
+              </button>
+              <button
+                onClick={() =>
+                  document
+                    .getElementById("session")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="rounded-xl border border-white/10 bg-[#1a1a1a] p-2 text-xs text-white/80 hover:bg-white/10 text-center lg:text-left font-bold"
+              >
+                Session
+              </button>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-3">
-                Device summary
+            <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-4 text-xs sm:text-sm text-white/70 space-y-2 break-all">
+              <p className="text-[10px] uppercase tracking-widest text-white/50 mb-2">
+                Device Info
               </p>
-              <div className="space-y-3 text-sm text-white/70">
-                <div>
-                  <span className="text-white/60">Socket ID:</span>
-                  <div className="break-all max-w-full">
-                    {socketId || socketid}
-                  </div>
-                </div>
-                <div>
-                  <span className="text-white/60">Address:</span> {device?.addr}
-                </div>
-                <div>
-                  <span className="text-white/60">Type:</span> {device?.type}
-                </div>
-                <div>
-                  <span className="text-white/60">Connected:</span>{" "}
-                  {new Date(device.lastAccess).toLocaleString()}
-                </div>
-              </div>
+              <p>
+                <strong className="text-white">ID:</strong>{" "}
+                {socketId || socketid}
+              </p>
+              <p>
+                <strong className="text-white">IP:</strong> {device?.addr}
+              </p>
+              <p>
+                <strong className="text-white">Type:</strong> {device?.type}
+              </p>
+              <p>
+                <strong className="text-white">Time:</strong>{" "}
+                {new Date(device.lastAccess).toLocaleTimeString()}
+              </p>
             </div>
           </aside>
 
-          <div className="space-y-4">
+          <div className="flex-1 flex flex-col gap-4">
             <section
               id="activities"
-              className="rounded-3xl pb-5 border border-white/10 bg-[#0d0d11] p-4"
+              className="rounded-xl border border-white/10 bg-[#0d0d11] p-4 scroll-mt-20"
             >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h5 className="text-lg font-semibold text-white">
-                    Running Activities
-                  </h5>
-                  <p className="text-sm text-white/60">
-                    Tap an activity to toggle its state.
-                  </p>
-                </div>
-                <span className="text-sm text-white/50">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="text-sm sm:text-base font-bold text-white">
+                  Activities
+                </h5>
+                <span className="text-xs bg-white/10 px-2 py-1 rounded-md text-white/70 font-bold">
                   {activities.length} active
                 </span>
               </div>
-
               {activities.length ? (
-                <div className="grid gap-3 mt-4">
+                <div className="flex flex-col gap-2">
                   {activities.map((activity) => (
                     <button
                       key={activity.id || activity.href}
-                      type="button"
                       onClick={() => toggleActivity(activity)}
-                      className="w-full rounded-3xl border border-white/10 bg-[#111] p-4 text-left transition hover:border-white/20 hover:bg-white/10"
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-[#1a1a1a] p-3 text-left transition hover:bg-white/10 w-full overflow-hidden active:scale-[0.98]"
                     >
-                      <div className="flex items-start gap-3 min-w-0">
-                        <img
-                          src={activity.icon}
-                          alt=""
-                          className="h-10 w-10 rounded-xl object-cover flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-lg font-semibold text-white truncate">
-                            {activity.name}
-                          </div>
-                          <div className="text-sm text-white/60 truncate break-words max-w-full">
-                            {(activity?.href || "").replace(
-                              "/fsexplorer",
-                              "",
-                            ) || activity?.location}
-                          </div>
+                      <img
+                        src={activity.icon}
+                        alt=""
+                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover bg-black/50 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-white truncate">
+                          {activity.name}
                         </div>
-                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white/80 flex-shrink-0">
-                          <FaTimes />
-                        </span>
+                        <div className="text-[10px] sm:text-xs text-white/50 truncate">
+                          {(activity?.href || "").replace("/fsexplorer", "") ||
+                            activity?.location}
+                        </div>
+                      </div>
+                      <div className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-white/5 text-white/50 hover:bg-red-500/20 hover:text-red-500 transition" onClick={(e)=>{
+                        e.stopPropagation()
+                        closeActivity(activity)
+                      }}>
+                        <FaTimes size={12} />
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 text-white/60">No running activities</div>
+                <div className="text-xs text-white/40 text-center py-4 font-bold">
+                  No active processes
+                </div>
               )}
             </section>
 
             <section
               id="info"
-              className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4"
+              className="rounded-xl border border-white/10 bg-[#0d0d11] p-4 scroll-mt-20"
             >
-              <h5 className="text-lg font-semibold text-white mb-3">
-                User Information
+              <h5 className="text-sm sm:text-base font-bold text-white mb-3">
+                User Agent
               </h5>
-              <div className="grid gap-3 text-sm text-white/80">
-                <div className="rounded-2xl bg-[#111] p-4">
-                  <div className="text-white/60">Address</div>
-                  <div className="mt-2 text-white">{device?.addr}</div>
-                </div>
-                <div className="rounded-2xl bg-[#111] p-4">
-                  <div className="text-white/60">User Agent</div>
-                  <div className="mt-2 text-white">{device?.agent}</div>
-                </div>
-              </div>
-            </section>
-
-            <section
-              id="session"
-              className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4"
-            >
-              <h5 className="text-lg font-semibold text-white mb-3">
-                Session Information
-              </h5>
-              <div className="grid gap-3 text-sm text-white/80">
-                <div className="rounded-2xl bg-[#111] p-4">
-                  <div className="text-white/60">Type</div>
-                  <div className="mt-2 text-white">
-                    {getDeviceType(device?.user?.agent)}
-                  </div>
-                </div>
-                <div className="rounded-2xl bg-[#111] p-4">
-                  <div className="text-white/60">Connected Since</div>
-                  <div className="mt-2 text-white">
-                    {new Date(device.lastAccess).toLocaleString()}
-                  </div>
-                </div>
+              <div className="rounded-lg bg-[#1a1a1a] p-3 text-xs sm:text-sm text-white/70 break-words whitespace-pre-wrap">
+                {device?.agent}
               </div>
             </section>
           </div>
