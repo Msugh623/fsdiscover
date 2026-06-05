@@ -107,10 +107,11 @@ const StateContext = ({ children }) => {
         );
       });
     }, 600);
-    // setTimeout(() => {
-    //   const ifr = document.getElementById("iframe-" + raised);
-    //   ifr && ifr.focus();
-    // }, 700);
+    setTimeout(() => {
+      const ifr = document.getElementById("iframe-" + raised);
+      ifr && ifr.focus();
+        ifr && ifr.click();
+    }, 700);
   }
 
   async function killWindow(id) {

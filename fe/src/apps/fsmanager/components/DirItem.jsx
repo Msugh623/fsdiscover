@@ -179,7 +179,7 @@ const DirItem = ({ item, viewMode = "grid" }) => {
               if (opening) {
                 const rect = e.currentTarget.getBoundingClientRect();
                 setDdPos({
-                  top: rect.bottom + 8,
+                  top: e.pageY +20,
                   left: rect.left,
                   right: window.innerWidth - rect.right,
                 });
@@ -247,7 +247,7 @@ function OpenWith({ data }) {
   return (
     <>
       <div
-        className="max-w-4xl mx-auto px-4 p-3 px-4"
+        className="max-w-4xl mx-auto p-3 px-4"
         style={{
           maxWidth: "90vw",
           maxHeight: "80vh",
