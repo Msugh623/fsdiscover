@@ -141,6 +141,69 @@ class Handlers {
       res.status(500).send(error);
     }
   };
+  downloadFile = (req, res) => {
+    const theToken = useNativeAuthHandler().config.authorizations.find(
+      (auth) => auth.token == req?.cookies?.uuid,
+    );
+    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+      req?.cookies?.uuid && res.clearCookie("uuid");
+      return res.status(401).send(`<center>
+          <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
+          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+      </center>`);
+    }
+    // Strip query string and work with decoded path
+    const rawUrl = (req.url || "").split("?")[0];
+    const badChar = rawUrl
+      .split("/")
+      .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
+    if (badChar) {
+      return res
+        .status(403)
+        .send(`Request pathname includes a forbidden character \"${badChar}\"`);
+    }
+
+    try {
+      // Remove the route prefix and leading slashes
+      let rel = rawUrl.replace("/fsdownload", "").replace(/^\/+/, "");
+      rel = decodeURIComponent(rel || "");
+
+      // Prevent path traversal
+      const normalized = path.normalize(rel);
+      if (
+        normalized.split(path.sep).includes("..") ||
+        normalized.startsWith("..")
+      ) {
+        return res.status(403).send("Forbidden path");
+      }
+
+      const fullPath = path.join(
+        runtimeConfig.config.publicDir,
+        normalized,
+      );
+
+      if (!existsSync(fullPath)) {
+        return res.status(404).send("File not found: "+fullPath);
+      }
+
+      const filename = path.basename(fullPath).replace(/\"/g, "");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+
+      // Stream the file from disk
+      res.sendFile(fullPath, (err) => {
+        if (err) {
+          if (!res.headersSent) {
+            res.status(500).send("File transfer interrupted");
+          }
+        }
+      });
+    } catch (error) {
+      res.status(500).send(String(error));
+    }
+  };
   zipDir = (req, res) => {
     const token = req?.token;
     if (!token?.token && !runtimeConfig.config.noAuthFsRead) {

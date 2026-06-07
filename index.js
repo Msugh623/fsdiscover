@@ -301,6 +301,7 @@ app.post("/rq/login", authHandler.login);
 app.get("/fsexplorer*", handlers.sendUi);
 app.get("/hostname", handlers.getHost);
 app.get("/zipper*", handlers.zipDir);
+app.get("/fsdownload*", authHandler.checkDirAuth, handlers.downloadFile);
 app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
 app.get("/heartbeat", handlers.header);
 app.head("*", handlers.header);

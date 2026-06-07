@@ -246,10 +246,12 @@ const ConnectedDevice = ({ socketid }) => {
                             activity?.location}
                         </div>
                       </div>
-                      <div className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-white/5 text-white/50 hover:bg-red-500/20 hover:text-red-500 transition" onClick={(e)=>{
-                        e.stopPropagation()
-                        closeActivity(activity)
-                      }}>
+                      <div className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-white/5 text-white/50 hover:bg-red-500/20 hover:text-red-500 transition"
+                      //   onClick={(e) => {
+                      //   e.stopPropagation()
+                      //   closeActivity(activity)
+                      // }}
+                      >
                         <FaTimes size={12} />
                       </div>
                     </button>

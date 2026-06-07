@@ -48,8 +48,10 @@ const DirItem = ({ item, viewMode = "grid" }) => {
           title="Download File"
           onClick={() => {
             const a = document.createElement("a");
-            a.href = location.pathname + "/" + psr?.name;
-            a.download = psr.name;
+            a.href = (location.pathname + "/" + psr?.name).replace(
+              "fsexplorer/",
+              "fsdownload/",
+            );
             a.click();
           }}
         >
@@ -179,7 +181,7 @@ const DirItem = ({ item, viewMode = "grid" }) => {
               if (opening) {
                 const rect = e.currentTarget.getBoundingClientRect();
                 setDdPos({
-                  top: e.pageY +20,
+                  top: e.pageY + 20,
                   left: rect.left,
                   right: window.innerWidth - rect.right,
                 });

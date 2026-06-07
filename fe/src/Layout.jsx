@@ -13,6 +13,7 @@ import Admin from "./pages/Admin";
 import AdminIndex from "./pages/AdminIndex";
 import Login from "./pages/authPages/Login";
 import SafeMode from "./pages/SafeMode";
+import NotFound from "./pages/NotFound";
 import FileManager from "./apps/fsmanager/FileManager";
 import FsContext from "./state/FsContext";
 import MainSection from "./apps/fsmanager/MainSection";
@@ -108,6 +109,9 @@ const Layout = () => {
             }
           />
         </Route>
+
+        {/* Catch-all 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       {/* Pop Window Overlay Container */}
