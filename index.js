@@ -240,24 +240,17 @@ app.post(
   },
   upload.array("files"),
   (req, res) => {
-    /*
-    
-    PLEASE DO NOT TRY TO REFACTOR THIS LOGIC WITHOUT FULLY UNDERSTANDING IT
-    CONTACT: Ernest Msugh Chia, iternenge469@gmail.com
-
-    - This logic replaces all "%20" with " " 
-    - It formats the path to quote every path segment in double quotes e.g /"home"/"uname"
-    - It replaces path seperator "/" with "\" for win32 enviroments
-    - Lastly it removes double path seperators like \\ becomes \ and // becomes /
-
-    */
-    const dir = req.body.dir == "/" ? "/" : req.body.dir;
-    const absoluteDir = (
-      runtimeConfig.config.defaultUploadDir ||
-      runtimeConfig.config.publicDir + (dir || "/") + "/"
-    )
-      .split("%20")
-      .join(" ");
+    const hasAuth = Boolean(req?.token?.token);
+    const dir = req.body.dir == "/" ? "/" : (req.body.dir||"/");
+    const absoluteDir =
+      runtimeConfig.config.safeMode && !hasAuth
+        ? runtimeConfig.config.safemodeUploadDir
+        : (
+            runtimeConfig.config.defaultUploadDir ||
+            runtimeConfig.config.publicDir + (dir || "/") + "/"
+          )
+            .split("%20")
+            .join(" ");
     const mv = `mv temp/* ${absoluteDir
       .split("/")
       .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p || ""}"` : p))
@@ -292,7 +285,6 @@ app.post(
 
 app.post("/init", authHandler.init);
 app.get("/safemode", handlers.isInSafeMode);
-app.get("/safemode-upload-dir", handlers.getSafeModeUploadDir);
 app.get("/isfirstlaunch", handlers.isfirststart);
 app.use("/admin", authHandler.enforceAuth, adminRouter);
 app.get("/profile", authHandler.getProfile);

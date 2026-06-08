@@ -16,8 +16,30 @@ const Header = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState([]);
   const [isSearching, setIsSearching] = useState(window.innerWidth > 768);
+  const [fallbackTarget, setFallbackTarget] = useState("/");
   const searchRef = useRef(null);
-
+  useEffect(() => {
+    api
+      .get("/fs")
+      .then((res) => {
+        const children = res.data || [];
+        const hasDownloads = children.includes("Downloads");
+        const hasDocuments = children.includes("Documents");
+        const hasPublic = children.includes("Public");
+        if (hasDownloads) {
+          setFallbackTarget("/Downloads");
+        } else if (hasDocuments) {
+          setFallbackTarget("/Documents");
+        } else if (hasPublic) {
+          setFallbackTarget("/Public");
+        } else {
+          setFallbackTarget("/");
+        }
+      })
+      .catch(() => {
+        setFallbackTarget("/");
+      });
+  }, []);
   useEffect(() => {
     if (isSearching && searchRef.current) {
       searchRef.current.focus();
@@ -31,8 +53,10 @@ const Header = () => {
       for (const file of fsd || files) {
         formData.append("files", file);
       }
-      formData.append("dir", location.pathname.replace("/fsexplorer", ""));
+      const targetDir =
+        location.pathname.replace("/fsexplorer", "") || fallbackTarget;
 
+      formData.append("dir", targetDir);
       try {
         const res = await api.post("/fs/upload", formData, {
           onUploadProgress: (progressEvent) => {

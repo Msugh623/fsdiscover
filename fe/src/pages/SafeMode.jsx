@@ -23,7 +23,7 @@ export default function SafeMode() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef(null);
-  const [safemodeDir, setSafemodeDir] = useState("/");
+  const [safemodeDir, _] = useState("/");
 
   const handleFile = (f) => {
     setStatus("");
@@ -57,19 +57,6 @@ export default function SafeMode() {
     if (droppedList && droppedList.length) handleFile(droppedList);
   }, []);
 
-  useEffect(() => {
-    let mounted = true;
-    api
-      .get("/safemode-upload-dir")
-      .then((r) => {
-        if (!mounted) return;
-        const v = r?.data;
-        if (v) setSafemodeDir(v);
-      })
-      .catch(() => {})
-      .finally(() => {});
-    return () => (mounted = false);
-  }, []);
 
   const handleUpload = async (e) => {
     e && e.preventDefault();
