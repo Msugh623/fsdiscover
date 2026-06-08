@@ -456,18 +456,18 @@ async function refresh() {
         logHeight,
         process.lastlog,
       );
-    const connections = runtimeConfig.sessions.map(
-      (sess, i) =>
-        `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "🖥️"} ` +
-        sess.addr,
-    );
-    compositor.draw(
-      pastMid + 2,
-      11,
-      22,
-      Math.max(connections.length, 1),
-      connections.join("\n"),
-    );
+  const connections = runtimeConfig.sessions.map(
+    (sess, i) =>
+      `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "💻"} ${sess.addr} - ${sess.deviceName}`,
+  );
+
+  compositor.draw(
+    pastMid + 2,
+    11,
+    Math.max(...connections.map((c) => c.length), 10),
+    Math.max(connections.length, 1),
+    connections.join("\n"),
+  );
     compositor.draw(4, 16, 30, 15, runtimeConfig.netQrcode);
     compositor.display();
   } catch (err) {

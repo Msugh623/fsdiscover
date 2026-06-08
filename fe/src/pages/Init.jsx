@@ -32,6 +32,8 @@ const Init = () => {
     autoUpdate: true,
     sessionMaxAge: 60 * 60 * 1000,
   });
+  const [sessionValue, setSessionValue] = useState(1);
+  const [sessionUnit, setSessionUnit] = useState("hours");
   const [step, setStep] = useState(0);
 
   const baseInputClass =
@@ -258,14 +260,69 @@ const Init = () => {
       title: "Session duration.",
       desc: "Set authorization lifespan in milliseconds.",
       render: () => (
-        <input
-          name="sessionMaxAge"
-          value={form.sessionMaxAge}
-          onChange={handleChange}
-          type="number"
-          className={baseInputClass}
-          autoFocus
-        />
+        <div>
+          <div className="mt-2 flex w-full gap-2">
+            <input
+              type="number"
+              min={0}
+              step="any"
+              value={sessionValue}
+              onChange={(e) => {
+                const v = Number(e.target.value) || 0;
+                setSessionValue(v);
+                let ms = 0;
+                switch (sessionUnit) {
+                  case "seconds":
+                    ms = Math.round(v * 1000);
+                    break;
+                  case "minutes":
+                    ms = Math.round(v * 60000);
+                    break;
+                  case "days":
+                    ms = Math.round(v * 86400000);
+                    break;
+                  default:
+                    ms = Math.round(v * 3600000);
+                }
+                setForm((p) => ({ ...p, sessionMaxAge: ms }));
+              }}
+              className={baseInputClass}
+              autoFocus
+            />
+            <select
+              value={sessionUnit}
+              onChange={(e) => {
+                const unit = e.target.value;
+                setSessionUnit(unit);
+                const v = Number(sessionValue) || 0;
+                let ms = 0;
+                switch (unit) {
+                  case "seconds":
+                    ms = Math.round(v * 1000);
+                    break;
+                  case "minutes":
+                    ms = Math.round(v * 60000);
+                    break;
+                  case "days":
+                    ms = Math.round(v * 86400000);
+                    break;
+                  default:
+                    ms = Math.round(v * 3600000);
+                }
+                setForm((p) => ({ ...p, sessionMaxAge: ms }));
+              }}
+              className={baseSelectClass}
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+              <option value="days">Days</option>
+            </select>
+          </div>
+          <div className="text-xs text-white/50 mt-2">
+            Default unit: hours | Current maxAge: {form.sessionMaxAge} ms
+          </div>
+        </div>
       ),
     },
     {
@@ -375,6 +432,15 @@ const Init = () => {
                 if (keys.includes(k)) merged[k] = data[k];
               }
               setForm(merged);
+              // initialize sessionValue/sessionUnit from sessionMaxAge
+              const ms = Number(merged?.sessionMaxAge || 0);
+              if (ms > 0) {
+                setSessionUnit("hours");
+                setSessionValue(ms / 3600000);
+              } else {
+                setSessionUnit("hours");
+                setSessionValue(1);
+              }
             })
             .catch(() => {})
             .finally(() => mounted && setLoading(false));

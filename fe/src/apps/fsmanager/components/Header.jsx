@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFsContext } from "../../../state/FsContext";
 import { FaBars, FaUpload } from "react-icons/fa6";
-import { BiLeftArrowCircle, BiSearch, BiSelectMultiple } from "react-icons/bi";
+import { BiLeftArrowCircle, BiSearch } from "react-icons/bi";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../../../axios/api";
 import { toast } from "material-react-toastify";
-import { FaTimes } from "react-icons/fa";
 import { useStateContext } from "../../../state/StateContext";
 
 const Header = () => {
@@ -102,8 +101,8 @@ const Header = () => {
                 <BiLeftArrowCircle className="icon" />
               </button>
               <div className="overflow-hidden" onClick={() => navigate("")}>
-                <div className="text-xs uppercase tracking-[0.3em] text-gray-500">
-                  SprintET
+                <div className="text-xs ">
+                {isHidden?`${hostname}`:"FSdiscover"}
                 </div>
                 <div className="text-sm font-semibold text-white truncate">
                   File Manager

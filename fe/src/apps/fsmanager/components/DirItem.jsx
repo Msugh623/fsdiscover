@@ -295,7 +295,7 @@ function OpenWith({ data }) {
                 overflow: "auto",
               }}
             >
-              <div className="icon col-sm-1 mb-2 mt-1">
+              <div className="icon col-sm-1 my-auto">
                 {getDeviceType(device.agent) == "mobile" ? (
                   <FaMobile />
                 ) : (
@@ -305,14 +305,8 @@ function OpenWith({ data }) {
               <div className="pl-2 col-sm-2 mb-2 mt-1">
                 {device.addr == "127.0.0.1"
                   ? "HOST - " + device.addr
-                  : device.addr}
-              </div>
-              <div className="pl-2 sm:w-5/12 px-2 mb-2 mt-1">
-                {device.agent}{" "}
-              </div>
-              <div className="pl-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
-              <div className="pl-2 col-sm-2 mb-2 mt-1">
-                {device.lastAccess.split("GMT")[0]}{" "}
+                  : device.addr}{" "}
+                - {device?.deviceName}
               </div>
             </div>
           ))}
@@ -329,7 +323,7 @@ function OpenWith({ data }) {
                 overflow: "auto",
               }}
             >
-              <div className="icon col-sm-1 mb-2 mt-1">
+              <div className="icon col-sm-1 my-auto">
                 {getDeviceType(device.agent) == "mobile" ? (
                   <FaMobile />
                 ) : (
@@ -337,14 +331,8 @@ function OpenWith({ data }) {
                 )}
               </div>
               <div className="pl-2 col-sm-2 mb-2 mt-1">
-                {device.addr == "127.0.0.1" ? "HOST" : device.addr}
-              </div>
-              <div className="pl-2 sm:w-5/12 px-2 mb-2 mt-1">
-                {device.agent}{" "}
-              </div>
-              <div className="pl-2 col-sm-2 mb-2 mt-1">{device.socketid} </div>
-              <div className="pl-2 col-sm-2 mb-2 mt-1">
-                {device.lastAccess.split("GMT")[0]}{" "}
+                {device.addr == "127.0.0.1" ? "HOST" : device.addr} -{" "}
+                {device?.deviceName}
               </div>
             </div>
           ))}

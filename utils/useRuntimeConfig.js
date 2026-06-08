@@ -59,18 +59,25 @@ class RuntimeConfig {
       const toJson =
         persistConf.length > 10 ? JSON.parse(persistConf) : this.config;
       this.config = { ...conf, ...toJson };
-      this.firstlaunch = Boolean(!this.config?.userspace);
-      this.firstlaunch && setTimeout(() => {
-        exec(
-          `open "${process.localUrl || "http://127.0.0.1:3000"}/init" || explorer "${process.localUrl || "http://127.0.0.1:3000"}/init"`,
-        );
-      }, 1200);
+      // Use a marker file to track whether initialization UI should open
+      const initMarker = path.join(dirname(), "__init");
+      if (fs.existsSync(initMarker)) {
+        this.firstlaunch = false;
+      } else {
+        this.firstlaunch = true;
+        setTimeout(() => {
+          exec(
+            `open "${process.localUrl || "http://127.0.0.1:3000"}/init" || explorer "${process.localUrl || "http://127.0.0.1:3000"}/init"`,
+          );
+        }, 1200);
+      }
     } catch (err) {
       logger.log(
         "RuntimeConfig: Failed to mount non-existent or curropted runtime.config.json... Cleaning and regenerating",
       );
       this.config = conf;
       this.saveConfig();
+      // on error (no config) treat as first launch and show initializer
       this.firstlaunch = true;
       setTimeout(() => {
         exec(
@@ -98,6 +105,7 @@ class RuntimeConfig {
       this.sessions.unshift(user);
     }
     this.socket.emit("sessionEvent", this.sessions);
+    // console.log(this.sessions)
     process.refreshCompositor();
   };
 
@@ -158,6 +166,58 @@ class RuntimeConfig {
       return res
         .status(400)
         .send("Config Rejected as it comes from a non existant session");
+    }
+    // if directory fields are supplied, validate they exist before saving
+    const dirChecks = [];
+    try {
+      if (
+        typeof newConf.publicDir === "string" &&
+        newConf.publicDir.trim().length > 0 &&
+        !fs.existsSync(path.resolve(newConf.publicDir))
+      ) {
+        dirChecks.push(
+          `File manager Directory ${newConf.publicDir} directory does not exist on this computer`,
+        );
+      }
+    } catch (e) {
+      dirChecks.push(`File manager Directory ${newConf.publicDir} (invalid path)`);
+    }
+    try {
+      if (
+        typeof newConf.defaultUploadDir === "string" &&
+        newConf.defaultUploadDir.trim().length > 0 &&
+        !fs.existsSync(path.resolve(newConf.defaultUploadDir))
+      ) {
+        dirChecks.push(
+          `Upload Directory: ${newConf.defaultUploadDir} directory does not exist on this computer`,
+        );
+      }
+    } catch (e) {
+      dirChecks.push(
+        `Upload Directory: ${newConf.defaultUploadDir} (invalid path)`,
+      );
+    }
+    try {
+      if (
+        typeof newConf.safemodeUploadDir === "string" &&
+        newConf.safemodeUploadDir.trim().length > 0 &&
+        !fs.existsSync(path.resolve(newConf.safemodeUploadDir))
+      ) {
+        dirChecks.push(
+          `Safemode Upload Directory ${newConf.safemodeUploadDir} directory does not exist on this computer`,
+        );
+      }
+    } catch (e) {
+      dirChecks.push(
+        `Safemode Upload Directory ${newConf.safemodeUploadDir} (invalid path)`,
+      );
+    }
+    if (dirChecks.length > 0) {
+      return res
+        .status(400)
+        .send(
+          `Runtime config update failed - directory validation errors:\n${dirChecks.join("\n")}`,
+        );
     }
     try {
       delete newConf.sessionUID;

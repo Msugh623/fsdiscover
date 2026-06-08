@@ -1,3 +1,3 @@
-const obj = require('child_process')
+const { randomSuperhero } = require('superheroes');
 
-obj.spawn()
+console.log(randomSuperhero()); 

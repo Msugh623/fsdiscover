@@ -96,7 +96,7 @@ export default function AdminIndex() {
                 <span className="text-white/80">profile:</span> {profile.addr}
               </div>
               <div className="truncate">
-                <span className="text-white/80">uuid:</span> {profile.uuid}
+                <span className="text-white/80">session name:</span> {profile.deviceName}
               </div>
             </div>
           </div>

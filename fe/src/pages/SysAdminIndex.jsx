@@ -68,6 +68,21 @@ const SysAdminIndex = () => {
     }
   }
 
+  async function ejectVisitor(visitor) {
+    try {
+      const res = await api.post("/admin/rq/visitors/rem", visitor);
+      setVisitors(res.data);
+    } catch (err) {
+      toast.error(
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `${err?.response?.data || err.message || "" + err}`,
+          }}
+        ></div>,
+      );
+    }
+  }
+
   async function pardon(forbidden) {
     try {
       const res = await api.post("/admin/rq/forbidden/pardon", forbidden);
@@ -98,10 +113,11 @@ const SysAdminIndex = () => {
     }
   }
 
-  async function updateRuntimeConfig() {
+  async function updateRuntimeConfig(newConfig) {
+    const cfg = newConfig || runtimeConfig;
     const tst = toast.loading("Updating");
     try {
-      const res = await api.put("/admin/rq/runtime", runtimeConfig);
+      const res = await api.put("/admin/rq/runtime", cfg);
       setRuntimeConfig(res.data);
     } catch (err) {
       toast.error(
@@ -370,7 +386,13 @@ const SysAdminIndex = () => {
                       {u?.lastAccess.split("(")[0]}
                     </div>
                     <div className="text-white/70">{u?.date.split("(")[0]}</div>
-                    <div>
+                    <div className="flex gap-2">
+                      <button
+                        className="rounded-xl bg-gray-600 px-3 py-1 text-sm font-medium hover:bg-gray-700 transition"
+                        onClick={() => ejectVisitor(u)}
+                      >
+                        Eject
+                      </button>
                       <button
                         className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium hover:bg-red-700 transition"
                         onClick={() => forbid(u)}
@@ -628,6 +650,8 @@ function RuntimeConfig({
   updateRuntimeConfig,
 }) {
   const { apps } = useStateContext();
+  const [sessionValue, setSessionValue] = useState(0);
+  const [sessionUnit, setSessionUnit] = useState("hours");
   function handleChange({ target }) {
     const { name, type, value, checked } = target;
     let val;
@@ -645,13 +669,46 @@ function RuntimeConfig({
     getRuntimeConfig();
   }, []);
 
+  useEffect(() => {
+    // initialize session value/unit from runtimeConfig.sessionMaxAge (ms)
+    const ms = Number(runtimeConfig?.sessionMaxAge || 0);
+    if (ms > 0) {
+      // default UI shows hours
+      setSessionUnit("hours");
+      setSessionValue(ms / 3600000);
+    } else {
+      setSessionUnit("hours");
+      setSessionValue(1);
+    }
+  }, [runtimeConfig]);
+
   return (
     <div className="rounded-3xl border border-white/10 bg-[#0d0d11] p-4 shadow-2xl">
-      <div className="flex items-center">
+      <div className="flex items-cente sticky -top-8 py-4  bg-[#0d0d11] ">
         <h3 className="text-xl font-semibold">Runtime Configuration</h3>
-        <div className="ml-auto">
+        <div className="ml-auto ">
           <button
-            onClick={updateRuntimeConfig}
+            onClick={() => {
+              // convert sessionValue + sessionUnit to milliseconds
+              let ms = 0;
+              const v = Number(sessionValue) || 0;
+              switch (sessionUnit) {
+                case "seconds":
+                  ms = Math.round(v * 1000);
+                  break;
+                case "minutes":
+                  ms = Math.round(v * 60000);
+                  break;
+                case "days":
+                  ms = Math.round(v * 86400000);
+                  break;
+                default:
+                  // hours
+                  ms = Math.round(v * 3600000);
+              }
+              const payload = { ...(runtimeConfig || {}), sessionMaxAge: ms };
+              updateRuntimeConfig(payload);
+            }}
             className="rounded-2xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
             Save Config
@@ -775,20 +832,44 @@ function RuntimeConfig({
         </div>
 
         <div className="rounded-2xl border border-white/5 bg-[#111] p-4 block">
-          <label className="block text-sm text-white/60">
-            Session Max Age (ms)
-          </label>
+          <label className="block text-sm text-white/60">Session Max Age</label>
           <div className="text-sm text-white/60 mt-2">
-            How long (in milliseconds) a session remains valid before requiring
-            re-login. e.g. 3600000 = 1 hour.
+            Specify how long a session remains valid before requiring re-login.
+            Choose a value and unit; this will be converted to milliseconds on
+            save.
           </div>
-          <input
-            type="number"
-            value={runtimeConfig?.sessionMaxAge || 0}
-            name="sessionMaxAge"
-            onChange={handleChange}
-            className="w-full rounded-2xl border border-white/10 px-3 py-2 bg-transparent mt-2"
-          />
+          <div className="mt-2 flex w-full gap-2">
+            <input
+              type="number"
+              min={0}
+              step="any"
+              value={sessionValue}
+              onChange={(e) => setSessionValue(Number(e.target.value))}
+              className="w-3/4 rounded-2xl border border-white/10 px-3 py-2 bg-transparent"
+            />
+            <select
+              value={sessionUnit}
+              onChange={(e) => setSessionUnit(e.target.value)}
+              className="w-1/4 rounded-2xl border border-white/10 px-3 py-2 bg-transparent"
+            >
+              <option className="text-white bg-black" value="seconds">
+                Seconds
+              </option>
+              <option className="text-white bg-black" value="minutes">
+                Minutes
+              </option>
+              <option className="text-white bg-black" value="hours">
+                Hours
+              </option>
+              <option className="text-white bg-black" value="days">
+                Days
+              </option>
+            </select>
+          </div>
+          <div className="text-xs text-white/50 mt-2">
+            Default unit: hours | Current maxAge:{" "}
+            {runtimeConfig?.sessionMaxAge || 0} ms
+          </div>
         </div>
 
         <div className="rounded-2xl border border-white/5 bg-[#111] p-4 block">
