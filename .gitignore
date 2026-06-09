@@ -9,3 +9,5 @@ cert/**/*
 logs/**/*
 update
 __init
+.npm_install.log
+logs.log
