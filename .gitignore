@@ -8,3 +8,4 @@ runtime.config.json
 cert/**/*
 logs/**/*
 update
+__init
