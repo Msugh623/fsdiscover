@@ -16,7 +16,9 @@ const initData = {
   nodeType: String(nodeTypes.CHILD || nodeTypes.parent),
   publicDir: String(os.homedir()),
   defaultUploadDir: String(""),
-  safemodeUploadDir: String(""),
+  safemodeUploadDir: String(
+    os.homedir() + os.platform == "win32" ? "\\" : "/" + "Downloads",
+  ),
   noAuthFsRead: Boolean(true),
   noAuthFsWrite: Boolean(true),
   safeMode: Boolean(false),
@@ -29,7 +31,9 @@ const runtimeConfData = {
   defaultUploadDir: String(""),
   noAuthFsRead: Boolean(true),
   noAuthFsWrite: Boolean(true),
-  safemodeUploadDir: String(""),
+  safemodeUploadDir: String(
+    os.homedir() + os.platform == "win32" ? "\\" : "/" + "Downloads",
+  ),
   autoUpdate: Boolean(true),
   sessionMaxAge: Number(60 * 60 * 1000),
   userspace: String(
