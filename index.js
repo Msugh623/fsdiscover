@@ -241,7 +241,7 @@ app.post(
   upload.array("files"),
   (req, res) => {
     const hasAuth = Boolean(req?.token?.token);
-    const dir = req.body.dir == "/" ? "/" : (req.body.dir||"/");
+    const dir = req.body.dir == "/" ? "/" : req.body.dir || "/";
     const absoluteDir =
       runtimeConfig.config.safeMode && !hasAuth
         ? runtimeConfig.config.safemodeUploadDir
@@ -374,11 +374,11 @@ getNewLocalPort(port);
 const logo = `SprintET FSdiscover`;
 async function refresh() {
   const urlLine = "URL: \x1b[36m" + process.netUrl + "\x1b[39m ";
-  const networkInterface = netFace.netface;
+  const networkInterface = netFace.interfaceName;
   networkStatusFlag = netProb.heartbeat ? "Connected" : "Disconnected";
   const networkStatus = netProb.heartbeat
     ? "\x1b[32mConnected\x1b[39m"
-    : "\x1b[31mDisconnected\x1b[39m";
+    : "\x1b[31mDisconnected\x1b[39m"; 
   const ifaceText =
     (() => {
       if (
@@ -388,7 +388,7 @@ async function refresh() {
         return `\x1b[31mNo Network Detected\x1b[39m`;
       }
       if (networkInterface == "wlan0") {
-        return "\x1b[32mWiFi\x1b[39m";
+        return "\x1b[32mWi-Fi\x1b[39m";
       }
       if (networkInterface) {
         return `\x1b[32m${networkInterface}\x1b[39m`;
@@ -456,18 +456,18 @@ async function refresh() {
         logHeight,
         process.lastlog,
       );
-  const connections = runtimeConfig.sessions.map(
-    (sess, i) =>
-      `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "💻"} ${sess.addr} - ${sess.deviceName}`,
-  );
+    const connections = runtimeConfig.sessions.map(
+      (sess, i) =>
+        `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "💻"} ${sess.addr} - ${sess.deviceName}`,
+    );
 
-  compositor.draw(
-    pastMid + 2,
-    11,
-    Math.max(...connections.map((c) => c.length), 10),
-    Math.max(connections.length, 1),
-    connections.join("\n"),
-  );
+    compositor.draw(
+      pastMid + 2,
+      11,
+      Math.max(...connections.map((c) => c.length), 10),
+      Math.max(connections.length, 1),
+      connections.join("\n"),
+    );
     compositor.draw(4, 16, 30, 15, runtimeConfig.netQrcode);
     compositor.display();
   } catch (err) {
