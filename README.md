@@ -54,7 +54,7 @@ git clone https://github.com/msugh623/fsdiscover.git
 cd fsdiscover
 ./install.sh
 # or headless install
-curl https://sprintet.onrender.com/apps/fsdiscover/fsdiscover-netinstall.sh | bash
+curl -s https://fsdiscover.sprintet.com/downloads/fsdiscover-netinstall.sh | bash
 
 ### Windows
 
@@ -120,10 +120,10 @@ We welcome your contributions! Here’s how you can help:
 
 ## Contact
 
-Questions, issues, or ideas? Contact us at **sprintetmail@gmail.com**
+Questions, issues, or ideas? Contact us at **team@sprintet.com**
 
 View on GitHub: https://github.com/msugh623/fsdiscover
 
-See more on the website https://sprintet.onrender.com/apps/fsdiscover
+See more on the website https://fsdiscover.sprintet.com/
 
 © 2025 SprintET. All rights reserved.
