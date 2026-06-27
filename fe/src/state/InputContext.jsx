@@ -1,12 +1,42 @@
-import { useContext, createContext, useState, useEffect } from "react";
-import { toast } from "material-react-toastify";
+import {
+  useContext,
+  createContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { keyMap } from "../assets/keymap";
 import { useStateContext } from "./StateContext";
 
 const context = createContext();
 
-const InputConext = ({ children }) => {
+
+function clamp(val) {
+  return val > -30 && val < 30 ? val : 0;
+}
+
+function getXY(e) {
+  const t = e.touches?.item(0) ?? e.changedTouches?.item(0);
+  return {
+    x: e.clientX ?? t?.clientX ?? 0,
+    y: e.clientY ?? t?.clientY ?? 0,
+  };
+}
+
+function fingerPrint({ code, keyCode, key }) {
+  return `${code}${keyCode}${key}`;
+}
+
+function judgeEvent({ keyCode, key, code }) {
+  return { code, key, keyCode };
+}
+
+// ---
+
+const InputContext = ({ children }) => {
   const { socket } = useStateContext();
+
   const [touchConfig, setTouchConfig] = useState({
     dispX: 0,
     dispY: 0,
@@ -32,325 +62,325 @@ const InputConext = ({ children }) => {
     scrollDown: false,
     hasKeyboard: false,
   });
-  const [keyConfig, setKeyConfig] = useState({
-    downKeys: [],
-  });
 
   const [downKeys, setDownKeys] = useState([]);
-  const [pad, setPad] = useState("");
+  const [pad, setPad] = useState(null);
   const [err, setErr] = useState("");
   const [status, setStatus] = useState("");
-  const [msTimeout, setMsTimeout] = useState(0);
   const [hasPannel, setHasPannel] = useState(undefined);
   const [keyVal, setKeyVal] = useState("");
   const [badKey, setBadKey] = useState(false);
   const [mouseDownHold, setMouseDownHold] = useState(false);
   const [lastPress, setLastPress] = useState(Date.now());
-  function ensinRange(val) {
-    if (val < 30 && val > -30) {
-      return val;
-    }
-    return 0;
-  }
-  useEffect(() => {
-    socket.on("error", (err) => {
-      setErr("ERROR: " + err);
-      setTimeout(() => !err.includes("termina") && setErr(""), 6000);
-    });
-    socket.on("mouseDownHold", (data) => {
-      setMouseDownHold(data);
-    });
 
-    socket.on("disconnect", () => {
-      setStatus("Connection Lost... Retrying");
-    });
-    socket.on("connect", () => {
-      setStatus("Connected... Validating device");
-      setTimeout(() => {
-        setStatus("");
-      }, 4000);
-    });
+  const isMouseDown = useRef(false);
+  const isScrollDown = useRef(false);
+  const mouseHistory = useRef([]);
+  const msTimeoutRef = useRef(null);
+  const lastEmitted = useRef({});
+  const pressIdRef = useRef(null);
+
+  const downKeysRef = useRef(new Set());
+
+  const hasMounted = useRef(false);
+
+  const handleSocketError = useCallback((e) => {
+    setErr("ERROR: " + e);
+    setTimeout(() => !e.includes("termina") && setErr(""), 6000);
   }, []);
 
-  const init = () => {
-    setTimeout(() => {
-      const pad = document.getElementById("tp");
-      const scrollbar = document.getElementById("scrollbar");
-      if (!pad && !scrollbar) {
-        return init();
-      }
+  const handleSocketConnect = useCallback(() => {
+    setStatus("Connected... Validating device");
+    setTimeout(() => setStatus(""), 4000);
+  }, []);
 
-      setTouchConfig((prev) => {
-        setPad(pad);
-        return {
-          ...prev,
-          ready: true,
-        };
-      });
-      pad.ontouchmove = drawMove;
-      pad.onmousemove = drawMove;
-      pad.ontouchstart = drawStart;
-      pad.onmousedown = drawStart;
-      pad.ontouchend = drawEnd;
-      pad.ontouchcancel = drawEnd;
-      pad.onmouseup = drawEnd;
-      pad.onclick = click;
-      pad.oncontextmenu = altClick;
-    }, 500);
-  };
+  useEffect(() => {
+    socket.on("error", handleSocketError);
+    socket.on("mouseDownHold", setMouseDownHold);
+    socket.on("disconnect", () => setStatus("Connection Lost... Retrying"));
+    socket.on("connect", handleSocketConnect);
 
-  function drawMove(e) {
+    return () => {
+      socket.off("error", handleSocketError);
+      socket.off("mouseDownHold", setMouseDownHold);
+      socket.off("disconnect");
+      socket.off("connect", handleSocketConnect);
+    };
+  }, [socket, handleSocketError, handleSocketConnect]);
+
+  const drawMove = useCallback((e) => {
     e.stopPropagation();
-    clearTimeout(msTimeout);
-    setTouchConfig((prev) => {
-      const diffX = localStorage.mouseDown
-        ? (e.clientX || e.touches.item(0).clientX) - prev.mouseX
-        : 0;
-      const diffY = localStorage.mouseDown
-        ? (e.clientY || e.touches.item(0).clientY) - prev.mouseY
-        : 0;
-      const newval = {
-        ...prev,
-        dispX: ensinRange(diffX),
-        dispY: ensinRange(diffY),
-        lastX: prev.mouseX,
-        lastY: prev.mouseY,
-        mouseX: e.clientX || e.touches.item(0).clientX,
-        mouseY: e.clientY || e.touches.item(0).clientY,
-        mouseIsMoving: true,
-        mouseDown: Boolean(localStorage.mouseDown),
-        click: false,
-      };
-      const msHist = JSON.parse(localStorage?.mouseHistory || "[]");
-      let first = [...msHist, { dispX: newval.dispX, dispY: newval.dispY }];
-      first.length > 10 && first.shift();
-      localStorage.mouseHistory = JSON.stringify(first);
-      return newval;
-    });
-    setMsTimeout(
-      setTimeout(() => {
-        setTouchConfig((prev) => ({
-          ...prev,
-          mouseIsMoving: false,
-          click: false,
-        }));
-      }, 400),
-    );
-  }
+    clearTimeout(msTimeoutRef.current);
 
-  function drawStart(e) {
-    e.stopPropagation();
-    const id = "" + Date.now();
+    const { x, y } = getXY(e);
+
     setTouchConfig((prev) => {
-      localStorage.mouseDown = "true";
+      const dispX = isMouseDown.current ? clamp(x - prev.mouseX) : 0;
+      const dispY = isMouseDown.current ? clamp(y - prev.mouseY) : 0;
+
+      const hist = mouseHistory.current;
+      hist.push({ dispX, dispY });
+      if (hist.length > 10) hist.shift();
+
       return {
         ...prev,
-        dispX: 0,
-        dispY: 0,
-        mouseDown: true,
-        mouseDownHold: false,
+        dispX,
+        dispY,
+        lastX: prev.mouseX,
+        lastY: prev.mouseY,
+        mouseX: x,
+        mouseY: y,
+        mouseIsMoving: true,
+        mouseDown: isMouseDown.current,
         click: false,
-        lastMouseDownX: e.clientX || e.touches.item(0).clientX,
-        lastMouseDownY: e.clientY || e.touches.item(0).clientY,
-        lastX: e.clientX || e.touches.item(0).clientX,
-        lastY: e.clientY || e.touches.item(0).clientY,
       };
     });
+
+    msTimeoutRef.current = setTimeout(() => {
+      setTouchConfig((prev) => ({
+        ...prev,
+        mouseIsMoving: false,
+        click: false,
+      }));
+    }, 400);
+  }, []);
+
+  const drawStart = useCallback((e) => {
+    e.stopPropagation();
+    isMouseDown.current = true;
+    mouseHistory.current = [];
+
+    const pressId = Date.now();
+    pressIdRef.current = pressId;
+
+    const { x, y } = getXY(e);
+
+    setTouchConfig((prev) => ({
+      ...prev,
+      dispX: 0,
+      dispY: 0,
+      mouseDown: true,
+      mouseDownHold: false,
+      click: false,
+      lastMouseDownX: x,
+      lastMouseDownY: y,
+      lastX: x,
+      lastY: y,
+    }));
+
     setTimeout(() => {
-      const didMove = (
-        localStorage?.mouseHistory ? JSON.parse(localStorage?.mouseHistory) : []
-      ).find((instance) => instance.dispX || instance.dispY);
-      if (localStorage.mouseDown && !Boolean(didMove)) {
-        console.log(didMove);
+      // Stale if a new press/release happened while this timer was running
+      if (pressIdRef.current !== pressId) return;
+      const didMove = mouseHistory.current.some((h) => h.dispX || h.dispY);
+      if (isMouseDown.current && !didMove) {
         setTouchConfig((prev) => ({
           ...prev,
           mouseDownHold: true,
           click: false,
         }));
       }
-      localStorage.clickId = id;
     }, 300);
-  }
+  }, []);
 
-  function click(e) {
+  const click = useCallback((e) => {
     e.stopPropagation();
-    localStorage.mouseDown = "";
-    setTouchConfig((prev) => ({
-      ...prev,
-      mouseDown: false,
-      click: "left",
+    isMouseDown.current = false;
+    pressIdRef.current = null;
+    setTouchConfig((prev) => ({ ...prev, mouseDown: false, click: "left" }));
+  }, []);
+
+  const altClick = useCallback((e) => {
+    e.stopPropagation();
+    isMouseDown.current = false;
+    pressIdRef.current = null;
+    setTouchConfig((prev) => ({ ...prev, mouseDown: false, click: "right" }));
+  }, []);
+
+  const drawEnd = useCallback((e) => {
+    e.stopPropagation();
+    isMouseDown.current = false;
+    pressIdRef.current = null;
+    mouseHistory.current = mouseHistory.current.map(() => ({
+      dispX: 0,
+      dispY: 0,
     }));
-  }
 
-  function altClick(e) {
-    e.stopPropagation();
-    localStorage.mouseDown = "";
-    setTouchConfig((prev) => ({
-      ...prev,
-      mouseDown: false,
-      click: "right",
-    }));
-  }
+    const { x, y } = getXY(e);
 
-  function drawEnd(e) {
-    e.stopPropagation();
-    localStorage.mouseDown = "";
     setTouchConfig((prev) => ({
       ...prev,
       mouseDown: false,
       mouseDownHold: false,
       mouseDownHoldExt: false,
       click: false,
-      lastMouseUpX: e.clientX || e.touches.item(0)?.clientX || prev?.lastX,
-      lastMouseUpY: e.clientY || e.touches.item(0)?.clientY || prev?.lastY,
+      lastMouseUpX: x || prev.lastX,
+      lastMouseUpY: y || prev.lastY,
       lastX: 0,
       lastY: 0,
     }));
-    const msHist = JSON.parse(localStorage?.mouseHistory || "[]");
-    let first = msHist.map(() => ({ dispX: 0, dispY: 0 }));
-    localStorage.mouseHistory = JSON.stringify(first);
-  }
+  }, []);
 
-  function scrollStart(e) {
-    localStorage.scrollDown = "true";
-    setTouchConfig((prev) => {
-      return {
-        ...prev,
-        scrollX: 0,
-        scrollY: 0,
-        scrollDown: true,
-        scrollPointX: e.clientX || e.touches.item(0)?.clientX,
-        scrollPointY: e.clientY || e.touches.item(0)?.clientY,
-        click: false,
-      };
-    });
-  }
-
-  function scrollMove(e) {
-    setTouchConfig((prev) => {
-      const diffX = localStorage.scrollDown
-        ? (e.clientX || e.touches.item(0).clientX) - prev.scrollPointX
-        : 0;
-      const diffY = localStorage.scrollDown
-        ? (e.clientY || e.touches.item(0).clientY) - prev.scrollPointY
-        : 0;
-      return {
-        ...prev,
-        scrollX: ensinRange(diffX),
-        scrollY: ensinRange(diffY),
-        scrollDown: true,
-        click: false,
-        scrollPointX: e.clientX || e.touches.item(0)?.clientX,
-        scrollPointY: e.clientY || e.touches.item(0)?.clientY,
-      };
-    });
-  }
-
-  function scrollEnd(e) {
-    localStorage.scrollDown = "";
-    setTouchConfig((prev) => {
-      return {
-        ...prev,
-        scrollX: 0,
-        scrollY: 0,
-        scrollDown: false,
-        click: false,
-        scrollPointX: e.clientX || e.touches.item(0)?.clientX,
-        scrollPointY: e.clientY || e.touches.item(0)?.clientY,
-      };
-    });
-  }
-
-  function fingerPrint(key = {}) {
-    return "" + key.code + key.keyCode + key.key;
-  }
-
-  function judgeEvent(e) {
-    const { keyCode, key, code } = e;
-    const model = {
-      code,
-      key: key,
-      keyCode,
-    };
-    return model;
-  }
-
-  function isBad(e) {
-    e.key == "Backspace" && setKeyVal("");
-    return e.keyCode == 229;
-  }
-
-  function handleKeydown(e) {
-    e.preventDefault();
-    if (isBad(e)) {
-      return setBadKey(true);
-    }
-    const data = judgeEvent(e);
-    const print = fingerPrint(data);
-    const inDownKeys = keyConfig.downKeys.find((k) => fingerPrint(k) == print);
-    if (!inDownKeys) {
-      setKeyConfig((prev) => ({
-        ...prev,
-        downKeys: [data, ...prev.downKeys],
-      }));
-      const key = keyMap[data.code || data.key];
-      socket.emit("keydown", key);
-    }
-  }
-
-  function handleKeyUp(e) {
-    e.preventDefault();
-    if (isBad(e)) {
-      return setBadKey(true);
-    }
-    const data = judgeEvent(e);
-    const print = fingerPrint(data);
-    const inDownKeys = keyConfig.downKeys.find((k) => fingerPrint(k) == print);
-    if (inDownKeys) {
-      setKeyConfig((prev) => ({
-        ...prev,
-        downKeys: prev.downKeys.filter((k) => fingerPrint(k) !== print),
-      }));
-      const key = keyMap[data.code || data.key];
-      socket.emit("keyup", key);
-    }
-  }
-
-  function toggleKeyboard(state = false) {
+  const scrollStart = useCallback((e) => {
+    isScrollDown.current = true;
+    const { x, y } = getXY(e);
     setTouchConfig((prev) => ({
       ...prev,
-      hasKeyboard: state,
+      scrollX: 0,
+      scrollY: 0,
+      scrollDown: true,
+      scrollPointX: x,
+      scrollPointY: y,
+      click: false,
     }));
+  }, []);
+
+  const scrollMove = useCallback((e) => {
+    const { x, y } = getXY(e);
+    setTouchConfig((prev) => ({
+      ...prev,
+      scrollX: isScrollDown.current ? clamp(x - prev.scrollPointX) : 0,
+      scrollY: isScrollDown.current ? clamp(y - prev.scrollPointY) : 0,
+      scrollDown: true,
+      click: false,
+      scrollPointX: x,
+      scrollPointY: y,
+    }));
+  }, []);
+
+  const scrollEnd = useCallback((e) => {
+    isScrollDown.current = false;
+    const { x, y } = getXY(e);
+    setTouchConfig((prev) => ({
+      ...prev,
+      scrollX: 0,
+      scrollY: 0,
+      scrollDown: false,
+      click: false,
+      scrollPointX: x,
+      scrollPointY: y,
+    }));
+  }, []);
+
+  const init = useCallback(() => {
+    const attempt = () => {
+      const el = document.getElementById("tp");
+      if (!el) return setTimeout(attempt, 500);
+
+      setPad(el);
+      setTouchConfig((prev) => ({ ...prev, ready: true }));
+
+      el.ontouchmove = el.onmousemove = drawMove;
+      el.ontouchstart = el.onmousedown = drawStart;
+      el.ontouchend = el.ontouchcancel = el.onmouseup = drawEnd;
+      el.onclick = click;
+      el.oncontextmenu = altClick;
+    };
+    setTimeout(attempt, 500);
+  }, [drawMove, drawStart, drawEnd, click, altClick]);
+
+  function isBad(e) {
+    if (e.key === "Backspace") setKeyVal("");
+    return e.keyCode === 229;
   }
 
+  const handleKeydown = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (isBad(e)) return setBadKey(true);
+
+      const data = judgeEvent(e);
+      const print = fingerPrint(data);
+
+      if (downKeysRef.current.has(print)) return;
+      downKeysRef.current.add(print);
+      socket.emit("keydown", keyMap[data.code || data.key]);
+      setDownKeys((prev) => [data, ...prev]);
+    },
+    [socket],
+  );
+
+  const handleKeyUp = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (isBad(e)) return setBadKey(true);
+
+      const data = judgeEvent(e);
+      const print = fingerPrint(data);
+
+      if (!downKeysRef.current.has(print)) return;
+      downKeysRef.current.delete(print);
+      socket.emit("keyup", keyMap[data.code || data.key]);
+      setDownKeys((prev) => prev.filter((k) => fingerPrint(k) !== print));
+    },
+    [socket],
+  );
+
+  const toggleKeyboard = useCallback((state = false) => {
+    setTouchConfig((prev) => ({ ...prev, hasKeyboard: state }));
+  }, []);
+
   useEffect(() => {
-    !touchConfig.mouseIsMoving &&
-      setTouchConfig((prev) => ({
-        ...prev,
-        dispX: 0,
-        dispY: 0,
-        click: false,
-      }));
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+    if (!touchConfig.mouseIsMoving) {
+      setTouchConfig((prev) => ({ ...prev, dispX: 0, dispY: 0, click: false }));
+    }
   }, [touchConfig.mouseIsMoving]);
 
   useEffect(() => {
-    if (badKey) {
-      const fabKey = keyMap[`Key${keyVal.toUpperCase()}`];
-      fabKey && downKeys.length
-        ? socket.emit("keydown", fabKey)
-        : socket.emit("keypress", keyVal);
-      fabKey && downKeys.length && socket.emit("keyup", fabKey);
+    if (!badKey) return;
+    const fabKey = keyMap[`Key${keyVal.toUpperCase()}`];
+    if (fabKey && downKeys.length) {
+      socket.emit("keydown", fabKey);
+      socket.emit("keyup", fabKey);
+    } else {
+      socket.emit("keypress", keyVal);
     }
+    setBadKey(false);
   }, [lastPress]);
 
   useEffect(() => {
+    const { dispX, dispY, click, mouseDown, mouseDownHold, scrollX, scrollY } =
+      touchConfig;
+    const prev = lastEmitted.current;
+
+    if (
+      prev.dispX === dispX &&
+      prev.dispY === dispY &&
+      prev.click === click &&
+      prev.mouseDown === mouseDown &&
+      prev.mouseDownHold === mouseDownHold &&
+      prev.scrollX === scrollX &&
+      prev.scrollY === scrollY
+    )
+      return;
+
+    lastEmitted.current = {
+      dispX,
+      dispY,
+      click,
+      mouseDown,
+      mouseDownHold,
+      scrollX,
+      scrollY,
+    };
+
     try {
       socket.emit("pointerEvent", touchConfig);
-      // setErr("");
     } catch {
       setErr("Failed to sync pointer data. Please check your connection.");
     }
-  }, [touchConfig]);
+  }, [
+    touchConfig.dispX,
+    touchConfig.dispY,
+    touchConfig.click,
+    touchConfig.mouseDown,
+    touchConfig.mouseDownHold,
+    touchConfig.scrollX,
+    touchConfig.scrollY,
+  ]);
 
   return (
     <context.Provider
@@ -367,8 +397,7 @@ const InputConext = ({ children }) => {
         toggleKeyboard,
         handleKeydown,
         handleKeyUp,
-        keyConfig,
-        setKeyConfig,
+        keyConfig: { downKeys },
         hasPannel,
         setHasPannel,
         keyVal,
@@ -380,23 +409,22 @@ const InputConext = ({ children }) => {
         mouseDownHold,
       }}
     >
-      {" "}
       <div
-        className="text-sm pt-14 p-5 py-6 justify-center left-0 right-0 fixed  z-20"
+        className="text-sm pt-14 p-5 py-6 justify-center left-0 right-0 fixed z-20"
         style={{
           whiteSpace: "pre-wrap",
           wordWrap: "break-word",
           pointerEvents: "none",
         }}
       >
-        {err && <div className="slideUp w-full flex text-center"> {err}</div>}
+        {err && <div className="slideUp w-full flex text-center">{err}</div>}
         <br />
-        <div className="text-sm w-full text-center ">{status}</div>
+        <div className="text-sm w-full text-center">{status}</div>
       </div>
       {children}
     </context.Provider>
   );
 };
 
-export default InputConext;
+export default InputContext;
 export const useInputContext = () => useContext(context);
