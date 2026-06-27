@@ -125,4 +125,4 @@ View on GitHub: https://github.com/msugh623/fsdiscover
 
 See more on the website https://fsdiscover.sprintet.com/
 
-© 2025 SprintET. All rights reserved.
+© 2026 SprintET. All rights reserved.
