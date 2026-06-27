@@ -1,68 +1,67 @@
 # FSdiscover
-
+ 
 ## Overview
-
-**FSdiscover** (File System Discover) is a **lightweight, cross-platform tool for secure file transfer, remote control, and mini personal cloud storage**. Its primary function is to let users **send files to and receive files from their computer remotely**, effectively turning the host device into a personal cloud. FSdiscover works on any device on the same network, requiring no cloud setup or extra installations.
-
-FSdiscover also provides **remote control functionality**, ideal for presentations, demos, or everyday use. You can interact with your computer's keyboard and mouse remotely from a browser on a phone, tablet, or another PC.
-
-FSdiscover is designed for everyone — casual users, students, and professionals alike — providing a **fast, secure, and hassle-free experience**. It runs on Linux, Windows, and macOS, and launches through a browser-accessible local URL.
-
+ 
+**FSdiscover** (File System Discover) is a lightweight, cross-platform tool for **file sharing and remote control over a local network**. It lets any device on the same network send and receive files directly to and from the host computer, no internet, no cloud setup, no extra apps.
+ 
+It also exposes a browser-based remote control interface for keyboard and mouse input, useful for presentations or day-to-day desktop access from a phone or tablet.
+ 
+FSdiscover runs on Linux, Windows, and macOS. Clients connect through a browser using a local network URL that appears on launch.
+ 
 ---
-
+ 
 ## Features
-
-- **Ultra-Fast File Transfer**: Upload or download files directly between devices over the network at speeds over to 22 Mbps (mobile wi-fi) and over 100 Mbps on LAN.
-- **Mini Personal Cloud**: Use the host computer as a personal cloud for easy access to your files from other devices.
-- **No Arbitrary Move/Copy**: Files cannot be moved or copied between devices outside of the upload/download process, ensuring security.
-- **Remote Keyboard & Mouse**: Control your computer remotely for presentations or daily use with responsive keyboard and touchpad inputs.
-- **Presentation Remote**: Dedicated mode optimized for giving presentations seamlessly.
-- **Virtual Keypad**: Type remotely using an on-screen keyboard.
-- **Interactive Tour Guide**: Familiarize yourself quickly with all features.
-- **Custom App-Level Firewall**: Control who can connect, set rules, and forbid access to unwanted users.
-- **Cross-Platform**: Works out-of-the-box on Linux, Windows, and macOS. Clients connect via browser — no extra apps needed.
-- **Automatic Updates**: FSdiscover manages its own updates to ensure you always have the latest features.
-- **CLI & Desktop Integration**: Launch via terminal (`fsdiscover`) or desktop launcher.
-
+ 
+- **Fast File Transfer**: Transfer files between devices over LAN at up to 22 Mbps on mobile Wi-Fi and over 100 Mbps on wired connections.
+- **No Cloud Required**: Everything happens on your local network. No account, no upload to a third-party server.
+- **Remote Keyboard & Mouse**: Control your computer from a browser touchpad, keyboard, and scroll all work.
+- **Presentation Remote**: A dedicated mode for running presentations remotely.
+- **Virtual Keypad**: On-screen keyboard for remote text input.
+- **Custom App-Level Firewall**: Control which devices can connect and what they can access.
+- **Cross-Platform**: Works on Linux, Windows, and macOS. Any device with a browser can connect no client installation needed.
+- **Automatic Updates**: FSdiscover keeps itself up to date.
+- **CLI & Desktop Integration**: Launch via terminal (`fsdiscover`) or a desktop shortcut.
+- **Interactive Tour Guide**: Built-in walkthrough to get you up to speed quickly.
 ---
-
+ 
 ## How It Works
-
-FSdiscover runs on top of **Node.js**, spinning up a local web server on launch. It detects the best network interface (wired, Wi-Fi, or hotspot) and exposes a browser-accessible URL. Any device on the same network can access the host computer using this link.
-
-**File Transfer** is handled via a browser-based file explorer, allowing uploads and downloads to/from the host device's broadcast or home directory. Remote control uses **WebSockets** for smooth, stateful keyboard and mouse interactions.
-
-FSdiscover logs all activity to ensure transparency and automatically manages log file storage by deleting old entries when necessary.
-
----
-
+ 
+FSdiscover runs a local web server on top of **Node.js**. On launch, it detects the best available network interface wired, Wi-Fi, or hotspot and prints a local URL. Any device on the same network can open that URL in a browser to start transferring files or controlling the host.
+ 
+File transfers are handled through a browser-based file explorer. Remote control uses **WebSockets** for low-latency keyboard and mouse input. All activity is logged, and log files are automatically rotated when they exceed a set size.
+ 
 ## Installation
 
 ### Quick Start (GUI/Desktop)
 
 1. Download the installer for your OS (Windows, Linux, or macOS).
-2. Run the installer — FSdiscover sets up a desktop shortcut automatically.
-3. Launch FSdiscover — a local network link will appear.
+2. Run the installer FSdiscover sets up a desktop shortcut automatically.
+3. Launch FSdiscover a local network link will appear.
 4. Open the link on any device on the same network to start transferring files or controlling the computer.
 
 ### Advanced / CLI Installation
 
-#### Linux & macOS
-
-````bash
+### Linux & macOS
+```bash
+curl -s https://fsdiscover.sprintet.com/downloads/fsdiscover-netinstall.sh | bash
+```
+or
+```bash
 git clone https://github.com/msugh623/fsdiscover.git
 cd fsdiscover
 ./install.sh
-# or headless install
-curl -s https://fsdiscover.sprintet.com/downloads/fsdiscover-netinstall.sh | bash
+```
 
 ### Windows
-
-```cmd
+```CMD
+curl -s https://fsdiscover.sprintet.com/downloads/fsdiscover-windows-netinstall.cmd -o fsdiscover-install.cmd && fsdiscover-install.cmd
+```
+or
+```CMD
 git clone https://github.com/msugh623/fsdiscover.git
 cd fsdiscover
 install.cmd
-````
+```
 
 ---
 
