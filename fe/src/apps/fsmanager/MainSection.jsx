@@ -115,11 +115,17 @@ const MainSection = () => {
                     <button
                       className={`rounded-2xl px-3 py-2 text-xs font-semibold transition ${sortMode === "date" || sortMode === "foldersFirst" ? "bg-white/10 text-white" : "text-gray-400 hover:bg-white/10"}`}
                       onClick={() =>
-                        setSortMode((prev) =>{
-                          const sortModes = ["date", "foldersFirst", "nameAsc", "nameDesc"];
-                          const index = sortModes.indexOf(prev)
-                          const newIndex=index+1>=sortModes.length?0:index+1;
-                          return sortModes[newIndex]
+                        setSortMode((prev) => {
+                          const sortModes = [
+                            "date",
+                            "foldersFirst",
+                            "nameAsc",
+                            "nameDesc",
+                          ];
+                          const index = sortModes.indexOf(prev);
+                          const newIndex =
+                            index + 1 >= sortModes.length ? 0 : index + 1;
+                          return sortModes[newIndex];
                         })
                       }
                       aria-label="Toggle sort mode"
@@ -158,9 +164,10 @@ const MainSection = () => {
             ) : null}
 
             {!isFetching && !locChildren.length ? (
-              <div className="bg-[#111] round border border-white/10 shadow-2xl p-6 text-center text-gray-200 slideUp">
-                {err || "Empty Directory"}
-              </div>
+              <div
+                dangerouslySetInnerHTML={{ __html: err || "Empty Directory" }}
+                className="bg-[#111] round border border-white/10 shadow-2xl p-6 text-center text-gray-200 slideUp"
+              ></div>
             ) : null}
 
             <div

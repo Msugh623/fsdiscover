@@ -90,11 +90,15 @@ class Handlers {
     const theToken = useNativeAuthHandler().config.authorizations.find(
       (auth) => auth.token == req?.cookies?.uuid,
     );
-    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+    if (
+      (!runtimeConfig.config.noAuthFsRead ||
+        runtimeConfig.config.safeMode) &&
+      !theToken
+    ) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
-          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+          ${runtimeConfig.config.safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files' 
       </center>`);
     }
     const badChar = req.url

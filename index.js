@@ -201,16 +201,16 @@ app.use(
   "/fsexplorer",
   (req, res, next) => {
     const cookies = req.cookies;
-    const { noAuthFsRead } = runtimeConfig.config;
+    const { noAuthFsRead, safeMode } = runtimeConfig.config;
     const theToken = authHandler.config.authorizations.find(
       (auth) => auth.token == cookies?.uuid,
     );
-    if (!noAuthFsRead && !theToken) {
+    if ((!noAuthFsRead || safeMode) && !theToken) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res
         .status(401)
         .send(
-          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/login'>Login</a> to read files</h1>",
+          `<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>${safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: You Are not logged in, <a href='/login'>Login</a> to read files. </h1>`,
         );
     }
     next();
@@ -378,7 +378,7 @@ async function refresh() {
   networkStatusFlag = netProb.heartbeat ? "Connected" : "Disconnected";
   const networkStatus = netProb.heartbeat
     ? "\x1b[32mConnected\x1b[39m"
-    : "\x1b[31mDisconnected\x1b[39m"; 
+    : "\x1b[31mDisconnected\x1b[39m";
   const ifaceText =
     (() => {
       if (
