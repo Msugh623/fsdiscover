@@ -327,3 +327,8 @@ button..active:hover {
 .squashPress:active {
   transform: scale(0.97);
 }
+
+.legacy-btn{
+  background: #efefef !important;
+  color: #0e0e0e !important;
+}

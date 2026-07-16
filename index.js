@@ -210,7 +210,7 @@ app.use(
       return res
         .status(401)
         .send(
-          `<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>${safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: You Are not logged in, <a href='/login'>Login</a> to read files. </h1>`,
+          `<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>${safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: You Are not logged in, <a class="legacy-btn" href='/login'>Login</a> to read files. </h1>`,
         );
     }
     next();
