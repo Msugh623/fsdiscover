@@ -2,6 +2,7 @@
 
 V=$(cat version 2>/dev/null || echo "dev")
 PARAM="$1"
+clear
 
 echo
 echo "FSDiscover Installer v$V"
