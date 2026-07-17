@@ -1,191 +1,152 @@
-#!/bin/bash
-source ~/.bashrc 2>/dev/null || true
+#!/usr/bin/env bash
 
-if ! command -v npm >/dev/null 2>&1; then
-    if [ -n "$NVM_DIR" ] && [ -s "$NVM_DIR/nvm.sh" ]; then
-        . "$NVM_DIR/nvm.sh"
-    fi
-    if [ -s "$HOME/.nvm/nvm.sh" ]; then
-        . "$HOME/.nvm/nvm.sh"
-    fi
-    if [ -s "$HOME/.nvm/bash_completion" ]; then
-        . "$HOME/.nvm/bash_completion"
-    fi
-fi
-V=$(cat version)
-PARAM=${1:-null}
+V=$(cat version 2>/dev/null || echo "dev")
+PARAM="$1"
 
-echo "-----------------------------------------"
-echo ""
-echo "   Sprint FS Discover Installer $V"
-echo ""
-echo "-----------------------------------------"
-echo ""
+echo
+echo "FSDiscover Installer v$V"
+echo "============================================"
+echo "Fsdiscover is a tool that allows you to access your filesystem and control your computer over your local HTTP network."
+echo
 
-echo "Fsdiscover is a tool that allows you to access your filesystem over local http network"
+IS_MACOS=false
+[ "$(uname -s)" = "Darwin" ] && IS_MACOS=true
+
+retry() {
+    local max=$1
+    local delay=$2
+    shift 2
+    local count=0
+    while [ $count -lt "$max" ]; do
+        if eval "$@"; then return 0; fi
+        count=$((count + 1))
+        if [ $count -lt "$max" ]; then
+            echo "[WARNING] Attempt $count failed. Retrying..."
+            sleep "$delay"
+        fi
+    done
+    echo "[ERROR] Failed after $max attempts."
+    return 1
+}
 
 
-if [[ $PARAM == "--auto" || $2 == "--auto" ]]; then
-    echo "Skipping permission because auto is supplied... automatic installer shall proceed"
+if [ "$PARAM" = "--auto" ]; then
+    echo "[INFO] Running in FULLY AUTOMATIC mode."
+    AUTO_YES=true
 else
-    echo "Do you want to proceed installation (y/n)"
-    echo "Use --auto to prevent this prompt"
-    read -r ACCEPT
-    if [ "$ACCEPT" != "y" ]; then
-        echo "Exiting...Installer Aborted by User, $ACCEPT is not y"
+    echo "Tip: Run with --auto to skip all prompts (ideal for VPS/servers)"
+    echo
+    read -r -p "Proceed with installation? (y/n) " ACCEPT
+    if [ "$ACCEPT" != "y" ] && [ "$ACCEPT" != "Y" ]; then
+        echo "[INFO] Aborted by user."
         exit 2
     fi
 fi
 
-# Check if Node.js is installed
-if ! command -v node &> /dev/null; then
-    echo "Node.js is not installed. Do you want to install it? (y/n)"
-    read -r INSTALL_NODE
-    if [[ "$INSTALL_NODE" == "y" || "$INSTALL_NODE" == "Y" ]]; then
-        echo 'Installing Node.js...'
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash
-        \. "$HOME/.nvm/nvm.sh"
-        nvm install 23
-        echo 'Node.js installed successfully.'
-        echo 'Node.js version:'
-        node -v 
-        echo 'NVM version:'
-        nvm current 
-        echo 'NPM version:'
-        npm -v
-        if ! [$? -eq 0 ]; then 
-            echo "npm Installer encountered and issue... retrying!"
-            wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-            export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install --lts
-            nvm use --lts
-        fi
-    else
-        echo "Node.js is required to run this script. Exiting..."
-        exit 1
-    fi
+
+echo
+echo "[INFO] Checking Node.js and npm..."
+
+if ! command -v npm >/dev/null 2>&1; then
+    echo "[INFO] npm not found. Installing Node.js automatically..."
+    
+    [ ! -d "$HOME/.nvm" ] && retry 3 2 "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash"
+
+    [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+    [ -s "/usr/local/opt/nvm/nvm.sh" ] && . "/usr/local/opt/nvm/nvm.sh"
+
+    retry 3 3 "nvm install --lts" || retry 2 3 "nvm install 20"
+    nvm use --lts 2>/dev/null || nvm use 20 2>/dev/null || true
 fi
 
+echo "[INFO] Node: $(node -v 2>/dev/null || echo '?') | npm: $(npm -v 2>/dev/null || echo '?')"
 
-# Install required dependencies
-if ! [ -f "package.json" ]; then
-    echo "Failure: package.json not found... Failed to find required dependencies"
+
+if [ ! -f "package.json" ]; then
+    echo "[ERROR] package.json not found."
     exit 1
-elif [[ $PARAM == "--build" || $2 == "--build" ]]; then
-    echo "Installing required dependencies..."
-    npm install > .npm_install.log
-    cd fe 
-    echo "Building client..."
-    npm run build
-    if ! [ $? -eq 0 ]; then
-        echo '!!! Installer Exited prematurely... Too many errors during build. Restart installer to try again'
-        echo "Please, Contact sprintetmail@gmail.com with the details of this error"
-        exit 1
-    fi
-    cd ../
-    rm -rf public/client
-    echo ""
-    echo "Copying build files..."
-    mv fe/dist/ public/client
-    echo "Build Succesfull"
-else
-    echo ""
-    echo "Installing app dependencies, Please wait..."
-    echo "This process requires internet connection and might take a moment"
-    npm install > .npm_install.log || sleep 5 && npm install > .npm_install.log
-fi
-if ! [ $? -eq 0 ]; then
-   echo '!!! Installer Exited prematurely... Installer failed to install necessary dependencies'
-   echo "Please, Contact sprintetmail@gmail.com with the details of this error "
-   exit 1
 fi
 
+echo
+echo "[INFO] Downloading and Installing dependencies..."
+retry 3 3 "npm install" > .npm_install.log 2>&1 || {
+    echo "[ERROR] Failed to install dependencies."
+    exit 1
+}
 
-if ! [ $? -eq 0 ]; then
-    echo '!!! Installer Exited prematurely... Failed to generate SSL certificate'
-    echo "Please, Contact sprintetmail@gmail.com with the details of this error"
-fi
 
 APP_DIR="$HOME/.local/share/fsdiscover"
-mkdir -p "$APP_DIR"
-
-ls logs | grep "ungrepable" || mkdir logs
-
-echo 'Copying files to application directory... This can take a while'
-if command  rsync --version &> /dev/null ; then
-    rsync -av --exclude='fe' --exclude='.git' --exclude='auth.config.json' ./ "$APP_DIR"||tar --exclude=".git" --exclude='auth.config.json' -cf - ./ | tar -xf - -C "$APP_DIR"
-else
-    echo "rsync failed... falling back to cp (This should take a bit longer)"
-    # cp -r ./ "$APP_DIR"
-    tar --exclude=".git" -cf - ./ | tar -xf - -C "$APP_DIR"
-fi
-
-if ! [ $? -eq 0 ]; then
-   echo ""
-   echo "!!! Installer Exited prematurely...  Installer failed to copy neccesary files"
-   echo "Please, Contact sprintetmail@gmail.com with the details of this error "
-   exit 1
-fi
-
-chmod +x "$APP_DIR/fsdiscover.sh"
-
-if ! [ -d "$APP_DIR/temp" ]; then 
-    echo "Could not find temp dir... creating temp dir"
-    mkdir -m 777 "$APP_DIR/temp"
-fi
-
-chmod 777 "$APP_DIR/temp" 
-
-# .desktop ENTRY
-DESKTOP_FILE="[Desktop Entry]
-Name=FSDiscover
-Comment=File System Discoverer
-Exec=$APP_DIR/fsdiscover.sh
-Icon=$APP_DIR/public/icon.png
-Terminal=true
-Type=Application
-Categories=Utility;"
-
-DESKTOP_DIR="$HOME/.local/share/applications"
-mkdir -p "$DESKTOP_DIR"
-echo "$DESKTOP_FILE" > "$DESKTOP_DIR/fsdiscover.desktop"
-
-node utils/makeico.js "$APP_DIR/fsdiscover.sh" "$DESKTOP_DIR/" "$APP_DIR/public/icon.png"
-update-desktop-database "$HOME/.local/share/applications"
-
-UNAME=$(id -u)
-OS=$(uname -s)
-
-if [ $UNAME -eq 0 ]; then
-    echo "Creating Global Executable... Might require sudo access"
-    ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" 
-else
-    echo "Installer needs root access to create Global executable"
-    sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/bin/fsdiscover" || sudo ln -sf "$APP_DIR/fsdiscover.sh" "/usr/local/bin/fsdiscover"
-fi
-
-if [ $OS == "Darwin" ]; then
-    xcode-select --install
-    printf "\n\x1b[43m********************************\x1b[49m\n"
-    echo "!>>> Fsdiscover remote input relies on Iterm's accesibility setting. To use the remote input service, Go to your 'System Settings -> Security & Privacy -> Privacy tab -> Accessibility' and make sure Iterm.app and Intellij IDEA.app are enabled"
-    printf "\n\n\x1b[43m********************************\x1b[49m\n"
-fi
-echo ""
-echo "Installation Finished."
 echo
-printf "\n\x1b[43m********************************\x1b[49m\n"
-printf '\n\x1b[33mINSTRUCTION FOR LOGIN PASSWORD\x1b[39m\nThe default password is set to "password", please change it as soon as possible\nIf you already changed it then ignore this message, it will not be overwritten\n\n'
-printf "\x1b[33mINSTRUCTIONS FOR LOGIN EMAIL\x1b[39m\nThe email requested at login is not tested against any value\nUse your own email as it doesn't matter which email you use to login\n"
-printf "\n\x1b[43m********************************\x1b[49m\n"
-echo
-echo ".desktop file created at $DESKTOP_DIR/fsdiscover.desktop"
-echo "Symbolic link created at /usr/bin/fsdiscover"
-echo "You can now run the application using the command 'fsdiscover'"
-echo 'Use "fsdiscover --help" for details';
-printf '\n\nRead the instructions above or Press CTRL+C to end installer\n'
-if [[ $PARAM == "--auto" || $2 == "--auto" ]]; then
-    sleep "5"
-else
-    sleep "15"
+echo "[INFO] Installing to $APP_DIR..."
+mkdir -p "$APP_DIR/temp" "$APP_DIR/logs"
+
+copy_files() {
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --exclude='.git' --exclude='auth.config.json' \
+                  --exclude='runtime.config.json' --exclude='fe' ./ "$APP_DIR/" && return 0
+    fi
+    tar --exclude='.git' --exclude='auth.config.json' --exclude='runtime.config.json' \
+        -cf - . 2>/dev/null | tar -xf - -C "$APP_DIR" 2>/dev/null && return 0
+    return 1
+}
+
+retry 3 2 copy_files || { echo "[ERROR] File copy failed."; exit 1; }
+
+chmod +x "$APP_DIR/fsdiscover.sh" 2>/dev/null
+chmod 700 "$APP_DIR/temp" 2>/dev/null || true
+
+if $IS_MACOS; then
+    echo "[INFO] Creating macOS .app bundle..."
+    APP_BUNDLE="/Applications/FSDiscover.app"
+    mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
+
+    cat > "$APP_BUNDLE/Contents/Info.plist" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>FSDiscover</string>
+    <key>CFBundleExecutable</key><string>fsdiscover</string>
+</dict>
+</plist>
+EOF
+
+    cat > "$APP_BUNDLE/Contents/MacOS/fsdiscover" << 'EOF'
+#!/usr/bin/env bash
+exec "$HOME/.local/share/fsdiscover/fsdiscover.sh" "$@"
+EOF
+    chmod +x "$APP_BUNDLE/Contents/MacOS/fsdiscover"
+    [ -f "$APP_DIR/public/icon.png" ] && cp "$APP_DIR/public/icon.png" "$APP_BUNDLE/Contents/Resources/icon.png" 2>/dev/null
 fi
+
+echo "[INFO] Creating global command..."
+TARGETS="/usr/local/bin/fsdiscover"
+$IS_MACOS && TARGETS="$TARGETS /opt/homebrew/bin/fsdiscover"
+
+for target in $TARGETS; do
+    mkdir -p "$(dirname "$target")" 2>/dev/null
+    ln -sf "$APP_DIR/fsdiscover.sh" "$target" 2>/dev/null && echo "[SUCCESS] $target" && continue
+    sudo ln -sf "$APP_DIR/fsdiscover.sh" "$target" 2>/dev/null && echo "[SUCCESS] $target (sudo)" && continue
+done
+
+mkdir -p "$HOME/.local/bin"
+ln -sf "$APP_DIR/fsdiscover.sh" "$HOME/.local/bin/fsdiscover" 2>/dev/null
+
+
+echo
+echo "[SUCCESS] Installation completed!"
+echo
+printf "\033[43m********************************\033[49m\n"
+printf '\033[33mDefault password is "password" - change it immediately!\033[39m\n'
+printf '\033[33mIf you alread changed it, it wont be overwritten\033[39m\n'
+printf "\033[43m********************************\033[49m\n"
+echo
+
+if $IS_MACOS; then
+    echo "macOS App: /Applications/FSDiscover.app"
+fi
+echo "You can now run: fsdiscover"
+echo
+
+
+[ "$PARAM" != "--auto" ] && read -r -p "Press Enter to finish..."
