@@ -47,7 +47,7 @@ fi
 
 echo "-----------------------------------------"
 echo ""
-echo "        Sprint FS Discover $V"
+echo "        SprintET FSdiscover $V"
 echo ""
 echo "-----------------------------------------"
 

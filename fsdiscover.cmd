@@ -16,7 +16,7 @@ for /f "usebackq delims=" %%v in ("%VERSION_FILE%") do set "VERSION=%%v"
 
 echo -----------------------------------------
 echo.
-echo        Sprint FS Discover %VERSION%
+echo        SprintET FSdiscover %VERSION%
 echo.
 echo -----------------------------------------
 
