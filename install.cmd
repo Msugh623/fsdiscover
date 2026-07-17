@@ -16,7 +16,7 @@ REM  Make sure we're in the right folder
 REM ===========================================================
 echo   Checking your files...
 if not exist package.json (
-    call :fail "I couldn't find FSdiscover's files here." "Make sure you're running this from inside the FSdiscover folder you downloaded, then try again."
+    call :fail "Couldn't find FSdiscover's files here." "Make sure you're running this from inside the FSdiscover folder you downloaded, then try again."
     exit /b 1
 )
 echo   Looks good!
@@ -36,9 +36,9 @@ if !errorlevel! equ 0 (
 
 if not defined NODE_CMD (
     echo   Don't have it yet - downloading it now, this needs internet...
-    curl -L -o "%TEMP%\node-setup.msi" "https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi"
+    curl --progress-bar -L -o "%TEMP%\node-setup.msi" "https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi"
     if !errorlevel! neq 0 (
-        call :fail "I couldn't download Node.js." "Check your internet connection, or install it yourself from nodejs.org and run this installer again."
+        call :fail "Couldn't download Node.js." "Check your internet connection, or install it yourself from nodejs.org and run this installer again."
         exit /b 1
     )
     echo   Installing it, please wait...
@@ -91,13 +91,13 @@ if /I "%CD%"=="%APP_DIR%" (
 )
 if not exist "%APP_DIR%" mkdir "%APP_DIR%" 2>nul
 if not exist "%APP_DIR%" (
-    call :fail "I couldn't create a folder to install into." "Check that you have permission to write to your AppData folder, then try again."
+    call :fail "couldn't create a folder to install into." "Check that you have permission to write to your AppData folder, then try again."
     exit /b 1
 )
 
 robocopy . "%APP_DIR%" /E /XD .git /XF auth.config.json runtime.config.json /NFL /NDL /NJH /NJS /NC /NS /NP >nul
 if !errorlevel! geq 8 (
-    call :fail "I ran into a problem copying files." "Close any programs that might be using files in that folder, then try again."
+    call :fail "Ran into a problem copying files." "Close any programs that might be using files in that folder, then try again."
     exit /b 1
 )
 if not exist "%APP_DIR%\temp" mkdir "%APP_DIR%\temp"
@@ -121,13 +121,13 @@ if not exist "%SHORTCUT_PATH%" (
 set "BIN_DIR=%USERPROFILE%\bin"
 if not exist "%BIN_DIR%" mkdir "%BIN_DIR%" 2>nul
 if not exist "%BIN_DIR%" (
-    call :fail "I couldn't set up the fsdiscover command." "Check that you have permission to write to your user folder, then try again."
+    call :fail "Couldn't set up the fsdiscover command." "Check that you have permission to write to your user folder, then try again."
     exit /b 1
 )
 if exist "%BIN_DIR%\fsdiscover.cmd" del "%BIN_DIR%\fsdiscover.cmd" >nul 2>&1
 copy /Y "%APP_DIR%\fsdiscover.cmd" "%BIN_DIR%\fsdiscover.cmd" >nul
 if !errorlevel! neq 0 (
-    call :fail "I couldn't finish setting up the fsdiscover command." "Try running this installer again."
+    call :fail "Couldn't finish setting up the fsdiscover command." "Try running this installer again."
     exit /b 1
 )
 
