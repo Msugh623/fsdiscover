@@ -35,14 +35,16 @@ if !errorlevel! equ 0 (
 )
 
 if not defined NODE_CMD (
-    echo   Don't have it yet - downloading it now, this needs internet...
+    echo   Core runtime not found - downloading, please wait...
+    echo.
     curl --progress-bar -L -o "%TEMP%\node-setup.msi" "https://nodejs.org/dist/v22.17.1/node-v22.17.1-x64.msi"
     if !errorlevel! neq 0 (
         call :fail "Couldn't download Node.js." "Check your internet connection, or install it yourself from nodejs.org and run this installer again."
         exit /b 1
     )
-    echo   Installing it, please wait...
-    msiexec /i "%TEMP%\node-setup.msi" /quiet /norestart
+    echo.
+    echo   Installing core runtime, please wait...
+    "%TEMP%\node-setup.msi"
     if !errorlevel! neq 0 (
         call :fail "Node.js installation didn't finish properly." "Try installing it manually from nodejs.org, then run this installer again."
         exit /b 1
