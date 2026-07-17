@@ -1,5 +1,4 @@
-import React, { useRef } from "react";
-import { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useInputContext } from "../../../state/InputContext";
 import {
   FaArrowDown,
@@ -15,13 +14,12 @@ import {
   FaTimes,
   FaWindows,
 } from "react-icons/fa";
-import { useEffect } from "react";
-import Menu from "../../../components/Menu";
 import { BiVolumeLow, BiX } from "react-icons/bi";
 import Delay from "../../../components/Delay";
+import { toast } from "material-react-toastify";
 
 const KeyboardFocusable = ({ hasDivider }) => {
-  const [panelClassName, setPanelClassName] = useState("d-none");
+  const [panelClassName, setPanelClassName] = useState("hidden");
   const [href, setHref] = useState(location.href);
   const strokerRef = useRef(null);
   const {
@@ -71,10 +69,10 @@ const KeyboardFocusable = ({ hasDivider }) => {
       toggleKeyboard(false);
       setPanelClassName("slideOut");
       setTimeout(() => {
-        setPanelClassName("d-none");
+        setPanelClassName("hidden");
       }, 500);
     } else {
-      setPanelClassName("d-block");
+      setPanelClassName("block");
       toggleKeyboard(true);
     }
   }, [hasPannel]);
@@ -87,439 +85,293 @@ const KeyboardFocusable = ({ hasDivider }) => {
       socket.connect();
     }
   }, []);
-
+  useEffect(() => {
+    console.log(keyVal);
+  }, [keyVal]);
   return (
     <>
       {controller && (
         <VirtualNavigator
           handleVirtualKey={handleVirtualKey}
-          closeController={() => setController(false)}
+          closeController={() => setController(false) || setHasPannel(true)}
         />
       )}
-      <div className="menu-panel">
-        {hasPannel && (
-          <Delay delay={800}>
-            <div
-              className="ms-auto slideUp my-auto me-4 px-1 icon active rounded"
-              style={{
-                width: "fit-content",
-                position: "relative",
-                top: "35px",
-                left: "10px",
-                zIndex: 2,
-              }}
-              onClick={() => {
-                setHasPannel(false);
-                toggleKeyboard(false);
-              }}
-            >
-              <FaTimes className="icon" />
-            </div>
-          </Delay>
-        )}
-        <div className="mx-auto col-12 col-sm-10 col-md-8 col-xl-9">
+      <div className="menu-panel relative bottom">
+        <div className="mx-auto w-full sm:w-11/12 md:w-5/6 xl:w-3/4 px-2">
           <div
-            className={`inner ani  rounded shadow-lg p-3 text-light bg-dark text-left slideUp ${panelClassName}`}
-            style={{
-              // zIndex: ,
-              // bottom: "10px",
-              position: "relative",
-            }}
+            className={`inner keyboard-panel ani rounded-3xl border border-white/10 bg-[#111] shadow-2xl p-4 text-gray-200 text-left slideUp relative ${panelClassName}`}
           >
-            <div
-              className="row text-light ani"
-              style={{
-                minHeight: "400px !important",
-                height: "20vh",
-                maxHeight: "80vh",
-                // overflowX: 'auto',
-                // overflowY:'visible'
-              }}
-            >
-              <div className="d-flex px-0 px-md-1 pb-2 virtualKeyboard">
-                <div className="row">
-                  <h5
-                    className="text-light my-auto pt-2 col-12 d-flex ps-3 m-0 mt-0 mb-0"
-                    style={{
-                      position: "relative",
-                      bottom: "6px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        maxWidth: "fit-content",
-                        // pointerEvents: "none",
-                        position: "relative",
-                        bottom: "6px",
-                      }}
-                    >
-                      {" "}
-                      Remote Keyboard
-                    </span>
-                  </h5>
-                  {/* First row */}
-                  <div className="d-flex col-md-12">
-                    <div className="p-1  d-flex">
-                      <button
-                        onClick={() => {
-                          setOtherKeys((prev) => !prev);
-                          inputHadFocus && strokerRef.current.focus();
-                        }}
-                        className={`btn border text-light w-100 text-center ${
-                          otherKeys && "active"
-                        }`}
-                      >
-                        {!otherKeys ? "More" : "Less"}
-                      </button>
-                    </div>
-                    <VirtualKey
-                      isAlt={otherKeys}
-                      id={"Escape"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      Esc
-                    </VirtualKey>
-                    <VirtualKey
-                      isAlt={otherKeys}
-                      id={"Tab"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      Tab
-                    </VirtualKey>
-                    <VirtualKey
-                      isAlt={otherKeys}
-                      id={"End"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      End
-                    </VirtualKey>
-                    {!mediaKeys ? (
-                      <VirtualKey
-                        alt={
-                          <VirtualKey
-                            id={"Backspace"}
-                            onClick={(e) => handleVirtualKey(e)}
-                          >
-                            <FaBackspace
-                              style={{
-                                fontSize: "1.6em",
-                                rotate: "180deg",
-                                pointerEvents: "none",
-                                rotate: "",
-                              }}
-                            />
-                          </VirtualKey>
-                        }
-                        isAlt={otherKeys}
-                        id={"PageUp"}
-                        onClick={(e) => handleVirtualKey(e)}
-                      >
-                        PgUp
-                      </VirtualKey>
-                    ) : (
-                      <VirtualKey
-                        isAlt={otherKeys}
-                        id={"VolumeUp"}
-                        onClick={(e) => handleVirtualKey(e)}
-                        alt={
-                          <VirtualKey
-                            id={"VolumeUp"}
-                            onClick={(e) => handleVirtualKey(e)}
-                          >
-                            <FaBackspace
-                              style={{
-                                fontSize: "1.6em",
-                                rotate: "180deg",
-                                pointerEvents: "none",
-                                rotate: "",
-                              }}
-                            />
-                          </VirtualKey>
-                        }
-                      >
-                        Vol +
-                      </VirtualKey>
-                    )}
-                  </div>
+            <div className="flex items-center justify-between w-full m-0 mb-4 pl-1">
+              <h5 className="text-white m-0 font-medium text-sm lg:text-base">
+                Remote Keyboard
+              </h5>
+              <button
+                aria-label="Close keyboard panel"
+                onClick={() => {
+                  setHasPannel(false);
+                  toggleKeyboard(false);
+                }}
+                className="ml-4 rounded border border-white/10 p-1 hover:bg-white/10 text-white transition"
+              >
+                <FaTimes />
+              </button>
+            </div>
 
-                  {/* Second Row */}
-                  <div className="d-flex col-lg-12">
-                    <div className=" p-1 d-flex">
-                      <button
-                        id="LeftSuper"
-                        onClick={(e) => handleVirtualKey(e)}
-                        className="btn text-light border w-100"
-                      >
-                        <FaWindows
-                          style={{
-                            fontSize: "1.6em",
-                            rotate: "180deg",
-                            pointerEvents: "none",
-                          }}
-                        />
-                      </button>
-                    </div>
-                    <VirtualKey
-                      isAlt={otherKeys}
-                      id={"LeftControl"}
-                      value={"toggle"}
-                      className={downKeys.includes("LeftControl") && "active"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      Ctrl
-                    </VirtualKey>
-                    <VirtualKey
-                      isAlt={otherKeys}
-                      id={"LeftAlt"}
-                      value={"toggle"}
-                      className={downKeys.includes("LeftAlt") && "active"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      Alt
-                    </VirtualKey>
-                    <VirtualKey
-                      isAlt={otherKeys}
-                      id={"LeftShift"}
-                      value={"toggle"}
-                      className={downKeys.includes("LeftShift") && "active"}
-                      onClick={(e) => handleVirtualKey(e)}
-                    >
-                      Shift
-                    </VirtualKey>
-                    {!mediaKeys ? (
-                      <VirtualKey
-                        alt={
-                          <VirtualKey
-                            id={"Enter"}
-                            onClick={(e) => handleVirtualKey(e)}
-                          >
-                            Enter
-                          </VirtualKey>
-                        }
-                        isAlt={otherKeys}
-                        id={"PageDown"}
-                        onClick={(e) => handleVirtualKey(e)}
-                      >
-                        PgDown
-                      </VirtualKey>
-                    ) : (
-                      <>
-                        <VirtualKey
-                          isAlt={otherKeys}
-                          id={"VolumeDown"}
-                          onClick={(e) => handleVirtualKey(e)}
-                        >
-                          <small>Volume -</small>
-                        </VirtualKey>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="ms-auto mt-auto">
-                  <div className="d-flex">
-                    <div className="col-4 p-1 d-flex">
-                      {otherKeys ? (
-                        <button
-                          id="Delete"
-                          onClick={(e) => handleVirtualKey(e)}
-                          className="btn pe-4 text-light border w-100"
-                        >
-                          Delete
-                        </button>
-                      ) : (
-                        <button
-                          id="Insert"
-                          onClick={() => {
-                            setController(true);
-                          }}
-                          className="btn pe-4 text-center text-light border w-100"
-                        >
-                          {/* <FaExpandArrowsAlt className=""
-                            style={{ rotate: "45deg", pointerEvents: "none" }}
-                          /> */}
-                          <small className="small">Present</small>
-                        </button>
-                      )}
-                    </div>
-                    {mediaKeys ? (
-                      <div className="col-4 p-1  d-flex">
-                        <button
-                          id="AudioPlay"
-                          onClick={(e) => handleVirtualKey(e)}
-                          className="btn text-light border w-100 text-center"
-                        >
-                          <FaPlay
-                            className="icon"
-                            style={{ padding: "1px", pointerEvents: "none" }}
-                          />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="col-4 p-1  d-flex">
-                        <button
-                          id="Up"
-                          onClick={(e) => handleVirtualKey(e)}
-                          className="btn text-light border w-100 text-center"
-                        >
-                          <FaArrowUp style={{ pointerEvents: "none" }} />
-                        </button>
-                      </div>
-                    )}
-                    <div className="col-4 p-1  d-flex">
-                      <button
-                        onClick={() => {
-                          setMediaKeys((prev) => !prev);
-                          inputHadFocus && strokerRef.current.focus();
-                        }}
-                        className={`btn border text-light w-100 text-center ${
-                          mediaKeys && "active"
-                        }`}
-                      >
-                        {!mediaKeys ? "Media" : "Arrow"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Second Row */}
-                  <div className="d-flex">
-                    {!mediaKeys ? (
-                      <>
-                        {/* Nav Keys */}
-                        <div className="col-4 p-1  d-flex">
-                          <button
-                            id="Left"
-                            onClick={(e) => handleVirtualKey(e)}
-                            className="btn border text-light w-100 text-center"
-                          >
-                            <FaArrowLeft style={{ pointerEvents: "none" }} />
-                          </button>
-                        </div>
-                        <div className="col-4 p-1  d-flex">
-                          <button
-                            id="Down"
-                            onClick={(e) => handleVirtualKey(e)}
-                            className="btn border text-light w-100 text-center"
-                          >
-                            <FaArrowDown style={{ pointerEvents: "none" }} />
-                          </button>
-                        </div>
-                        <div className="col-4 p-1  d-flex">
-                          <button
-                            id="Right"
-                            onClick={(e) => handleVirtualKey(e)}
-                            className="btn border text-light w-100 text-center"
-                          >
-                            <FaArrowRight style={{ pointerEvents: "none" }} />
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="col-4 p-1  d-flex">
-                          <button
-                            id="AudioPrev"
-                            onClick={(e) => handleVirtualKey(e)}
-                            className="btn border text-light w-100 text-center"
-                          >
-                            <FaBackward style={{ pointerEvents: "none" }} />
-                          </button>
-                        </div>
-                        <div className="col-4 p-1  d-flex">
-                          <button
-                            id="AudioPlay"
-                            onClick={(e) => handleVirtualKey(e)}
-                            className="btn border text-light w-100 text-center"
-                          >
-                            <FaPause
-                              className="icon"
-                              style={{ padding: "1px", pointerEvents: "none" }}
-                            />
-                          </button>
-                        </div>
-                        <div className="col-4 p-1  d-flex">
-                          <button
-                            id="AudioNext"
-                            onClick={(e) => handleVirtualKey(e)}
-                            className="btn border text-light w-100 text-center"
-                          >
-                            <FaForward style={{ pointerEvents: "none" }} />
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="px-2 ">
-                <input
-                  type="text"
-                  onKeyDown={handleKeydown}
-                  onKeyUp={handleKeyUp}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  aria-multiline="false"
-                  onFocus={() => {
-                    setTimeout(() => {
-                      setInputHadFocus(true);
-                    }, 250);
+            {/* Grid Layout Container */}
+            <div className="grid grid-cols-[5fr_3fr] gap-2 sm:gap-8 md:gap-12 lg:gap-28 mb-4">
+              {/* Left Grid: 5 Columns */}
+              <div className="grid grid-cols-5 gap-0.5 sm:g-1 md:gap-2">
+                <VirtualKey
+                  id="MoreToggle"
+                  onClick={() => {
+                    setOtherKeys((prev) => !prev);
+                    inputHadFocus && strokerRef.current.focus();
                   }}
-                  onBlur={() => {
-                    setTimeout(() => {
-                      setInputHadFocus(false);
-                    }, 250);
-                  }}
-                  onChange={({ target }) => {
-                    const { value } = target;
-                    setKeyVal((prev) =>
-                      value.length <= 2
-                        ? target.value[value.length - 1] || target.value
-                        : (() => {
-                            if (value.length - prev.length == 1) {
-                              return target.value[value.length - 1];
-                            }
-                            const i = value.indexOf(prev);
-                            return value
-                              .slice(i + i.length + 1, value.length)
-                              .replace(prev, "");
-                          })()
-                    );
-                    setLastPress(Date.now());
-                  }}
-                  className={`form-control bg-dark border rounded text-light ${
-                    inputHadFocus && "border-primary"
+                  className={`border border-white/10 rounded-2xl px-1 sm:px-2 py-2 text-white hover:bg-white/10 transition ${
+                    otherKeys ? "bg-white/10" : ""
                   }`}
-                  placeholder={"Write Here (Writeup will not display here)"}
-                  value={keyVal}
-                  autoFocus
-                  ref={strokerRef}
-                  id="keystroker"
-                />
+                >
+                  {!otherKeys ? "More" : "Less"}
+                </VirtualKey>
+                <VirtualKey
+                  isAlt={otherKeys}
+                  id={"Escape"}
+                  onClick={handleVirtualKey}
+                >
+                  Esc
+                </VirtualKey>
+                <VirtualKey
+                  isAlt={otherKeys}
+                  id={"Tab"}
+                  onClick={handleVirtualKey}
+                >
+                  Tab
+                </VirtualKey>
+                <VirtualKey
+                  isAlt={otherKeys}
+                  id={"End"}
+                  onClick={handleVirtualKey}
+                >
+                  End
+                </VirtualKey>
+
+                {!mediaKeys ? (
+                  <VirtualKey
+                    id={otherKeys ? "Backspace" : "PageUp"}
+                    onClick={handleVirtualKey}
+                  >
+                    {otherKeys ? (
+                      <FaBackspace className="pointer-events-none" />
+                    ) : (
+                      "PgUp"
+                    )}
+                  </VirtualKey>
+                ) : (
+                  <VirtualKey
+                    isAlt={otherKeys}
+                    id={"VolumeUp"}
+                    onClick={handleVirtualKey}
+                  >
+                    Vol +
+                  </VirtualKey>
+                )}
+
+                <VirtualKey id="LeftSuper" onClick={handleVirtualKey}>
+                  <FaWindows className="text-base sm:text-lg md:text-xl rotate-180 pointer-events-none" />
+                </VirtualKey>
+                <VirtualKey
+                  isAlt={otherKeys}
+                  id={"LeftControl"}
+                  value={"toggle"}
+                  className={
+                    downKeys.includes("LeftControl") ? "bg-white/10" : ""
+                  }
+                  onClick={handleVirtualKey}
+                >
+                  Ctrl
+                </VirtualKey>
+                <VirtualKey
+                  isAlt={otherKeys}
+                  id={"LeftAlt"}
+                  value={"toggle"}
+                  className={downKeys.includes("LeftAlt") ? "bg-white/10" : ""}
+                  onClick={handleVirtualKey}
+                >
+                  Alt
+                </VirtualKey>
+                <VirtualKey
+                  isAlt={otherKeys}
+                  id={"LeftShift"}
+                  value={"toggle"}
+                  className={
+                    downKeys.includes("LeftShift") ? "bg-white/10" : ""
+                  }
+                  onClick={handleVirtualKey}
+                >
+                  Shift
+                </VirtualKey>
+
+                {!mediaKeys ? (
+                  <VirtualKey
+                    alt={
+                      <VirtualKey id={"Enter"} onClick={handleVirtualKey}>
+                        Enter
+                      </VirtualKey>
+                    }
+                    isAlt={otherKeys}
+                    id={"PageDown"}
+                    onClick={handleVirtualKey}
+                  >
+                    <span className="hidden sm:inline">PgDown</span>
+                    <span className="sm:hidden inline">PgDn</span>
+                  </VirtualKey>
+                ) : (
+                  <VirtualKey
+                    isAlt={otherKeys}
+                    id={"VolumeDown"}
+                    onClick={handleVirtualKey}
+                  >
+                    <span className="">Vol -</span>
+                  </VirtualKey>
+                )}
               </div>
+
+              {/* Right Grid: 3 Columns */}
+              <div className="grid grid-cols-3 gap-0.5 sm:g-1 md:gap-2">
+                {otherKeys ? (
+                  <VirtualKey id="Delete" onClick={handleVirtualKey}>
+                    Delete
+                  </VirtualKey>
+                ) : (
+                  <VirtualKey
+                    id="Insert"
+                    onClick={() =>
+                      setController(true) ||
+                      document.getElementById("start").click()
+                    }
+                  >
+                    <span className="">Present</span>
+                  </VirtualKey>
+                )}
+
+                {mediaKeys ? (
+                  <VirtualKey id="AudioPlay" onClick={handleVirtualKey}>
+                    <FaPlay className="pointer-events-none" />
+                  </VirtualKey>
+                ) : (
+                  <VirtualKey id="Up" onClick={handleVirtualKey}>
+                    <FaArrowUp className="pointer-events-none" />
+                  </VirtualKey>
+                )}
+
+                <VirtualKey
+                  id="MediaToggle"
+                  onClick={() => {
+                    setMediaKeys((prev) => !prev);
+                    inputHadFocus && strokerRef.current.focus();
+                  }}
+                  className={`${mediaKeys ? "bg-white/10" : ""}`}
+                >
+                  {!mediaKeys ? "Media" : "Arrow"}
+                </VirtualKey>
+
+                {!mediaKeys ? (
+                  <>
+                    <VirtualKey id="Left" onClick={handleVirtualKey}>
+                      <FaArrowLeft className="pointer-events-none" />
+                    </VirtualKey>
+                    <VirtualKey id="Down" onClick={handleVirtualKey}>
+                      <FaArrowDown className="pointer-events-none" />
+                    </VirtualKey>
+                    <VirtualKey id="Right" onClick={handleVirtualKey}>
+                      <FaArrowRight className="pointer-events-none" />
+                    </VirtualKey>
+                  </>
+                ) : (
+                  <>
+                    <VirtualKey id="AudioPrev" onClick={handleVirtualKey}>
+                      <FaBackward className="pointer-events-none" />
+                    </VirtualKey>
+                    <VirtualKey id="AudioPlay" onClick={handleVirtualKey}>
+                      <FaPause className="pointer-events-none" />
+                    </VirtualKey>
+                    <VirtualKey id="AudioNext" onClick={handleVirtualKey}>
+                      <FaForward className="pointer-events-none" />
+                    </VirtualKey>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Input Field Area */}
+            <div className="w-full">
+              <input
+                type="text"
+                onKeyDown={handleKeydown}
+                onKeyUp={handleKeyUp}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck="false"
+                aria-multiline="false"
+                onFocus={() => {
+                  setTimeout(() => {
+                    setInputHadFocus(true);
+                  }, 250);
+                }}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setInputHadFocus(false);
+                  }, 250);
+                }}
+                onChange={({ target }) => {
+                  const { value } = target;
+                  setKeyVal((prev) =>
+                    value.length <= 2
+                      ? target.value[value.length - 1] || target.value
+                      : (() => {
+                          if (value.length - prev.length == 1) {
+                            return target.value[value.length - 1];
+                          }
+                          const i = value.indexOf(prev);
+                          return value
+                            .slice(i + i.length + 1, value.length)
+                            .replace(prev, "");
+                        })(),
+                  );
+                  setLastPress(Date.now());
+                }}
+                className={`w-full px-2 sm:px-3 md:px-4 py-1 sm:py-2 bg-[#0d0d11] border border-white/10 rounded-2xl text-gray-200 outline-none transition ${
+                  inputHadFocus ? "border-sky-400" : "border-white/10"
+                }`}
+                placeholder={"Write Here (Writeup will not display here)"}
+                value={keyVal}
+                autoFocus
+                ref={strokerRef}
+                id="keystroker"
+              />
             </div>
           </div>
         </div>
       </div>
+
       <div
         id="start"
         title="Keyboard Menu"
-        className={`app my-auto p-2 py-1 btn fs-5 ${hasPannel && "active"}`}
+        className={`app fixed left-4 md:bottom-4 bottom-28 rounded-xl my-auto p-2 transition ${
+          hasPannel
+            ? "bg-white/10 text-white"
+            : "bg-[#0d0d11] text-gray-200 hover:bg-white/10"
+        }`}
         onClick={() => {
-          setHasPannel((prev) => !prev), setKeyVal("");
+          setHasPannel((prev) => !prev);
+          setKeyVal("");
         }}
       >
-        <FaRegKeyboard
-          className="text-light"
-          style={{
-            fontSize: "35px",
-          }}
-        />
+        <FaRegKeyboard className="text-white text-[2em]" />
       </div>
+
       {hasDivider !== false && (
-        <div
-          className="divider my-auto mx-2"
-          style={{ width: "1px", background: "#efefef60", height: "80%" }}
-        ></div>
+        <div className="my-auto mx-2 w-px h-[80%] bg-white/40"></div>
       )}
     </>
   );
@@ -529,16 +381,14 @@ export default KeyboardFocusable;
 
 function VirtualKey({ children, id, onClick, className, value, isAlt, alt }) {
   return !isAlt || !alt ? (
-    <div className=" p-1 d-flex">
-      <button
-        id={id}
-        value={value || ""}
-        onClick={(e) => onClick(e)}
-        className={`btn text-light border w-100 ${className}`}
-      >
-        {children}
-      </button>
-    </div>
+    <button
+      id={id}
+      value={value || ""}
+      onClick={(e) => onClick(e)}
+      className={`rounded-xl border border-white/10 bg-[#0d0d11] text-white flex justify-center items-center hover:bg-white/10 transition text-[0.50rem] sm:text-[0.75rem] md:text-[0.85rem] px-1.5 sm:px-2 md:px-3 py-2 min-w-0 ${className || ""}`}
+    >
+      {children}
+    </button>
   ) : (
     alt
   );
@@ -557,108 +407,63 @@ function VirtualNavigator({ handleVirtualKey, closeController }) {
   }, []);
 
   return (
-    <>
-      <div
-        className="d-flex fadeIn pb-5"
-        style={{
-          position: "fixed",
-          left: "0",
-          right: "0",
-          top: "0",
-          bottom: "0",
-          backgroundColor: "#061e2cfa",
-          zIndex: 10,
-          backdropFilter: "blur(20px)",
-        }}
-      >
-        <div
-          className="m-auto slideUp shadow border text-light active p-3 virtualKeyboard"
-          style={{
-            borderRadius: "25px",
-          }}
-        >
-          <h4 className="text-light d-flex">
-            Presentation Controller{" "}
-            <button
-              className="ms-auto active rounded my-auto me-1 border"
-              onClick={closeController}
+    <div className="flex fixed z-50 inset-0 bg-[#061e2cfa]backdrop-blur-md pb-5 fadeIn">
+      <div className="m-auto slideUp  shadow-lg border border-white/10 bg-[#0d0d11] text-white p-3 rounded-[25px] virtualKeyboard">
+        <h4 className="text-white flex items-center mb-4">
+          Presentation Controller{" "}
+          <button
+            className="ml-auto rounded border border-white/10 p-1 hover:bg-white/10 transition"
+            onClick={closeController}
+          >
+            <BiX className="text-base sm:text-lg md:text-xl text-white" />
+          </button>
+        </h4>
+        <div className="flex gap-2">
+          {/* Left Key */}
+          <div className="flex">
+            <VirtualKey
+              id="Left"
+              onClick={(e) => handleVirtualKey(e, true)}
+              className="rounded-2xl border-white/10 bg-[#0d0d11] text-white flex justify-center items-center text-base sm:text-lg md:text-xl hover:bg-white/10 transition w-[25vw] h-[40vh]"
             >
-              <BiX className="icon" />
-            </button>
-          </h4>
-          <div className="d-flex">
-            {/* Left Key */}
-            <div className=" p-1  d-flex">
-              <button
-                id="Left"
-                onClick={(e) => handleVirtualKey(e, true)}
-                className="btn border my-auto text-light h-100 w-100 fs-5 text-center"
-                style={{
-                  width: "25vw",
-                  minWidth: "25vw",
-                  maxWwidth: "25vw",
-                  minHeight: "25vw",
-                }}
+              <FaArrowLeft className="pointer-events-none" />
+            </VirtualKey>
+          </div>
+
+          {/* Up/Down Keys */}
+          <div className="flex flex-col gap-2">
+            <div className="flex h-full">
+              <VirtualKey
+                id="Up"
+                onClick={(e) => handleVirtualKey(e)}
+                className="rounded-2xl border-white/10 bg-[#0d0d11] text-white flex justify-center items-center text-base sm:text-lg md:text-xl hover:bg-white/10 transition w-[25vw] h-[20vh]"
               >
-                <FaArrowLeft style={{ pointerEvents: "none" }} />
-              </button>
+                <FaArrowUp className="pointer-events-none" />
+              </VirtualKey>
             </div>
-
-            {/* Up Key */}
-            <div className="d-flex flex-column">
-              <div className=" p-1 mb-auto d-flex">
-                <button
-                  id="Up"
-                  style={{
-                    width: "25vw",
-                    minWidth: "25vw",
-                    maxWidth: "25vw",
-                    minHeight: "25vh",
-                  }}
-                  onClick={(e) => handleVirtualKey(e)}
-                  className="btn text-light border w-100 text-center fs-5"
-                >
-                  <FaArrowUp style={{ pointerEvents: "none" }} />
-                </button>
-              </div>
-
-              {/* Down Key */}
-              <div className=" p-1 mt-auto d-flex">
-                <button
-                  id="Down"
-                  style={{
-                    width: "25vw",
-                    minWidth: "25vw",
-                    maxWwidth: "25vw",
-                    minHeight: "25vh",
-                  }}
-                  onClick={(e) => handleVirtualKey(e, true)}
-                  className="btn border text-light w-100 text-center fs-5"
-                >
-                  <FaArrowDown style={{ pointerEvents: "none" }} />
-                </button>
-              </div>
-            </div>
-
-            {/* Right Key */}
-            <div className=" p-1  d-flex">
-              <button
-                id="Right"
+            <div className="flex h-full">
+              <VirtualKey
+                id="Down"
                 onClick={(e) => handleVirtualKey(e, true)}
-                className="btn border my-auto text-light w-100 h-100 text-center fs-5"
-                style={{
-                  width: "25vw",
-                  minWidth: "25vw",
-                  maxWwidth: "25vw",
-                  minHeight: "25vw",
-                }}
+                className="rounded-2xl border-white/10 bg-[#0d0d11] text-white flex justify-center items-center text-base sm:text-lg md:text-xl hover:bg-white/10 transition w-[25vw] h-[19vh]"
               >
-                <FaArrowRight style={{ pointerEvents: "none" }} />
-              </button>
+                <FaArrowDown className="pointer-events-none" />
+              </VirtualKey>
             </div>
+          </div>
+
+          {/* Right Key */}
+          <div className="flex">
+            <VirtualKey
+              id="Right"
+              onClick={(e) => handleVirtualKey(e, true)}
+              className="rounded-2xl border-white/10 bg-[#0d0d11] text-white flex justify-center items-center text-base sm:text-lg md:text-xl hover:bg-white/10 transition w-[25vw] h-[40vh]"
+            >
+              <FaArrowRight className="pointer-events-none" />
+            </VirtualKey>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

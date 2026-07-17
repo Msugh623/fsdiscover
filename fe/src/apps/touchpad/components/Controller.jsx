@@ -3,30 +3,25 @@ import Delay from "../../../components/Delay";
 import { useInputContext } from "../../../state/InputContext";
 import KeyboardFocusable from "./KeyboardFocusable";
 import { useState } from "react";
-// import { toast } from "react-toastify";
+// import { toast } from "material-react-toastify";
 
 const Controller = () => {
   const { click, altClick, scrollStart, scrollMove, scrollEnd, socket } =
     useInputContext();
-  const [inflate,setInflate]=useState(false)
+  const [inflate, setInflate] = useState(false);
   return (
     <div>
       <Delay delay={800}>
         <div
           id="mouseBar"
-          className={`fixed-bottom d-flex ${false && "d-none"}`}
-          style={{
-            bottom: "10px",
-            height: "70px",
-            // zIndex: ,
-          }}
+          className={`fixed left-2 right-2 bottom-0 pb-1 d-flex ${false && "d-none"}`}
         >
           <div
             id="mouseBarInner"
-            className="custom-navmenu mx-auto text-light slideUp p-2 col-11 col-sm-10 col-md-8 col-xl-9 mb-2 bg-dark rounded d-flex text-light"
+            className=" mx-auto slideUp p-2  md:w-2/3 px-2  mb-2 bg-[#111] rounded-3xl flex text-white border border-white/10 shadow-2xl"
           >
             <button
-              className="btn text-light active shadow themebg"
+              className="text-white active shadow-lg bg-[#0d0d11] hover:bg-white/10 rounded-2xl transition max-h-14"
               onClick={click}
               style={{
                 minWidth: window.innerWidth < 300 ? "30px" : "70px",
@@ -41,24 +36,24 @@ const Controller = () => {
                 }}
               ></small>
             </button>
-            <div className="m-auto px-1 d-flex h-100 w-100">
+            <div className="m-auto px-1 flex h-14 w-full">
               <div
                 onClick={() => {
-                  !inflate && socket.emit("middleclick")
+                  !inflate && socket.emit("middleclick");
                   inflate && setInflate(false);
                 }}
                 id="scrollBar"
                 onTouchStart={(e) => {
-                  scrollStart(e)
+                  scrollStart(e);
                   setInflate(true);
-                  e.target.focus()
+                  e.target.focus();
                 }}
                 onTouchMove={scrollMove}
-                onTouchEnd={(e)=>{
-                  scrollEnd(e)
+                onTouchEnd={(e) => {
+                  scrollEnd(e);
                 }}
-                onTouchCancel={(e)=>{
-                  scrollEnd(e)
+                onTouchCancel={(e) => {
+                  scrollEnd(e);
                 }}
                 onMouseDown={scrollStart}
                 onMouseMove={scrollMove}
@@ -69,9 +64,9 @@ const Controller = () => {
                 onBlur={() => {
                   setInflate(false);
                 }}
-                className={`active rounded d-flex w-100 ${
-                  !inflate && "h-100"
-                } text-center my-auto`}
+                className={`rounded-2xl flex w-full ${
+                  !inflate ? "max-h-14" : "min-h-28 relativ bottom-14"
+                } text-center my-auto bg-[#141414] transition border border-white/10`}
                 style={{
                   minWidth: "40px",
                   fontSize: ".7em",
@@ -84,7 +79,7 @@ const Controller = () => {
               </div>
             </div>
             <button
-              className="btn text-light active shadow themebg"
+              className="text-white active shadow-lg bg-[#0d0d11] hover:bg-white/10 rounded-2xl transition max-h-14"
               style={{
                 minWidth: window.innerWidth < 300 ? "30px" : "70px",
                 fontSize: ".6em",
@@ -101,15 +96,24 @@ const Controller = () => {
             </button>
           </div>
           <div
-            className="p-3 w-100 fixed  bottom d-flex"
+            className="fixed left-0 right-0 flex justify-center"
             style={{
               position: "fixed",
-              bottom: window.innerWidth > 780 ? "0" : "70px",
-              left: "4px",
-              zIndex: -1,
+              bottom: window.innerWidth > 780 ? "60px" : "110px",
+              zIndex: 60,
+              pointerEvents: "auto",
             }}
           >
-            <KeyboardFocusable />
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "1200px",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <KeyboardFocusable />
+            </div>
           </div>
         </div>
       </Delay>

@@ -183,6 +183,7 @@ if (args.includes("--prefer") || args.includes("-p")) {
 }
 
 const netFace = netProb.autoDetect();
+let networkStatusFlag = "";
 process.netFace = netFace;
 
 app.use(authHandler.checkAuth);
@@ -200,16 +201,16 @@ app.use(
   "/fsexplorer",
   (req, res, next) => {
     const cookies = req.cookies;
-    const { noAuthFsRead } = runtimeConfig.config;
+    const { noAuthFsRead, safeMode } = runtimeConfig.config;
     const theToken = authHandler.config.authorizations.find(
       (auth) => auth.token == cookies?.uuid,
     );
-    if (!noAuthFsRead && !theToken) {
+    if ((!noAuthFsRead || safeMode) && !theToken) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res
         .status(401)
         .send(
-          "<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>You Are not logged in, <a href='/login'>Login</a> to read files</h1>",
+          `<h1>SprintET <a href='https://sprintet.onrender.com/fsdiscover'>FSdiscover</a> <hr>${safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: You Are not logged in, <a class="legacy-btn" href='/login'>Login</a> to read files. </h1>`,
         );
     }
     next();
@@ -239,24 +240,17 @@ app.post(
   },
   upload.array("files"),
   (req, res) => {
-    /*
-    
-    PLEASE DO NOT TRY TO REFACTOR THIS LOGIC WITHOUT FULLY UNDERSTANDING IT
-    CONTACT: Ernest Msugh Chia, iternenge469@gmail.com
-
-    - This logic replaces all "%20" with " " 
-    - It formats the path to quote every path segment in double quotes e.g /"home"/"uname"
-    - It replaces path seperator "/" with "\" for win32 enviroments
-    - Lastly it remove double path seperators like \\ becomes \ and // becomes /
-
-    */
-    const dir = req.body.dir == "/" ? "/" : req.body.dir;
-    const absoluteDir = (
-      runtimeConfig.config.defaultUploadDir ||
-      runtimeConfig.config.publicDir + (dir || "/") + "/"
-    )
-      .split("%20")
-      .join(" ");
+    const hasAuth = Boolean(req?.token?.token);
+    const dir = req.body.dir == "/" ? "/" : req.body.dir || "/";
+    const absoluteDir =
+      runtimeConfig.config.safeMode && !hasAuth
+        ? runtimeConfig.config.safemodeUploadDir
+        : (
+            runtimeConfig.config.defaultUploadDir ||
+            runtimeConfig.config.publicDir + (dir || "/") + "/"
+          )
+            .split("%20")
+            .join(" ");
     const mv = `mv temp/* ${absoluteDir
       .split("/")
       .map((p) => (p.includes(" ") && !p.startsWith('"') ? `"${p || ""}"` : p))
@@ -288,6 +282,10 @@ app.post(
       );
   },
 );
+
+app.post("/init", authHandler.init);
+app.get("/safemode", handlers.isInSafeMode);
+app.get("/isfirstlaunch", handlers.isfirststart);
 app.use("/admin", authHandler.enforceAuth, adminRouter);
 app.get("/profile", authHandler.getProfile);
 app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
@@ -295,7 +293,9 @@ app.post("/rq/login", authHandler.login);
 app.get("/fsexplorer*", handlers.sendUi);
 app.get("/hostname", handlers.getHost);
 app.get("/zipper*", handlers.zipDir);
+app.get("/fsdownload*", authHandler.checkDirAuth, handlers.downloadFile);
 app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
+app.get("/heartbeat", handlers.header);
 app.head("*", handlers.header);
 app.get("*", handlers.sendUi);
 
@@ -313,6 +313,9 @@ async function getNewPort(port) {
     netProb.port = port;
     process.netPort = port;
     process.netUrl = `http://${netFace.address}:${port}`;
+    server.headersTimeout = 60 * 1000; // 60 seconds
+    server.requestTimeout = 30 * 60 * 1000; // 30 mins
+    server.keepAliveTimeout = 10 * 1000; // 10 seconds
     server.listen(port, "0.0.0.0" || netFace.address, () => {
       logger.log(
         `\nSprintET FSdiscover is serving ${os.hostname()} @ \x1b[32mhttp://${
@@ -365,19 +368,37 @@ async function getNewLocalPort(port) {
 getNewPort(port);
 getNewLocalPort(port);
 
-// TUI composition starts here
-const logo = `SprintET FSdiscover`;
+/* *********** TUI composition starts here ********** *
 
+*/
+const logo = `SprintET FSdiscover`;
 async function refresh() {
+  const urlLine = "URL: \x1b[36m" + process.netUrl + "\x1b[39m ";
+  const networkInterface = netFace.interfaceName;
+  networkStatusFlag = netProb.heartbeat ? "Connected" : "Disconnected";
+  const networkStatus = netProb.heartbeat
+    ? "\x1b[32mConnected\x1b[39m"
+    : "\x1b[31mDisconnected\x1b[39m";
+  const ifaceText =
+    (() => {
+      if (
+        (!networkInterface || networkInterface == "lo") &&
+        netFace.address.includes("127.0.0.1")
+      ) {
+        return `\x1b[31mNo Network Detected\x1b[39m`;
+      }
+      if (networkInterface == "wlan0") {
+        return "\x1b[32mWi-Fi\x1b[39m";
+      }
+      if (networkInterface) {
+        return `\x1b[32m${networkInterface}\x1b[39m`;
+      }
+      return `\x1b[32mUnidentified Network\x1b[39m`;
+    })() + ` - ${networkStatus}`;
   try {
     compositor.init();
-    compositor.draw(
-      4,
-      12,
-      41,
-      2,
-      "URL: \x1b[36m" + process.netUrl + "\x1b[39m",
-    );
+    compositor.draw(4, 10, ifaceText.length, 2, ifaceText);
+    compositor.draw(4, 12, urlLine.length, 2, urlLine);
     compositor.draw(
       4,
       14,
@@ -420,9 +441,8 @@ async function refresh() {
       compositor.rod,
     );
     process.pastMid = pastMid;
-    compositor.draw(4, 8, 8, 1, "Actions");
+    compositor.draw(4, 8, 8, 1, "Status");
     compositor.drawRow(4, 9, 7, compositor.rod);
-    compositor.draw(4, 10, 41, 2, "exit - Close FSdiscover");
     compositor.draw(pastMid + 2, 8, 17, 1, "Connected Devices");
     compositor.drawRow(pastMid + 2, 9, 17, compositor.rod);
     const logHeight = (process.lastlog || "").includes(compositor.newLine)
@@ -438,13 +458,13 @@ async function refresh() {
       );
     const connections = runtimeConfig.sessions.map(
       (sess, i) =>
-        `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "🖥️"} ` +
-        sess.addr,
+        `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "💻"} ${sess.addr} - ${sess.deviceName}`,
     );
+
     compositor.draw(
       pastMid + 2,
       11,
-      22,
+      Math.max(...connections.map((c) => c.length), 10),
       Math.max(connections.length, 1),
       connections.join("\n"),
     );
@@ -454,9 +474,11 @@ async function refresh() {
     logger.log(err.message);
   }
 }
+netProb.fallback = refresh;
 process.refreshCompositor = refresh;
 refresh();
 update();
+
 function getDeviceType(userAgent) {
   const mobileRegex =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
@@ -465,3 +487,13 @@ function getDeviceType(userAgent) {
 process.currentVersion = fs.readFileSync(path.join(dirname(), "version"), {
   encoding: "utf-8",
 });
+
+setInterval(() => {
+  netProb.heartbeat && networkStatusFlag == "Disconnected" ? refresh() : null;
+  if (
+    process.stdout.rows + process.stdout.columns !==
+    compositor.height + compositor.width
+  ) {
+    refresh();
+  }
+}, 5000);

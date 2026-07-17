@@ -12,7 +12,9 @@ const archiver = require("archiver");
 const { UseLogger } = require("./logger");
 const { UseRuntimeConfig } = require("./useRuntimeConfig");
 const { logger } = new UseLogger();
-const crypto = require("crypto");
+const crypto = require("node:crypto");
+const schemas = require("./schemas");
+const { randomSuperhero } = require("superheroes");
 
 const { platform } = os;
 function homedir() {
@@ -51,11 +53,25 @@ const forbiddenChars = [
 ];
 class Handlers {
   header = (_, res) => {
-    res.send("Heartbeat Live");
+    res.status(200).send(`sysnet-v${process.currentVersion}`);
   };
   getHost = (_, res) => {
     const hn = os.hostname();
     res.send(hn);
+  };
+  isfirststart = (_, res) => {
+    return res.status(200).json(runtimeConfig.firstlaunch ? 1 : 0);
+  };
+  isInSafeMode = (_, res) => {
+    return res.status(200).json(runtimeConfig.config?.safeMode ? 1 : 0);
+  };
+  getSafeModeUploadDir = (_, res) => {
+    const dir =
+      runtimeConfig.config?.safemodeUploadDir ||
+      runtimeConfig.config?.defaultUploadDir ||
+      runtimeConfig.config?.publicDir ||
+      "";
+    return res.status(200).json(dir);
   };
   sendUi = async (_, res) => {
     const boilerplate = await readFileSync(
@@ -74,11 +90,14 @@ class Handlers {
     const theToken = useNativeAuthHandler().config.authorizations.find(
       (auth) => auth.token == req?.cookies?.uuid,
     );
-    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+    if (
+      (!runtimeConfig.config.noAuthFsRead || runtimeConfig.config.safeMode) &&
+      !theToken
+    ) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
-          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+          ${runtimeConfig.config.safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="legacy-btn">Login</button></a> to be able to access files' 
       </center>`);
     }
     const badChar = req.url
@@ -126,12 +145,75 @@ class Handlers {
       res.status(500).send(error);
     }
   };
-  zipDir = (req, res) => {
-    const token = req?.token;
-    if (!token?.token && !runtimeConfig.config.noAuthFsRead) {
+  downloadFile = (req, res) => {
+    const theToken = useNativeAuthHandler().config.authorizations.find(
+      (auth) => auth.token == req?.cookies?.uuid,
+    );
+    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+      req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
-          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/auth/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
+      </center>`);
+    }
+    // Strip query string and work with decoded path
+    const rawUrl = (req.url || "").split("?")[0];
+    const badChar = rawUrl
+      .split("/")
+      .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
+    if (badChar) {
+      return res
+        .status(403)
+        .send(`Request pathname includes a forbidden character \"${badChar}\"`);
+    }
+
+    try {
+      // Remove the route prefix and leading slashes
+      let rel = rawUrl.replace("/fsdownload", "").replace(/^\/+/, "");
+      rel = decodeURIComponent(rel || "");
+
+      // Prevent path traversal
+      const normalized = path.normalize(rel);
+      if (
+        normalized.split(path.sep).includes("..") ||
+        normalized.startsWith("..")
+      ) {
+        return res.status(403).send("Forbidden path");
+      }
+
+      const fullPath = path.join(runtimeConfig.config.publicDir, normalized);
+
+      if (!existsSync(fullPath)) {
+        return res.status(404).send("File not found: " + fullPath);
+      }
+
+      const filename = path.basename(fullPath).replace(/\"/g, "");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+
+      // Stream the file from disk
+      res.sendFile(fullPath, (err) => {
+        if (err) {
+          if (!res.headersSent) {
+            res.status(500).send("File transfer interrupted");
+          }
+        }
+      });
+    } catch (error) {
+      res.status(500).send(String(error));
+    }
+  };
+  zipDir = (req, res) => {
+    const theToken = useNativeAuthHandler().config.authorizations.find(
+      (auth) => auth.token == req?.cookies?.uuid,
+    );
+    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+      req?.cookies?.uuid && res.clearCookie("uuid");
+      return res.status(401).send(`<center>
+          <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
+          "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="btn btn-primary">Login</button></a> to be able to access files'
       </center>`);
     }
     try {
@@ -418,63 +500,168 @@ class AuthHandler {
       this.saveConfig(() => process.exit(0));
     });
     process.on("uncaughtException", (err) => {
-      const stackArr = err.stack.split("\n");
-      logger.log(
-        ("\nRuntimeErrorHandler: " + new Date()).split("(")[0] +
-          "\n" +
-          stackArr
-            .map(
-              (s, i) =>
-                `${
-                  i == 0
-                    ? "×─── "
-                    : i == stackArr.length - 1
-                      ? "╰───>"
-                      : "│─── "
-                } ${s.replaceAll("   ", " ")}`,
-            )
-            .join("\n") +
-          "\n",
-      );
+      logger.log("RuntimeErrorHandler: " + ` ${err.stack}`);
       this.saveConfig();
     });
   }
 
   config = { ...config };
 
+  init = (req, res) => {
+    const { runtimeConfig } = new UseRuntimeConfig();
+    if (!`${req?.headers?.host}`.includes("127.0.0.1")) {
+      return res.status(401).send("forbidden");
+    }
+    if (!runtimeConfig.firstlaunch) {
+      return res.status(403).send("Initializer forbidden");
+    }
+    const { body } = req;
+    const initData = schemas.initData;
+    initData.password = String(body.password);
+    initData.userspace = String(body.userspace);
+    initData.nodeType = String(body.nodeType);
+    initData.autoUpdate = Boolean(body.autoUpdate);
+    initData.defaultUploadDir = String(body.defaultUploadDir);
+    initData.safemodeUploadDir = String(body.safemodeUploadDir || "");
+    initData.noAuthFsRead = Boolean(body.noAuthFsRead);
+    initData.noAuthFsWrite = Boolean(body.noAuthFsWrite);
+    initData.safeMode = Boolean(body.safeMode);
+    initData.publicDir = String(body.publicDir || os.homedir());
+    // validate directories supplied
+    const dirChecks = [];
+    try {
+      const pPublic = path.resolve(initData.publicDir || "");
+      if (initData.publicDir && !existsSync(pPublic)) {
+        dirChecks.push(
+          `File manager Directory ${initData.publicDir} directory does not exist on this computer`,
+        );
+      }
+    } catch (e) {
+      dirChecks.push(
+        `File manager Directory ${initData.publicDir} (invalid path)`,
+      );
+    }
+    try {
+      const pDefault = path.resolve(initData.defaultUploadDir || "");
+      if (initData.defaultUploadDir && !existsSync(pDefault)) {
+        dirChecks.push(
+          `Upload Directory: ${initData.defaultUploadDir} directory does not exist on this computer`,
+        );
+      }
+    } catch (e) {
+      dirChecks.push(
+        `Upload Directory: ${initData.defaultUploadDir} (invalid path)`,
+      );
+    }
+    try {
+      const pSafe = path.resolve(initData.safemodeUploadDir || "");
+      if (initData.safemodeUploadDir && !existsSync(pSafe)) {
+        dirChecks.push(
+          `Safemode Upload Directory ${initData.safemodeUploadDir} directory does not exist on this computer`,
+        );
+      }
+    } catch (e) {
+      dirChecks.push(
+        `Safemode Upload Directory ${initData.safemodeUploadDir} (invalid path)`,
+      );
+    }
+    if (dirChecks.length > 0) {
+      return res
+        .status(400)
+        .send(
+          `Initialization failed - directory validation errors:\n${dirChecks.join("\n")}`,
+        );
+    }
+    if (!initData.password || !initData.userspace || !initData.nodeType) {
+      return res.status(400).send("incomplete data");
+    }
+    const newRuntimeConfig = {
+      ...schemas.runtimeConfData,
+      userspace: initData.userspace,
+      nodeType: initData.nodeType,
+      autoUpdate: initData.autoUpdate,
+      defaultUploadDir: initData.defaultUploadDir,
+      noAuthFsRead: initData.noAuthFsRead,
+      noAuthFsWrite: initData.noAuthFsWrite,
+      safeMode: initData.safeMode,
+      safemodeUploadDir: initData.safemodeUploadDir,
+      publicDir: initData.publicDir,
+      apps: schemas.runtimeConfData.apps,
+    };
+    this.config.password = initData.password;
+    runtimeConfig.config = {
+      ...newRuntimeConfig,
+    };
+    runtimeConfig.firstlaunch = false;
+    runtimeConfig.saveConfig();
+    this.saveConfig();
+    try {
+      // create a marker file so the runtime knows initialization completed
+      writeFileSync(path.join(dirname(), "__init"), String(Date.now()), {
+        encoding: "utf-8",
+      });
+    } catch (e) {
+      logger.log("Init: failed to write __init marker: " + e);
+    }
+    res.status(200).send("Initialization succesful");
+  };
   checkAuth = async (req, res, next) => {
     const { headers, socket } = req;
+    const cookieMaxAge =
+      Number(runtimeConfig?.config?.sessionMaxAge) > 0
+        ? Number(runtimeConfig.config.sessionMaxAge)
+        : 3600000;
+
+    const existingVisitor = this.config.visitors.find(
+      (v) =>
+        v.agent === headers["user-agent"] && v.addr === socket.remoteAddress,
+    );
+
+    const deviceName =
+      req?.cookies?.device_name ||
+      existingVisitor?.deviceName ||
+      randomSuperhero().split(" ").join("-").toLocaleLowerCase();
+
     const uInfo = {
       agent: headers["user-agent"],
       addr: socket.remoteAddress,
       type: "rest",
-      date: `${new Date()}`,
+      date: existingVisitor?.date || `${new Date()}`,
       lastAccess: `${new Date()}`,
       uuid: req?.cookies?.uuid,
+      deviceName,
     };
-    const theVisitor = this.config.visitors.find(
-      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr,
-    );
-    if (!theVisitor) {
+
+    // Always set the cookie so it persists across requests
+    if (!req?.cookies?.device_name) {
+      res.cookie("device_name", deviceName, {
+        httpOnly: false, // needs to be readable by the browser if your client reads it;
+        // keep true if server-only
+        maxAge: cookieMaxAge,
+        sameSite: "lax",
+      });
+    }
+
+    if (!existingVisitor) {
       this.config.visitors.push(uInfo);
       this.saveConfig();
     } else {
-      this.config.visitors = this.config.visitors.map((u) =>
-        u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
-          ? { ...u, lastAccess: `${new Date()}` }
-          : u,
+      // Only update mutable fields, never overwrite deviceName
+      this.config.visitors = this.config.visitors.map((v) =>
+        v.agent === uInfo.agent && v.addr === uInfo.addr
+          ? { ...v, lastAccess: uInfo.lastAccess, uuid: uInfo.uuid }
+          : v,
       );
     }
+
     req.user = this.config.visitors.find(
-      (v) =>
-        (req?.cookies?.uuid && Boolean(req?.cookies?.uuid == v?.uuid)) ||
-        (v.agent == uInfo.agent && v.addr == uInfo.addr),
+      (v) => v.agent === uInfo.agent && v.addr === uInfo.addr,
     );
+
+    // Forbidden check
     if (
       this.config.forbidden.find(
-        (v) =>
-          (req?.cookies?.uuid && Boolean(req?.cookies?.uuid == v?.uuid)) ||
-          (v.agent == uInfo.agent && v.addr == uInfo.addr),
+        (v) => v.agent === uInfo.agent && v.addr === uInfo.addr,
       )
     ) {
       return res
@@ -483,12 +670,15 @@ class AuthHandler {
           "<center><h1> EACCES </h1> <hr> \n 403 Forbidden by Admin\n</center>",
         );
     }
+
     if (this.hasAuth) {
-      const token = headers["authorization"];
-      const theToken = this.config.authorizations.find((a) => a.token == token);
+      const theToken = this.config.authorizations.find(
+        (auth) => auth.token == req?.cookies?.uuid,
+      );
       req.token = theToken;
       return next();
     }
+
     const badChar = req.url
       .split("/")
       .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
@@ -497,92 +687,121 @@ class AuthHandler {
         .status(403)
         .send(`Request pathname includes a forbidden character \"${badChar}\"`);
     }
+
     req.token = uInfo;
     next();
   };
 
   checkSocketAuth = async (socket, next) => {
     const headers = socket.handshake.headers;
+    const rawAddr =
+      socket.handshake.address || socket.request.connection.remoteAddress;
+
+    // Parse the raw cookie string — socket.handshake.headers.cookie is not a parsed object
+    const cookies = Object.fromEntries(
+      (socket.handshake.headers.cookie || "")
+        .split(";")
+        .filter(Boolean)
+        .map((c) => c.trim().split("=").map(decodeURIComponent)),
+    );
+
+    // Resolve existing visitor before building uInfo
+    const existingVisitor = this.config.visitors.find(
+      (v) => v.agent === headers["user-agent"] && v.addr === rawAddr,
+    );
+
+    const deviceName =
+      cookies.device_name ||
+      existingVisitor?.deviceName ||
+      randomSuperhero().split(" ").join("-").toLocaleLowerCase();
+
     const uInfo = {
       agent: headers["user-agent"],
-      addr: socket.handshake.address || socket.request.connection.remoteAddress,
+      addr: rawAddr,
       type: "socket",
-      date: `${new Date()}`,
+      date: existingVisitor?.date || `${new Date()}`,
       lastAccess: `${new Date()}`,
       socketid: socket.id,
-      uuid: socket.handshake.headers.cookie?.uuid,
+      uuid: cookies.uuid,
+      deviceName,
     };
+
     const auth = socket.handshake.auth.token;
+
     logger.lognet(
       "NetFirewall: " +
         ("" + new Date()).split("(")[0] +
         " SOCKET Attempt from " +
-        uInfo.addr +
-        "",
+        uInfo.addr,
       uInfo,
     );
 
-    // Track visitors
-    const theVisitor = this.config.visitors.find(
-      (v) => v.agent == uInfo.agent && v.addr == uInfo.addr,
-    );
-    if (!theVisitor) {
-      this.config.visitors.push(uInfo);
-      this.saveConfig();
-    } else {
-      this.config.visitors = this.config.visitors.map((u) =>
-        u.agent == uInfo.agent && u.addr == uInfo.addr && u.type == uInfo.type
-          ? { ...u, lastAccess: `${new Date()}`, uuid: socket.id }
-          : u,
-      );
-    }
-
-    socket.user = uInfo;
-
-    // Check forbidden
+    // Forbidden check
     if (
       this.config.forbidden.find(
-        (u) => u.agent == uInfo.agent && u.addr == uInfo.addr,
+        (u) =>
+          u.deviceName === uInfo.deviceName ||
+          (u.agent === uInfo.agent && u.addr === uInfo.addr),
       )
     ) {
       logger.lognet(
         "NetFirewall: " +
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
-          user.addr +
+          uInfo.addr +
           " with Forbidden Session",
-        user,
+        uInfo,
       );
       return;
     }
+
+    if (!existingVisitor) {
+      this.config.visitors.push(uInfo);
+      this.saveConfig();
+    } else {
+      // Only update mutable fields — never overwrite deviceName
+      this.config.visitors = this.config.visitors.map((v) =>
+        v.agent === uInfo.agent && v.addr === uInfo.addr
+          ? {
+              ...v,
+              lastAccess: uInfo.lastAccess,
+              socketid: socket.id,
+              uuid: uInfo.uuid,
+            }
+          : v,
+      );
+    }
+
+    socket.user = this.config.visitors.find(
+      (v) => v.agent === uInfo.agent && v.addr === uInfo.addr,
+    );
+
     // Auth check
     if (auth) {
-      const token = auth;
-      const theToken = this.config.authorizations.find((a) => a.token == token);
+      const theToken = this.config.authorizations.find((a) => a.token === auth);
       socket.token = { ...uInfo, ...theToken };
       return next();
     }
+
     socket.token = uInfo;
     next();
   };
 
   enforceSocketAuth = (socket, next) => {
     const headers = socket.handshake.headers;
-    const user = socket.token;
+    const user = socket.token; // this line exists, so below references are fine
     if (!user.token) {
       logger.lognet(
         "AuthHandler: " +
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with Invalid Authorization - Login with credentials to get valid Authorization",
+          " with Invalid Authorization",
         user,
       );
       return socket.emit(
         "error",
-        `<center>
-          <h1> EACCES </h1> <hr> \n ${true ? "401 Unauthorized" : ""}\n 
-          </center>`,
+        `<center><h1> EACCES </h1> <hr> \n 401 Unauthorized\n</center>`,
       );
     }
     if (!this.tokenIsYoung(user)) {
@@ -591,7 +810,7 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with (Old/Expired) Socket Session - Login again to renew Authorization",
+          " with (Old/Expired) Socket Session",
         user,
       );
       socket.emit("error", "Session Expired");
@@ -603,14 +822,14 @@ class AuthHandler {
           ("" + new Date()).split("(")[0] +
           " SOCKET Rejected from " +
           user.addr +
-          " with Forbidden Socket Session - Login with credentials to get valid Authorization",
-        user,
+          " with Forbidden Socket Session",
+        user, // was referencing undefined 'user' in original
       );
       socket.emit(
         "error",
         "Authorization compromised: Login again to renew Authorization",
       );
-      return this.ejectCred(user.token);
+      return this.ejectCred(user.token); // same
     }
     next();
   };
@@ -651,7 +870,9 @@ class AuthHandler {
     const { headers, token } = req;
     const user = req.user;
     const haslogin = this.config.authorizations.find(
-      (a) => a?.addr == user?.addr && a?.agent == user?.agent,
+      (a) =>
+        a.deviceName == user.deviceName ||
+        (a?.addr == user?.addr && a?.agent == user?.agent),
     );
     if (!token?.token) {
       logger.lognet(
@@ -796,7 +1017,9 @@ class AuthHandler {
     const newForbidden = body || {};
     if (
       this.config.forbidden.find(
-        (f) => f.agent == body.agent && f.addr == body.addr,
+        (f) =>
+          f.deviceName == body.deviceName ||
+          (f.agent == body.agent && f.addr == body.addr),
       )
     ) {
       return res.status(200).json(this.config.forbidden);
@@ -810,7 +1033,9 @@ class AuthHandler {
     const { body } = req;
     const { agent, addr } = body;
     this.config.forbidden = this.config.forbidden.filter(
-      (f) => f.agent !== agent || f.addr !== addr,
+      (f) =>
+        f.deviceName !== body?.deviceName ||
+        (f.agent !== agent && f.addr !== addr),
     );
     this.saveConfig();
     res.status(200).json(this.config.forbidden);
@@ -852,6 +1077,20 @@ class AuthHandler {
     );
     this.saveConfig();
     res.status(200).json(this.config.devices);
+  };
+
+  remVisitor = (req, res) => {
+    const { body } = req;
+    const { agent, addr, deviceName, uuid } = body || {};
+    // remove visitors that match by deviceName or by agent+addr or by uuid
+    this.config.visitors = this.config.visitors.filter((v) => {
+      if (deviceName && v.deviceName === deviceName) return false;
+      if (uuid && (v.uuid === uuid || v.socketid === uuid)) return false;
+      if (agent && addr && v.agent === agent && v.addr === addr) return false;
+      return true;
+    });
+    this.saveConfig();
+    res.status(200).json(this.config.visitors);
   };
 
   getProtectedRoutes = (_, res) => {

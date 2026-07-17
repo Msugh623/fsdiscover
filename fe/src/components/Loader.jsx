@@ -1,66 +1,37 @@
-import React, { useEffect, useState } from 'react'
-import Delay from './Delay'
-import { LazyLoadImage } from 'react-lazy-load-image-component'
-import PlaceHolder from './PlaceHolder'
-import { FaSpinner } from "react-icons/fa";
+import React from "react";
+import Delay from "./Delay";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import PlaceHolder from "./PlaceHolder";
+import { FaSpinner } from "react-icons/fa6";
 
 const Loader = ({ animate }) => {
-    const [rm, setRm] = useState(Boolean(false))
+  return (
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070809]/60 backdrop-blur-md transition-all duration-300">
+      <Delay delay={!animate ? 50 : 0}>
+        <div className="relative mb-8 slideUp flex flex-col items-center">
+          {/* Subtle ambient glow behind the logo */}
+          <div className="absolute inset-0 animate-pulse rounded-2xl bg-blue-500/20 blur-xl"></div>
 
-    // useEffect(() => {
-    //     setTimeout(() => setRm(true), 800)
-    // }, [])
-
-    return (
-      <div
-        className="w-100"
-        style={{
-          position: "fixed",
-          top: "45vh",
-        }}
-      >
-        <div className="d-flex">
-          <div className="mx-auto">
-            <h1 className="">
-              <div className="p-3"></div>
-              {animate && (
-                <Delay delay={300}>
-                  <FaSpinner className="spinner icon mt-5 text-light" />
-                </Delay>
-              )}
-              {!rm && (
-                <Delay delay={!animate ? 50 : 0}>
-                  <div className="img">
-                    <div
-                      className="fixed-top d-flex w-100"
-                      style={{
-                        height: "90%",
-                      }}
-                    >
-                      <div
-                        className="m-auto"
-                        style={{
-                          maxWidth: "70vw",
-                          width: "150px",
-                        }}
-                      >
-                        <LazyLoadImage
-                          effect="opacity"
-                          placeholder={<PlaceHolder />}
-                          src="/sprintetS.png"
-                          className="m-auto slideUp rounded img-fluid"
-                          alt="bg"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </Delay>
-              )}
-            </h1>
-          </div>
+          <LazyLoadImage
+            effect="opacity"
+            placeholder={<PlaceHolder />}
+            src="/icon.png"
+            className="relative h-28 w-28 rounded-2xl border border-white/10 bg-white/5 object-contain shadow-2xl transition-transform hover:scale-105"
+            alt="FSdiscover Logo"
+            draggable={false}
+          />
         </div>
-      </div>
-    );
-}
+      </Delay>
+        <Delay delay={300}>
+          <div className="slideUp flex flex-col items-center gap-3">
+            <FaSpinner className="h-6 w-6 animate-spin text-white/70" />
+            <span className="text-xs font-medium tracking-[0.2em] text-white/50 uppercase">
+              Loading
+            </span>
+          </div>
+        </Delay>
+    </div>
+  );
+};
 
-export default Loader
+export default Loader;

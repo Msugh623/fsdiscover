@@ -1,5 +1,5 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../../axios/api";
 import { io } from "socket.io-client";
@@ -15,7 +15,7 @@ const socket = io(baseUrl, {
 });
 
 const StateContext = ({ children }) => {
-  const sprintet = {
+  const SprintET = {
     name: "App Info",
     location: "https://sprintet.onrender.com/fsdiscover",
     icon: "/info.png",
@@ -29,7 +29,7 @@ const StateContext = ({ children }) => {
     location: "/fsexplorer",
     icon: "/icon.png",
     pinned: true,
-    about: "Sprintet File Explorer",
+    about: "SprintET File Explorer",
     category: "utility",
   };
 
@@ -51,16 +51,7 @@ const StateContext = ({ children }) => {
     category: "utility",
   };
 
-  const sprintos = {
-    name: "Sprint OS",
-    location: "/os",
-    icon: "/os.png",
-    pinned: false,
-    about: "Sprintet web Computer UI",
-    category: "default",
-  };
-
-  const defaultApps = [fsdiscover, touchpad, deviceMgr, sprintet];
+  const defaultApps = [fsdiscover, touchpad, deviceMgr, SprintET];
 
   const navigate = useNavigate();
   const [searchParams, _] = useSearchParams();
@@ -72,6 +63,7 @@ const StateContext = ({ children }) => {
   const [opened, setOpened] = useState([]);
   const [categories, setCategories] = useState([]);
   const [winIsFs, setWinIsFs] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [pop, setPop] = useState("");
   const [vw, setVw] = useState(window.innerWidth);
   const [hostname, setHostname] = useState("");
@@ -82,6 +74,7 @@ const StateContext = ({ children }) => {
   const [devices, setDevices] = useState([]);
   const [traffic, setTraffic] = useState([]);
   const [runtimeConfig, setRuntimeConfig] = useState({});
+  const [safeMode, setSafeMode] = useState(null);
   const [profile, setProfile] = useState({});
   const [scrollConfig, setScrollConfig] = useState({
     top: scrollY,
@@ -89,7 +82,7 @@ const StateContext = ({ children }) => {
   });
   const [menuPos, setMenuPos] = useState({
     x: 40,
-    y: window.innerHeight - 80,
+    y: window.innerHeight - 100,
   });
   const [key, setKey] = useState("");
   const [sessions, setSessions] = useState([]);
@@ -100,7 +93,7 @@ const StateContext = ({ children }) => {
   async function upDateWindow(loc, key, val) {
     setOpened((prev) => {
       return prev.map((item) =>
-        item.id == loc || item.location == loc ? { ...item, [key]: val } : item
+        item.id == loc || item.location == loc ? { ...item, [key]: val } : item,
       );
     });
   }
@@ -110,14 +103,15 @@ const StateContext = ({ children }) => {
     setTimeout(() => {
       setOpened((prev) => {
         return prev.map((item) =>
-          item.id == raised ? { ...item, zIndex: 5 } : { ...item, zIndex: 3 }
+          item.id == raised ? { ...item, zIndex: 5 } : { ...item, zIndex: 3 },
         );
       });
     }, 600);
-    // setTimeout(() => {
-    //   const ifr = document.getElementById("iframe-" + raised);
-    //   ifr && ifr.focus();
-    // }, 700);
+    setTimeout(() => {
+      const ifr = document.getElementById("iframe-" + raised);
+      ifr && ifr.focus();
+        ifr && ifr.click();
+    }, 700);
   }
 
   async function killWindow(id) {
@@ -167,7 +161,9 @@ const StateContext = ({ children }) => {
   function handleIconClick(loc, href) {
     const app =
       opened.find((app) => app.location == loc || app.id == loc) ||
-    (  document.opened||[]).find((app) => app.location == loc || app.id == loc);
+      (document.opened || []).find(
+        (app) => app.location == loc || app.id == loc,
+      );
     if (app) {
       localStorage.focused = app.location;
       if (app.zIndex < 5) {
@@ -192,12 +188,12 @@ const StateContext = ({ children }) => {
       const theApp = psr.find(
         (a) =>
           (a.name + "").toLowerCase() ==
-          ("" + appName.replace("%20", " ")).toLowerCase()
+          ("" + appName.replace("%20", " ")).toLowerCase(),
       );
       if (theApp) {
         document.theApp = theApp.location;
       }
-    } catch  {
+    } catch {
       // location.pathname !== '/' && toast.error(`ERROR: ${err.message}`)
     }
   };
@@ -212,7 +208,7 @@ const StateContext = ({ children }) => {
           dangerouslySetInnerHTML={{
             __html: `${err?.response?.data || err.message || "" + err}`,
           }}
-        ></div>
+        ></div>,
       );
     }
   }
@@ -238,7 +234,7 @@ const StateContext = ({ children }) => {
           dangerouslySetInnerHTML={{
             __html: `${err?.response?.data || err.message || "" + err}`,
           }}
-        ></div>
+        ></div>,
       );
     }
   };
@@ -260,13 +256,13 @@ const StateContext = ({ children }) => {
                 dangerouslySetInnerHTML={{
                   __html: `${err?.response?.data || err.message || "" + err}`,
                 }}
-              ></div>
+              ></div>,
             );
-          if (err.response.status == 401) {
+          if (err?.response?.status == 401) {
             !("" + err.response.data).startsWith("<") &&
               toast.error("ERROR: Authoraization Error... Login to continue");
+            localStorage.access = "";
             navigate("/login");
-            localStorage.access == "";
           }
         })();
     }
@@ -275,6 +271,18 @@ const StateContext = ({ children }) => {
   useEffect(() => {
     api.defaults.headers.common["Authorization"] = localStorage?.access || "";
     init();
+    setFetching(true);
+    (async () => {
+      try {
+        const res = await api.get("/safemode");
+        const v = res?.data;
+        setSafeMode(Boolean(Number(v)));
+      } catch {
+        // ignore
+      } finally {
+        setFetching(false);
+      }
+    })();
     fetchSrc();
     localStorage?.access && fetchConfig();
     socket.on("netlog", (data) => {
@@ -346,7 +354,7 @@ const StateContext = ({ children }) => {
       (win) =>
         win.height >= window.innerHeight &&
         win.width >= window.innerWidth &&
-        !win.isMini
+        !win.isMini,
     );
     setWinIsFs(Boolean(fsWin));
     document.opened = opened;
@@ -369,7 +377,7 @@ const StateContext = ({ children }) => {
         setToTop,
         vw,
         openApp,
-        sprintet,
+        SprintET,
         fsdiscover,
         fetchSrc,
         categories,
@@ -397,6 +405,8 @@ const StateContext = ({ children }) => {
         setScrollConfig,
         runtimeConfig,
         setRuntimeConfig,
+        safeMode,
+        setSafeMode,
         sessions,
         setSessions,
         setModal,
@@ -406,6 +416,7 @@ const StateContext = ({ children }) => {
         profile,
         key,
         setKey,
+        fetching,
       }}
     >
       {children}
@@ -413,45 +424,27 @@ const StateContext = ({ children }) => {
         <a id="url-mounter" href=""></a>
         {modal && (
           <div
-            className="d-flex"
-            style={{
-              position: "fixed",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: "#00000020",
-              zIndex: 1,
-            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
             onClick={() => setModal("")}
           >
             <div
-              className="rounded m-auto p-2 d-flex slideUp flex-column"
-              style={{
-                backgroundColor: "#283344ff",
-              }}
+              className="m-auto flex min-w-[320px] max-w-[90vw] flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#111] p-4 shadow-2xl slideUp"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="d-flex pb-2">
-                <div className=" text-light">{modalTitle}</div>
+              <div className="flex items-center gap-3 border-b border-white/10 pb-3 mb-3">
+                <div className="text-white text-lg font-semibold">
+                  {modalTitle}
+                </div>
                 <button
-                  className="active ms-auto fs-6 p-0 px-2 my-auto rounded"
+                  className="ml-auto rounded-2xl border border-white/10 bg-[#0d0d11] px-3 py-2 text-white transition hover:bg-white/10"
                   onClick={() => setModal("")}
                 >
                   <FaTimes className="icon" />
                 </button>
               </div>
               <div
-                className="rounded"
-                style={{
-                  minWidth: "25vw",
-                  minHeight: "30vh",
-
-                  maxWidth: "90vw",
-                  maxHeight: "75vh",
-                  overflow: "auto",
-                  backgroundColor: "#121b27ff",
-                }}
+                className="rounded-3xl bg-[#0d0d11]  border-white/10 border overflow-auto"
+                style={{ minHeight: "30vh", maxHeight: "75vh" }}
               >
                 {modal}
               </div>

@@ -9,7 +9,7 @@ const Delay = ({ delay, children, inline }) => {
         }, delay || 700);
     }, [])
 
-    return arch ? children : <div className={inline ? 'd-inline' : ''} style={{ opacity: 0 }}>
+    return arch ? children : <div className={inline ? 'inline-block' : ''} style={{ opacity: 0 }}>
         {children}
     </div>
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useInputContext } from "../../../state/InputContext";
 import { BiInfoCircle } from "react-icons/bi";
-import { toast } from "react-toastify";
+import { toast } from "material-react-toastify";
 import { useStateContext } from "../../../state/StateContext";
 
 const Panel = () => {
@@ -35,8 +35,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(1)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -50,8 +50,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(2)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("tp");
@@ -67,8 +67,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(3)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("mouseBarInner");
@@ -85,8 +85,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(4)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("scrollBar");
@@ -103,8 +103,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(5)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
       setTimeout(() => {
         blink("start");
@@ -121,8 +121,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(6)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -136,8 +136,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(7)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -151,8 +151,8 @@ const Panel = () => {
               prev={prev || "0"}
               next={() => tourGuide(8)}
             />,
-            { autoClose: false }
-          ))
+            { autoClose: false },
+          )),
       );
     },
     () => {
@@ -167,7 +167,7 @@ const Panel = () => {
               null;
             }}
           />
-        )))
+        ))),
       );
     },
   ];
@@ -178,21 +178,20 @@ const Panel = () => {
 
   useEffect(() => {
     setMenuPos({
-      x: window.innerWidth - 60,
+      x: window.innerWidth - 70,
       y: 15,
     });
   }, []);
 
   return (
     <div
-      className="d-flex"
+      className="flex w-full"
       style={{
         overflow: "hidden",
-        maxWidth: "99vw",
       }}
     >
       <div
-        className={`active rounded btn p-1 px-2`}
+        className={`active flex rounded-2xl p-1 px-2`}
         style={{
           position: "fixed",
           top: "1.2rem",
@@ -217,7 +216,7 @@ const Panel = () => {
         {socket.connected ? (
           ""
         ) : (
-          <small className="bg-warning text-dark" style={{ zIndex: 10 }}>
+          <small className="bg-warning mx-2 text-dark" style={{ zIndex: 10 }}>
             Not Connected
           </small>
         )}
@@ -225,16 +224,16 @@ const Panel = () => {
       <div
         className="mt-auto mx-auto"
         style={{
-          border: "50%",
+          border: "10%",
           backgroundColor: mouseDownHold
             ? "green"
             : touchConfig.mouseDown
-            ? touchConfig.mouseDownHold
-              ? "green"
-              : "red"
-            : touchConfig.scollDown
-            ? "yellow"
-            : "#efefef",
+              ? touchConfig.mouseDownHold
+                ? "green"
+                : "red"
+              : touchConfig.scollDown
+                ? "yellow"
+                : "#efefef",
           pointerEvents: "none",
           height: "2px",
           position: "fixed",
@@ -246,15 +245,21 @@ const Panel = () => {
           minWidth: "110vw",
         }}
       ></div>
-      <canvas
-        id="tp"
-        className="border"
-        style={{
-          height: "100vh",
-          position: "fixed",
-          width: "99.99vw",
-        }}
-      ></canvas>
+      <div className="flex " style={{ width: "100%" }}>
+        <canvas
+          id="tp"
+          className="border xl:mt-10 mx-auto border-white/10 rounded-2xl"
+          style={{
+            height: "84vh",
+            position: "relative",
+            width: "100%",
+            maxWidth: "1200px",
+            backgroundColor: "#060606",
+            borderRadius: "12px",
+            boxSizing: "border-box",
+          }}
+        ></canvas>
+      </div>
       {!didInit &&
         (() => {
           init(document.getElementById("tp"));
@@ -267,10 +272,10 @@ const Panel = () => {
           backgroundColor: mouseDownHold
             ? "green"
             : touchConfig.mouseDown
-            ? touchConfig.mouseDownHold
-              ? "green"
-              : "red"
-            : "steelblue",
+              ? touchConfig.mouseDownHold
+                ? "green"
+                : "red"
+              : "steelblue",
           position: "fixed",
           top: touchConfig.mouseY - 3,
           left: touchConfig.mouseX - 3,
@@ -289,10 +294,10 @@ function ToastModel({ data, next, done }) {
       <div
         dangerouslySetInnerHTML={{ __html: data || localStorage.toastData }}
       ></div>
-      <div className="d-flex mt-1">
-        <div className="me-auto">
+      <div className="flex mt-1">
+        <div className="mr-auto">
           <button
-            className="btn-primary p-1 px-2 btn-small btn"
+            className="bg-blue-600 text-white hover:bg-blue-700 p-1 px-2 text-sm px-2 py-1"
             onClick={() => {
               toast.dismiss(localStorage.lastToast);
               next();

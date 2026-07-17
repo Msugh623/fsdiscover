@@ -16,7 +16,7 @@ for /f "usebackq delims=" %%v in ("%VERSION_FILE%") do set "VERSION=%%v"
 
 echo -----------------------------------------
 echo.
-echo        Sprint FS Discover %VERSION%
+echo        SprintET FSdiscover %VERSION%
 echo.
 echo -----------------------------------------
 
@@ -79,15 +79,28 @@ if /I "%PARAM1%"=="-v" (
 )
 
 if /I "%PARAM1%"=="-p" (
-    echo "Initiator: Prefered network interface set to: %PARAM2%"
-    echo "Initiator: Prefered network interface will be ignored if not available"
-    PARAMS="--prefer %PARAM2%"
+    if /I "%PARAM2%"=="no-default" (
+        echo Initiator: Clearing saved preferred interface
+        if exist __prefer del /f /q __prefer
+        set "PARAMS="
+    ) else (
+        echo "Initiator: Prefered network interface set to: %PARAM2%"
+        echo "Initiator: Prefered network interface will be ignored if not available"
+        set "PARAMS=--prefer %PARAM2%"
+    )
 )
 
 if /I "%PARAM1%"=="-prefer" (
-    echo "Initiator: Prefered network interface set to: %PARAM2%"
-    echo "Initiator: Prefered network interface will be ignored if not available"
-    set PARAMS="--prefer %PARAM2%"
+    if /I "%PARAM2%"=="no-default" (
+        echo Initiator: Clearing saved preferred interface
+        if exist __prefer del /f /q __prefer
+        set "PARAMS="
+    ) else (
+        echo "Initiator: Prefered network interface set to: %PARAM2%"
+        echo "Initiator: Prefered network interface will be ignored if not available"
+        set "PARAMS=--prefer %PARAM2%"
+        if defined PARAM2 if not "%PARAM2%"=="" <nul set /p="%PARAM2%" > __prefer
+    )
 )
 
 if /I "%PARAM1%"=="-help" goto :show_help
@@ -111,9 +124,20 @@ if exist ..\update\fsdiscover-main (
   )
 ) 
 
+REM If no explicit prefer was provided, fall back to saved __prefer file
+if not defined PARAMS (
+    if exist __prefer (
+        for /f "usebackq delims=" %%i in ("__prefer") do set "PREF=%%i"
+        if defined PREF (
+            echo Initiator: Using saved preferred interface: %PREF%
+            set "PARAMS=--prefer %PREF%"
+        )
+    )
+)
+
 REM Check for node_modules before starting
 if exist node_modules (
-    node index.js
+    node index.js %PARAMS%
 ) else (
     echo Failure: node_modules not found.
     echo Run 'install.cmd' or 'npm install' to install dependencies.

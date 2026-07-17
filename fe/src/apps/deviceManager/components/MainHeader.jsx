@@ -1,107 +1,58 @@
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { BiLeftArrowCircle, BiSearch } from "react-icons/bi";
-import { Link } from "react-router-dom";
 import { useStateContext } from "../../../state/StateContext";
 
 const MainHeader = () => {
+  const navigate = useNavigate();
   const { setKey, key, hostname, sessions } = useStateContext();
   const [isSearching, setIsSearching] = useState(false);
   return (
-    <>
-      <nav
-        className="navbar flex-column gap-2 navbar-expand-lg mb-0 navbar-dark themebg ani slideIn shadow-sm"
-        style={{ position: "sticky", top: 0, zIndex: 1 }}
-      >
-        <div className="w-100 nav">
-          {
-            <h2 className="h4 mt-auto slideUp mx-4 ms-4  pb-2 mb-4 border-bottom d-flex">
-              <Link to={"/"} className="text-light mt-auto  fw-bold fs-5">
-                {hostname}
-              </Link>
-              <div className="mt-auto ms-2"> - Device Manager</div>
-            </h2>
-          }
-          {window.innerWidth < 400 && (
-            <>
-              <div
-                className="ms-auto w-auto d-flex my-auto  p-1 form-group border rounded me-2"
-                style={{
-                  maxWidth: "98vw",
-                }}
-              >
-                {isSearching && (
-                  <input
-                    type="search"
-                    autoFocus
-                    value={key}
-                    className="rounded input px-1 no-dec bg-none themebg"
-                    onChange={({ target }) => setKey(target.value)}
-                    style={{
-                      border: "none",
-                      outline: "none",
-                    }}
-                  />
-                )}
-                <button
-                  className="themebg border-0 border-start px-2 border my-auto text-light"
-                  onClick={() => {
-                    setIsSearching((prev) => !prev);
-                    setKey("");
-                  }}
-                >
-                  <BiSearch />
-                </button>
-              </div>
-              <div className="me-1"></div>
-            </>
-          )}
-        </div>
-        <div className="container-fluid">
-          <div
-            className={`w-100 d-flex ${false ? "d-none" : ""}`}
-            id="navbarNav"
-          >
-            <a
-              className="nav-link my-auto fs-3 border-end px-2 pe-3"
+    <nav className="sticky top-0 z-5  rounded-3xl border border-white/10 bg-[#111] p-4 shadow-2xl backdrop-blur-xl">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-white">
+            <button
+              className="rounded-2xl border border-white/10 bg-[#0d0d11] px-3 py-2 text-white hover:bg-white/10 transition"
               onClick={() => navigate(-1)}
             >
-              <BiLeftArrowCircle className="icon" />
-            </a>
-            <div className="ps-2 ps-md-3 my-auto">
-              {sessions.length} Connected devices
-            </div>
-            <div className="d-flex ms-auto">
-              {window.innerWidth >= 400 && (
-                <div className="d-flex p-1 form-group border rounded me-2">
-                  {isSearching && (
-                    <input
-                      autoFocus
-                      type="search"
-                      value={key}
-                      className="rounded input px-1 no-dec bg-none themebg"
-                      onChange={({ target }) => setKey(target.value)}
-                      style={{
-                        border: "none",
-                        outline: "none",
-                      }}
-                    />
-                  )}
-                  <button
-                    className="themebg border-0 border-start px-2 border text-light"
-                    onClick={() => {
-                      setIsSearching((prev) => !prev);
-                      setKey("");
-                    }}
-                  >
-                    <BiSearch />
-                  </button>
-                </div>
+              <BiLeftArrowCircle className="text-lg" />
+            </button>
+            <Link to="/" className="font-semibold text-xl hover:text-white/80">
+              {hostname}
+            </Link>
+            <span className="text-sm text-white/60">- Device Manager</span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex flex-1  items-center rounded-2xl border border-white/10 bg-[#0d0d11] p-2">
+              {isSearching && (
+                <input
+                  autoFocus
+                  type="search"
+                  value={key}
+                  className="w-full bg-transparent text-white outline-none placeholder:text-white/40"
+                  onChange={({ target }) => setKey(target.value)}
+                  placeholder="Search devices..."
+                />
               )}
+              <button
+                className="rounded-2xl border border-white/10 bg-[#0d0d11] px-3 py-2 text-white hover:bg-white/10 transition"
+                onClick={() => {
+                  setIsSearching((prev) => !prev);
+                  setKey("");
+                }}
+              >
+                <BiSearch />
+              </button>
             </div>
           </div>
         </div>
-      </nav>
-    </>
+
+            <div className="text-sm text-white/60">
+              {sessions.length} Connected devices
+            </div> 
+      </div>
+    </nav>
   );
 };
 
