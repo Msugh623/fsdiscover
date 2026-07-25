@@ -17,10 +17,13 @@ const http = require("http");
 const { Mouse } = require("./utils/devices");
 const { Keyboard } = require("./utils/devices");
 const { LogIoParser, UseLogger } = require("./utils/logger");
-const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
 const update = require("./update");
 const cookieParser = require("cookie-parser");
+const neighborhoodRouter = require("./utils/neighborhoodRouter");
+const { UseRuntimeConfig } = require("./utils/useRuntimeConfig");
+const { UseNeighborhood } = require("./utils/neighborhood");
 const { logger } = new UseLogger();
+const { neighborhood } = new UseNeighborhood();
 
 config({ path: path.join(dirname(), ".env") });
 const app = express();
@@ -31,6 +34,7 @@ process.socket = socket;
 const ioParser = new LogIoParser();
 const runtime = new UseRuntimeConfig();
 const { runtimeConfig } = runtime;
+process.runtimeConfig = runtimeConfig;
 runtime.attatchSocket(socket);
 ioParser.parseIo(socket);
 socket.use(authHandler.checkSocketAuth);
@@ -287,6 +291,7 @@ app.post("/init", authHandler.init);
 app.get("/safemode", handlers.isInSafeMode);
 app.get("/isfirstlaunch", handlers.isfirststart);
 app.use("/admin", authHandler.enforceAuth, adminRouter);
+app.use("/rq/neighborhood", neighborhoodRouter);
 app.get("/profile", authHandler.getProfile);
 app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
 app.post("/rq/login", authHandler.login);
@@ -443,8 +448,26 @@ async function refresh() {
     process.pastMid = pastMid;
     compositor.draw(4, 8, 8, 1, "Status");
     compositor.drawRow(4, 9, 7, compositor.rod);
-    compositor.draw(pastMid + 2, 8, 17, 1, "Connected Devices");
-    compositor.drawRow(pastMid + 2, 9, 17, compositor.rod);
+    const shl = "Connected Devices: " + runtimeConfig?.sessions?.length;
+    compositor.draw(pastMid + 2, 8, shl.length, 1, shl);
+    compositor.drawRow(pastMid + 2, 9, 22, compositor.rod);
+    const nhl =
+      "Neighboring Devices: " + neighborhood?.config?.discovered?.length;
+    neighborhood?.config?.discovered?.length &&
+      compositor.draw(
+        pastMid + 2,
+        Number(compositor.height / 2) + 3,
+        nhl.length,
+        1,
+        nhl,
+      );
+    neighborhood?.config?.discovered?.length &&
+      compositor.drawRow(
+        pastMid + 2,
+        Number(compositor.height / 2) + 4,
+        24,
+        compositor.rod,
+      );
     const logHeight = (process.lastlog || "").includes(compositor.newLine)
       ? 2
       : 1;
@@ -460,13 +483,23 @@ async function refresh() {
       (sess, i) =>
         `${i + 1}. ${getDeviceType(sess.agent) == "mobile" ? "📱" : "💻"} ${sess.addr} - ${sess.deviceName}`,
     );
-
+    const neighbors = neighborhood?.config?.discovered.map(
+      (neighbor = neighborhood.beacon.defaultBeamData, i) =>
+        `${i + 1}. 💻 ${neighbor.address} - ${neighbor.hostname}`,
+    );
     compositor.draw(
       pastMid + 2,
       11,
       Math.max(...connections.map((c) => c.length), 10),
-      Math.max(connections.length, 1),
+      Math.max(Number(compositor.height / 2) - 9, 1),
       connections.join("\n"),
+    );
+    compositor.draw(
+      pastMid + 2,
+      Number(compositor.height / 2) + 6,
+      Math.max(...neighbors.map((c) => c.length), 10),
+      Math.min(neighbors.length + 1, 5),
+      neighbors.join("\n"),
     );
     compositor.draw(4, 16, 30, 15, runtimeConfig.netQrcode);
     compositor.display();

@@ -55,12 +55,12 @@ class Logger {
   lognet(message, user, toConsole = true) {
     if (toConsole) {
       const splits = (message || "").split();
-      if ((message || "").length > process.compositor.width - 8) {
+      if ((message || "").length > (process?.compositor?.width||0) - 8) {
         splits[(splits.length / 3) * 2] =
           "\n" + splits[(splits.length / 3) * 2];
       }
       process.lastlog = (splits || [""]).join("");
-      process.refreshCompositor();
+      process.refreshCompositor && process.refreshCompositor();
     }
     const entry = {
       message: message,
@@ -76,12 +76,12 @@ class Logger {
   log(message, toConsole = true) {
     if (toConsole) {
       const splits = (message || "").split();
-      if ((message || "").length > process.compositor.width - 8) {
+      if ((message || "").length > (process?.compositor?.width||0) - 8) {
         splits[(splits.length / 3) * 2] =
           "\n" + splits[(splits.length / 3) * 2];
       }
       process.lastlog = (splits || [""]).join("");
-      process.refreshCompositor()
+      process.refreshCompositor && process.refreshCompositor();
     }
     this.allhistory.push(message);
     this.saveLog();

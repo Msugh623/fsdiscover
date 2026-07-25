@@ -1,3 +1,3 @@
-const schemas = require("./utils/schemas");
+const schemas = require("../utils/schemas");
 
 module.exports = { conf: schemas.runtimeConfData };

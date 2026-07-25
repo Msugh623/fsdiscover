@@ -35,7 +35,7 @@ if [ "$PARAM" = "--auto" ]; then
     echo "[INFO] Running in FULLY AUTOMATIC mode."
     AUTO_YES=true
 else
-    echo "Tip: Run with --auto to skip all prompts (ideal for VPS/servers)"
+    echo "Tip: Run with --auto to skip all prompts (ideal for remote envs, VPS/servers)"
     echo
     read -r -p "Proceed with installation? (y/n) " ACCEPT
     if [ "$ACCEPT" != "y" ] && [ "$ACCEPT" != "Y" ]; then

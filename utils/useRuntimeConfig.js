@@ -1,5 +1,5 @@
 const path = require("path");
-const { conf } = require("../runtime.config");
+const { conf } = require("../config/runtime.config");
 const fs = require("fs");
 const dirname = require("../dirname");
 const { UseLogger } = require("./logger");
@@ -86,6 +86,11 @@ class RuntimeConfig {
       }, 1200);
     } finally {
       this.config.sessionUID = crypto.randomUUID();
+      if (!this.config.deviceID) {
+        this.config.deviceID = crypto.randomUUID();
+        console.log("saving config")
+        this.saveConfig()
+      }
     }
   }
 
@@ -180,7 +185,9 @@ class RuntimeConfig {
         );
       }
     } catch (e) {
-      dirChecks.push(`File manager Directory ${newConf.publicDir} (invalid path)`);
+      dirChecks.push(
+        `File manager Directory ${newConf.publicDir} (invalid path)`,
+      );
     }
     try {
       if (

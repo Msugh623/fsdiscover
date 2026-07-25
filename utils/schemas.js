@@ -34,6 +34,7 @@ const runtimeConfData = {
   safemodeUploadDir: String(
     os.homedir() + `${os.platform == "win32" ? "\\" : "/"}` + "Downloads",
   ),
+  deviceID: crypto.randomUUID(),
   autoUpdate: Boolean(true),
   sessionMaxAge: Number(60 * 60 * 1000),
   userspace: String(
@@ -50,8 +51,16 @@ const runtimeConfData = {
   ],
 };
 
+const neighborhoodData = {
+  discovered: [],
+  pairing: [],
+  pairRequests: [],
+  paired: [],
+};
+
 module.exports = {
   initData,
   runtimeConfData,
   userspaces,
+  neighborhoodData,
 };
