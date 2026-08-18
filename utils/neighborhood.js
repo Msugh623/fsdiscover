@@ -33,7 +33,7 @@ class Beacon {
     this.paired = paired;
     this.pairing = pairing;
     this.saveConfig = () => {};
-    this.defaultMessage = "_:_:_:_;";
+    this.defaultMessage = "_::_::_::_;";
     this.defaultBeamData = {
       deviceID: "_",
       address: "_",
@@ -115,7 +115,7 @@ class Beacon {
   };
 
   beamToObject = (beamMessage = "") => {
-    const split = (beamMessage || this.defaultMessage).split(";")[0].split(":");
+    const split = (beamMessage || this.defaultMessage).split(";")[0].split("::");
     const beamData = {
       deviceID: split[0] || "_",
       address: split[1] || "_",
@@ -130,7 +130,7 @@ class Beacon {
   };
 
   createBeam = (deviceID, address) => {
-    return `${deviceID}:${address}:${hostname()}:${Date.now()}`;
+    return `${deviceID}::${address}::${hostname()}::${Date.now()}`;
   };
   getNewBeamData = () => {
     const beam = this.createBeam(

@@ -6,7 +6,12 @@ import { io } from "socket.io-client";
 import { baseUrl } from "../../axios/api";
 import { FaTimes } from "react-icons/fa";
 import actions from "../assets/actions";
+// import qrcode from "qrcode"
 
+let code = "";
+// (async () => {
+//   code = await qrcode.toDataURL(location.origin)
+// })();
 const context = createContext();
 // Create the socket instance outside the component
 const socket = io(baseUrl, {
@@ -417,6 +422,7 @@ const StateContext = ({ children }) => {
         key,
         setKey,
         fetching,
+        code
       }}
     >
       {children}

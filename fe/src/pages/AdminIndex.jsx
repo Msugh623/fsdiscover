@@ -18,6 +18,7 @@ export default function AdminIndex() {
     profile,
     setMenuPos,
     setSafeMode,
+    code
   } = useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, _] = useState("All");
@@ -88,6 +89,12 @@ export default function AdminIndex() {
                 >
                   <FaGear className="text-xs text-white/50" /> Settings
                 </Link>
+                <button
+                  to={!localStorage.access ? `/login` : "/admin"}
+                  className="flex items-center gap-1.5 text-[12px] font-sans mt-2 font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <FaQrcode className="text-xs text-white/50" /> Show QRcode
+                </button>
               </div>
               <div>
                 <span className="text-white/80">host:</span> {hostname}

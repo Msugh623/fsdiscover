@@ -5,6 +5,7 @@ packager-lock.json
 .env
 auth.config.json
 runtime.config.json
+neighborhood.config.json
 cert/**/*
 logs/**/*
 update
