@@ -156,7 +156,8 @@ const SysAdminIndex = () => {
     }
     try {
       await api.post("/admin/rq/logout");
-      localStorage.access = "";
+      localStorage.removeItem("access");
+      api.defaults.headers.common["Authorization"] = "";
       location.href = location.origin;
     } catch (err) {
       toast.error(
@@ -167,7 +168,8 @@ const SysAdminIndex = () => {
         ></div>,
       );
       navigate("/login");
-      localStorage.access = "";
+      localStorage.removeItem("access");
+      api.defaults.headers.common["Authorization"] = "";
     }
   }
 
@@ -952,7 +954,7 @@ function RuntimeConfig({
                       }));
                     }
                   }}
-                  className={`p-1 rounded cursor-pointer border border-white/5 ${isAllowed ? "outline outline-2 outline-steelblue" : ""}`}
+                  className={`p-1 rounded cursor-pointer border border-white/5 ${isAllowed ? "ring-2 ring-blue-500 ring-offset-0" : ""}`}
                 >
                   <img
                     src={app?.icon}

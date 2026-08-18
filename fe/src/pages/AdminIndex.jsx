@@ -1,13 +1,60 @@
 import React, { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { useStateContext } from "../state/StateContext";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../axios/api";
 import { toast } from "material-react-toastify";
-import { FaTrash } from "react-icons/fa";
+import { FaQrcode, FaTrash } from "react-icons/fa";
 import { BiPencil, BiSync, BiX } from "react-icons/bi";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import PlaceHolder from "../components/PlaceHolder";
 import { FaGear } from "react-icons/fa6";
+
+function OriginQrModal() {
+  const [qr, setQr] = useState("");
+  const origin = location.origin;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const dataUrl = await QRCode.toDataURL(origin, {
+          margin: 0,
+          width: 220,
+          color: { light: "#ffffff", dark: "#0d0d11" },
+        });
+        setQr(dataUrl);
+      } catch {
+        setQr("");
+      }
+    })();
+  }, [origin]);
+
+  return (
+    <div className="flex w-full max-w-md flex-col items-center gap-4 p-5 text-center text-white">
+      <div className="rounded-2xl border border-white/10 bg-white p-3 shadow-xl">
+        {qr ? (
+          <img src={qr} alt="QR code for this page" className="h-48 w-48" />
+        ) : (
+          <div className="flex h-48 w-48 items-center justify-center text-sm text-black/60">
+            Generating QR...
+          </div>
+        )}
+      </div>
+
+      <div className="w-full rounded-2xl border border-white/10 bg-[#0d0d11] p-3">
+        <p className="mb-2 text-xs uppercase tracking-[0.2em] text-white/45">
+          Link
+        </p>
+        <div className="break-all text-sm text-white/80">{origin}</div>
+      </div>
+
+      <p className="max-w-sm text-sm text-white/60">
+        Scan this QR code from another device on the same network to open this
+        FSdiscover instance.
+      </p>
+    </div>
+  );
+}
 
 export default function AdminIndex() {
   const {
@@ -18,7 +65,9 @@ export default function AdminIndex() {
     profile,
     setMenuPos,
     setSafeMode,
-    code
+    setModal,
+    setModalTitle,
+    code,
   } = useStateContext();
   const [prs, setPrs] = useState(apps);
   const [category, _] = useState("All");
@@ -83,18 +132,24 @@ export default function AdminIndex() {
                     </div>
                   </div>
                 </div>
-                <Link
-                  to={!localStorage.access ? `/login` : "/admin"}
-                  className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <FaGear className="text-xs text-white/50" /> Settings
-                </Link>
-                <button
-                  to={!localStorage.access ? `/login` : "/admin"}
-                  className="flex items-center gap-1.5 text-[12px] font-sans mt-2 font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <FaQrcode className="text-xs text-white/50" /> Show QRcode
-                </button>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalTitle("Open on another device");
+                      setModal(<OriginQrModal />);
+                    }}
+                    className="flex items-center gap-1.5 text-[12px] font-sans mb-2 font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <FaQrcode className="text-xs text-white/50" /> Show QRcode
+                  </button>
+                  <Link
+                    to={!localStorage.access ? `/login` : "/admin"}
+                    className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <FaGear className="text-xs text-white/50" /> Settings
+                  </Link>
+                </div>
               </div>
               <div>
                 <span className="text-white/80">host:</span> {hostname}
@@ -103,7 +158,8 @@ export default function AdminIndex() {
                 <span className="text-white/80">profile:</span> {profile.addr}
               </div>
               <div className="truncate">
-                <span className="text-white/80">session name:</span> {profile.deviceName}
+                <span className="text-white/80">session name:</span>{" "}
+                {profile.deviceName}
               </div>
             </div>
           </div>

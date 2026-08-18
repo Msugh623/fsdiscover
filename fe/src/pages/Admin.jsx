@@ -12,7 +12,7 @@ const Admin = ({ children, sudo }) => {
     if (sudo) {
       if (!localStorage.access) {
         localStorage.go = location.pathname;
-        toast("Remote input requires administrator access");
+        toast("Admin access required");
         localStorage.go = loc.pathname;
         return navigate("/login", { replace: true });
       } else {

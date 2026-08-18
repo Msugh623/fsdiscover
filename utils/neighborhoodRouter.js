@@ -1,73 +1,44 @@
 const express = require("express");
 const { UseNeighborhood } = require("./neighborhood");
-const {neighborhood} = new UseNeighborhood()
+const { neighborhood } = new UseNeighborhood();
+const router = express.Router();
+router.use(express.json());
 
-const neighborhoodRouter = express.Router();
-
-// Handlers
-neighborhoodRouter.route("/pair-request").post((req, res) => {
+const execute = (action, msg) => async (req, res) => {
   try {
-    const beam = req.body;
-    neighborhood.handleParingRequest(beam);
-    res.status(201).send("Pair request registered");
+    await action(req.body);
+    res.status(201).send(`${msg} ${req.body.hostname || ""}`.trim());
   } catch (err) {
-    res.status(500).send("Error: " + err);
+    res.status(500).send(err.message || err);
   }
-});
+};
 
-neighborhoodRouter.route("/pair-accepted").post(async (req, res) => {
-  try {
-    const beam = req.body;
-    await neighborhood.handlePairAccepted(beam);
-    res.status(201).send("Pair request rejected");
-  } catch (err) {
-    res.status(500).send("Error: " + err);
-  }
-});
+router.post(
+  "/pair-request",
+  execute(neighborhood.handleParingRequest.bind(neighborhood), "Requested"),
+);
+router.post(
+  "/pair-accepted",
+  execute(neighborhood.handlePairAccepted.bind(neighborhood), "Accepted"),
+);
+router.post(
+  "/pair-rejected",
+  execute(neighborhood.handlePairRejected.bind(neighborhood), "Rejected"),
+);
+router.post(
+  "/request-pairing",
+  execute(neighborhood.requestPairing.bind(neighborhood), "Sent to"),
+);
+router.post(
+  "/accept-pairing",
+  execute(neighborhood.acceptPair.bind(neighborhood), "Paired"),
+);
+router.post(
+  "/reject-pairing",
+  execute(neighborhood.rejectParing.bind(neighborhood), "Rejected"),
+);
+router.get("/config", (_, res) =>
+  res.status(200).json(neighborhood.getConfig()),
+);
 
-neighborhoodRouter.route("/pair-rejected").post(async (req, res) => {
-  try {
-    const beam = req.body;
-    await neighborhood.handlePairRejected(beam);
-    res.status(201).send("Pair request rejected");
-  } catch (err) {
-    res.status(500).send("Error: " + err);
-  }
-});
-
-// Requestors
-neighborhoodRouter.route("/pair-request_pairing").post(async (req, res) => {
-  try {
-    const beam = req.body;
-    await neighborhood.requestPairing(beam);
-    res.status(201).send("Pair request sent to " + beam.hostname);
-  } catch (err) {
-    res.status(500).send("Error: " + err);
-  }
-});
-
-neighborhoodRouter.route("/pair-accept_pairing").post(async (req, res) => {
-  try {
-    const beam = req.body;
-    await neighborhood.acceptPair(beam);
-    res.status(201).send("Paired with " + beam.hostname + " succesfully");
-  } catch (err) {
-    res.status(500).send("Error: " + err);
-  }
-});
-
-neighborhoodRouter.route("/pair-reject_pairing").post(async (req, res) => {
-  try {
-    const beam = req.body;
-    await neighborhood.rejectParing(beam);
-    res.status(201).send("Pair request from " + beam.hostname + " rejected");
-  } catch (err) {
-    res.status(500).send("Error: " + err);
-  }
-});
-
-neighborhoodRouter.route("/config").get((_, res) => {
-  res.status(200).json(neighborhood.getConfig());
-});
-
-module.exports = neighborhoodRouter;
+module.exports = router;

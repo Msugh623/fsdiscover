@@ -115,7 +115,7 @@ const StateContext = ({ children }) => {
     setTimeout(() => {
       const ifr = document.getElementById("iframe-" + raised);
       ifr && ifr.focus();
-        ifr && ifr.click();
+      ifr && ifr.click();
     }, 700);
   }
 
@@ -218,6 +218,12 @@ const StateContext = ({ children }) => {
     }
   }
 
+  const clearAccessToken = () => {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("access");
+    api.defaults.headers.common["Authorization"] = "";
+  };
+
   const changePass = async () => {
     try {
       if (!confirm("Click OK to continue to password wizard")) {
@@ -231,7 +237,7 @@ const StateContext = ({ children }) => {
       };
       await api.post("/admin/rq/change-password", data);
       await api.post("/admin/rq/logout");
-      localStorage.access = "";
+      clearAccessToken();
       location.pathname = "/";
     } catch (err) {
       toast.error(
@@ -253,23 +259,28 @@ const StateContext = ({ children }) => {
       setProtectedRoutes(resConfig.protectedRoutes || []);
       setDevices(resConfig.devices || []);
     } catch (err) {
-      localStorage.access &&
-        (() => {
-          !("" + err?.response?.data).startsWith("<") &&
-            toast.error(
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: `${err?.response?.data || err.message || "" + err}`,
-                }}
-              ></div>,
-            );
-          if (err?.response?.status == 401) {
-            !("" + err.response.data).startsWith("<") &&
-              toast.error("ERROR: Authoraization Error... Login to continue");
-            localStorage.access = "";
-            navigate("/login");
-          }
-        })();
+      const hasAccess = Boolean(localStorage.getItem("access"));
+      if (hasAccess && err?.response?.status === 401) {
+        !("" + err.response.data).startsWith("<") &&
+          toast.error("ERROR: Authoraization Error... Login to continue");
+        clearAccessToken();
+        navigate("/login");
+        return;
+      }
+
+      if (
+        hasAccess &&
+        err?.response?.data &&
+        !("" + err.response.data).startsWith("<")
+      ) {
+        toast.error(
+          <div
+            dangerouslySetInnerHTML={{
+              __html: `${err?.response?.data || err.message || "" + err}`,
+            }}
+          ></div>,
+        );
+      }
     }
   };
 
@@ -422,7 +433,7 @@ const StateContext = ({ children }) => {
         key,
         setKey,
         fetching,
-        code
+        code,
       }}
     >
       {children}
