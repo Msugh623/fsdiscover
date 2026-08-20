@@ -1,6 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 title FSdiscover Setup
+cd /d "%~dp0"
 
 cls
 echo.
@@ -11,9 +12,6 @@ echo   local network - no cloud, no accounts.
 echo   This will only take a minute or two.
 echo.
 
-REM ===========================================================
-REM  Make sure we're in the right folder
-REM ===========================================================
 echo   Checking your files...
 if not exist package.json (
     call :fail "Couldn't find FSdiscover's files here." "Make sure you're running this from inside the FSdiscover folder you downloaded, then try again."
@@ -21,9 +19,6 @@ if not exist package.json (
 )
 echo   Looks good!
 
-REM ===========================================================
-REM  Node.js
-REM ===========================================================
 echo.
 echo   Checking for Node.js, which FSdiscover needs to run...
 set "NODE_CMD="
@@ -44,7 +39,7 @@ if not defined NODE_CMD (
     )
     echo.
     echo   Installing core runtime, please wait...
-    "%TEMP%\node-setup.msi"
+    msiexec /i "%TEMP%\node-setup.msi" /qn /norestart
     if !errorlevel! neq 0 (
         call :fail "Node.js installation didn't finish properly." "Try installing it manually from nodejs.org, then run this installer again."
         exit /b 1
@@ -63,9 +58,6 @@ if not defined NODE_CMD (
 )
 echo   All set!
 
-REM ===========================================================
-REM  npm install
-REM ===========================================================
 echo.
 echo   Installing FSdiscover - this can take a minute or two...
 if not exist logs mkdir logs
@@ -81,9 +73,6 @@ if !errorlevel! neq 0 (
 )
 echo   Done!
 
-REM ===========================================================
-REM  Copy files to the install directory
-REM ===========================================================
 echo.
 echo   Setting up your FSdiscover folder...
 set "APP_DIR=%LOCALAPPDATA%\fsdiscover"
@@ -93,11 +82,11 @@ if /I "%CD%"=="%APP_DIR%" (
 )
 if not exist "%APP_DIR%" mkdir "%APP_DIR%" 2>nul
 if not exist "%APP_DIR%" (
-    call :fail "couldn't create a folder to install into." "Check that you have permission to write to your AppData folder, then try again."
+    call :fail "Couldn't create a folder to install into." "Check that you have permission to write to your AppData folder, then try again."
     exit /b 1
 )
 
-robocopy . "%APP_DIR%" /E /XD .git /XF auth.config.json runtime.config.json /NFL /NDL /NJH /NJS /NC /NS /NP >nul
+robocopy . "%APP_DIR%" /E /XD .git logs /XF auth.config.json runtime.config.json /NFL /NDL /NJH /NJS /NC /NS /NP >nul
 if !errorlevel! geq 8 (
     call :fail "Ran into a problem copying files." "Close any programs that might be using files in that folder, then try again."
     exit /b 1
@@ -105,19 +94,14 @@ if !errorlevel! geq 8 (
 if not exist "%APP_DIR%\temp" mkdir "%APP_DIR%\temp"
 echo   Done!
 
-REM ===========================================================
-REM  Shortcuts (Start Menu + CLI command)
-REM ===========================================================
 echo.
 echo   Creating shortcuts on Desktop and in Start Menu...
 set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FsDiscover"
 set "TARGET_PATH=%APP_DIR%\fsdiscover.cmd"
 set "ICON_PATH=%APP_DIR%\public\icon.ICO"
 if not exist "%SHORTCUT_PATH%" mkdir "%SHORTCUT_PATH%" >nul 2>&1
-"!NODE_CMD!" utils\makeico.js "%TARGET_PATH%" "%SHORTCUT_PATH%" "%ICON_PATH%" >nul 2>&1
-if not exist "%SHORTCUT_PATH%" (
-    echo   Couldn't create a Start Menu shortcut, but that's okay -
-    echo   you can still open FSdiscover from a terminal.
+if exist utils\makeico.js (
+    "!NODE_CMD!" utils\makeico.js "%TARGET_PATH%" "%SHORTCUT_PATH%" "%ICON_PATH%" >nul 2>&1
 )
 
 set "BIN_DIR=%USERPROFILE%\bin"
@@ -133,9 +117,14 @@ if !errorlevel! neq 0 (
     exit /b 1
 )
 
-echo %PATH% | find /I "%BIN_DIR%" >nul
+for /f "tokens=2*" %%A in ('reg query HKCU\Environment /v Path 2^>nul') do set "USER_PATH=%%B"
+echo "!USER_PATH!" | find /I "%BIN_DIR%" >nul
 if !errorlevel! neq 0 (
-    setx PATH "%PATH%;%BIN_DIR%" >nul
+    if defined USER_PATH (
+        reg add HKCU\Environment /v Path /t REG_EXPAND_SZ /d "!USER_PATH!;%BIN_DIR%" /f >nul
+    ) else (
+        reg add HKCU\Environment /v Path /t REG_EXPAND_SZ /d "%BIN_DIR%" /f >nul
+    )
 )
 echo   Done!
 
@@ -158,8 +147,19 @@ exit /b 0
 REM ===========================================================
 :fail
 echo.
-echo   Hmm, something didn't work: %~1
-echo   Try this: %~2
+echo   Hmm, something didn't work.
+echo   I couldn't prepare FSdiscover.
+echo.
+if "%~1"=="" (
+    echo   Reason: Unknown error occurred.
+) else (
+    echo   Reason: %~1
+)
+if "%~2"=="" (
+    echo   Try this: Run the installer again or check your environment.
+) else (
+    echo   Try this: %~2
+)
 echo.
 pause
 goto :eof

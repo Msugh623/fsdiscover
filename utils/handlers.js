@@ -673,7 +673,8 @@ class AuthHandler {
 
     if (this.hasAuth) {
       const theToken = this.config.authorizations.find(
-        (auth) => auth.token == req?.cookies?.uuid,
+        (auth) =>
+          auth.token == (req?.cookies?.uuid || req.headers["authorization"]),
       );
       req.token = theToken;
       return next();
