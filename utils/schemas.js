@@ -34,7 +34,7 @@ const runtimeConfData = {
   safemodeUploadDir: String(
     os.homedir() + `${os.platform == "win32" ? "\\" : "/"}` + "Downloads",
   ),
-  deviceID: crypto.randomUUID(),
+  deviceID: "",
   autoUpdate: Boolean(true),
   sessionMaxAge: Number(60 * 60 * 1000),
   userspace: String(

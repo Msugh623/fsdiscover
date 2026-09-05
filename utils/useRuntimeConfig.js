@@ -88,7 +88,7 @@ class RuntimeConfig {
       this.config.sessionUID = crypto.randomUUID();
       if (!this.config.deviceID) {
         this.config.deviceID = crypto.randomUUID();
-        console.log("saving config")
+        console.log("RuntimeConfig: Saving device configuration file")
         this.saveConfig()
       }
     }
