@@ -133,19 +133,29 @@ REM ===========================================================
 :find_runtime
 set "FOUND_NODE="
 set "FOUND_NPM="
-where node.exe >nul 2>&1
-if !errorlevel! equ 0 set "FOUND_NODE=node.exe"
+
+REM Capture the real, fully-qualified path from PATH instead of
+REM hardcoding the bare "node.exe"/"npm.cmd" name - a bare name
+REM gets re-resolved relative to whatever the CWD is at call time
+REM later in the script, which is APP_DIR by then, not the real
+REM Node install folder.
+for /f "usebackq delims=" %%N in (`where node.exe 2^>nul`) do (
+    if not defined FOUND_NODE set "FOUND_NODE=%%N"
+)
 if not defined FOUND_NODE if exist "%ProgramFiles%\nodejs\node.exe" set "FOUND_NODE=%ProgramFiles%\nodejs\node.exe"
 if not defined FOUND_NODE if exist "%ProgramFiles(x86)%\nodejs\node.exe" set "FOUND_NODE=%ProgramFiles(x86)%\nodejs\node.exe"
 if not defined FOUND_NODE if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" set "FOUND_NODE=%LOCALAPPDATA%\Programs\nodejs\node.exe"
-where npm.cmd >nul 2>&1
-if !errorlevel! equ 0 set "FOUND_NPM=npm.cmd"
+
+for /f "usebackq delims=" %%N in (`where npm.cmd 2^>nul`) do (
+    if not defined FOUND_NPM set "FOUND_NPM=%%N"
+)
 if not defined FOUND_NPM if exist "%ProgramFiles%\nodejs\npm.cmd" set "FOUND_NPM=%ProgramFiles%\nodejs\npm.cmd"
 if not defined FOUND_NPM if exist "%ProgramFiles(x86)%\nodejs\npm.cmd" set "FOUND_NPM=%ProgramFiles(x86)%\nodejs\npm.cmd"
 if not defined FOUND_NPM if exist "%LOCALAPPDATA%\Programs\nodejs\npm.cmd" set "FOUND_NPM=%LOCALAPPDATA%\Programs\nodejs\npm.cmd"
+
 if defined FOUND_NODE if defined FOUND_NPM (
-    set "NODE_CMD=!FOUND_NODE!"
-    set "NPM_CMD=!FOUND_NPM!"
+    set "NODE_CMD=%FOUND_NODE%"
+    set "NPM_CMD=%FOUND_NPM%"
 )
 exit /b 0
 
@@ -254,6 +264,6 @@ popd >nul 2>&1
 exit /b 1
 
 :finish_ok
-call :show_result "FSdiscover installation succeeded" "FSdiscover is installed and ready to use. Open a new PowerShell or Command Prompt window, then run: fsdiscover"
+call :show_result "FSdiscover installation succeeded" "FSdiscover is installed and ready to use. Open FSdiscover from the desktop icon or start menu. You can also open a new PowerShell or Command Prompt window, then run: fsdiscover"
 popd >nul 2>&1
 exit /b 0
