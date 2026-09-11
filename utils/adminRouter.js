@@ -18,6 +18,7 @@ adminRouter.route("/rq/sessions").get(runtimeConfig.getSessions);
 
 adminRouter.route("/rq/devices/rem").post(authHandler.remDevice);
 adminRouter.route("/rq/visitors/rem").post(authHandler.remVisitor);
+adminRouter.route("/rq/genpem").post(authHandler.generatePem);
 
 adminRouter.route("/rq/exec").post((req, res) => {
   const meta = req.body;

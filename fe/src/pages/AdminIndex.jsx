@@ -141,7 +141,7 @@ export default function AdminIndex() {
                     }}
                     className="flex items-center gap-1.5 text-[12px] font-sans mb-2 font-medium text-white bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors"
                   >
-                    <FaQrcode className="text-xs text-white/50" /> Show QRcode
+                    <FaQrcode className="text-xs text-white/50" /> QRcode
                   </button>
                   <Link
                     to={!localStorage.access ? `/login` : "/admin"}

@@ -1,11 +1,16 @@
 import React, { useRef, useState } from "react";
 import Folder from "./Folder";
 import File from "./File";
-import { FaDownload, FaEllipsisVertical, FaFileZipper } from "react-icons/fa6";
+import {
+  FaCopy,
+  FaDownload,
+  FaEllipsisVertical,
+  FaFileZipper,
+} from "react-icons/fa6";
 import { useFsContext } from "../../../state/FsContext";
 import { BiDevices, BiLock } from "react-icons/bi";
 import { useStateContext } from "../../../state/StateContext";
-import { FaDesktop, FaMobile } from "react-icons/fa";
+import { FaDesktop, FaMobile, FaShare } from "react-icons/fa";
 import api from "../../../../axios/api";
 import { toast } from "material-react-toastify";
 import ConnectedDevice from "../../deviceManager/ConnectedDevice";
@@ -93,6 +98,39 @@ const DirItem = ({ item, viewMode = "grid" }) => {
         <>
           <button
             className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
+            title={
+              "Share " +
+              `"${name}"` +
+              (type == "folder" ? " as Compressed Zip" : "")
+            }
+            onClick={() => {
+              const path = location.pathname + "/" + item;
+              const data = {
+                action: "permit",
+                pathname: path,
+                type: "once",
+              };
+              setModal(
+                <Share
+                  meta={{
+                    ...psr,
+                    zipUrl:
+                      location.pathname.replace("/fsexplorer", "/zipper") +
+                      "/" +
+                      psr?.name,
+                  }}
+                  data={data}
+                  sessions={sessions}
+                />,
+              );
+              setModalTitle(<h5 className="text-white">Share {name}</h5>);
+            }}
+          >
+            <FaShare className="text-sm" />
+            <span>Share</span>
+          </button>
+          <button
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-sm text-white/90 hover:bg-white/10 transition-colors"
             title="Open With"
             onClick={() => {
               const path = location.pathname + "/" + item;
@@ -173,7 +211,7 @@ const DirItem = ({ item, viewMode = "grid" }) => {
           <button
             ref={btnRef}
             type="button"
-            className="rounded-full  p-2 active text-gray-200 hover:bg-white/10 transition"
+            className="rounded-full  p-2 active  text-gray-200 hover:bg-white/10 transition"
             title="More actions"
             onClick={(e) => {
               e.stopPropagation();
@@ -341,6 +379,184 @@ function OpenWith({ data }) {
   );
 }
 
+function Share({ data, meta }) {
+  const { setModal, setModalTitle } = useStateContext();
+  const { sessions, safeMode } = useStateContext();
+  const fixUrl = location.href + "/" + meta.name;
+  const [url, setUrl] = useState(fixUrl);
+  const [conf, setConf] = useState({
+    usePermision: false,
+    oneTimeUse: true,
+    path: fixUrl,
+    session: {},
+  });
+
+  const selectedSession = conf.session?.addr ? conf.session : null;
+  const canCopy = !safeMode || conf.usePermision;
+
+  const generatePermissionUrl = async () => {
+    const response = await api.post("/admin/rq/genpem", {
+      ...conf,
+      session: selectedSession,
+      oneTime: conf.oneTimeUse,
+      durationMs: conf.durationMs,
+    });
+    const separator = fixUrl.includes("?") ? "&" : "?";
+    return `${fixUrl}${separator}pem=${response.data.id}`;
+  };
+
+  const copyShareUrl = async () => {
+    if (!canCopy) {
+      toast.info("Enable Use Permission before copying in Safe Mode");
+      return;
+    }
+
+    try {
+      const shareUrl = conf.usePermision
+        ? await generatePermissionUrl()
+        : fixUrl;
+      setUrl(shareUrl);
+      const fileInput = document.getElementById("fileUrl");
+      fileInput.focus();
+      fileInput.select();
+      document.execCommand("copy");
+      toast.success(`Link to ${meta.name} copied to clipboard`);
+      setTimeout(
+        () =>
+          toast.info(
+            "Make sure your other device is also connected to the same network or Wi-Fi",
+          ),
+        2500,
+      );
+    } catch (err) {
+      toast.error(
+        err?.response?.data || err.message || "Unable to create link",
+      );
+    }
+  };
+
+  return (
+    <>
+      <div
+        className="max-w-4xl mx-auto p-3 px-4"
+        style={{
+          maxWidth: "90vw",
+          minWidth: "40vw",
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
+      >
+        <div className="mb-3 flex border p-2 rounded-3xl">
+          <input
+            id="fileUrl"
+            type="text"
+            className="focus:border-none px-1 pe-2 overflow-hidden my-auto rounded-3xl w-full"
+            value={url}
+          />
+          <button
+            autoFocus
+            disabled={!canCopy}
+            className="transition-all bg-[#00789c] hover:bg-[#006888] active:bg-[#005974] disabled:cursor-not-allowed disabled:opacity-40 p-2 px-4 rounded-3xl min-w-max"
+            onClick={copyShareUrl}
+          >
+            <div>
+              <FaCopy className="inline" /> Copy
+            </div>
+          </button>
+        </div>
+        <div className="space-y-3 rounded-3xl border border-white/10 bg-[#111] p-4 text-sm text-white/80">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={conf.usePermision}
+              disabled={Boolean(selectedSession)}
+              onChange={(event) =>
+                setConf((prev) => ({
+                  ...prev,
+                  usePermision: event.target.checked,
+                }))
+              }
+            />
+            <span>Use Permision</span>
+          </label>
+
+          {safeMode && !conf.usePermision && (
+            <p className="text-xs text-amber-300">
+              Safe Mode requires a permission link before this URL can be
+              copied.
+            </p>
+          )}
+
+          <div>
+            <div className="mb-2 text-xs uppercase tracking-[0.15em] text-white/45">
+              Allow a session
+            </div>
+            <div className="space-y-2">
+              {(sessions || []).map((session, index) => {
+                const selected =
+                  selectedSession?.addr === session.addr &&
+                  selectedSession?.agent === session.agent;
+                return (
+                  <button
+                    type="button"
+                    key={`${session.addr}-${session.agent}-${index}`}
+                    className={`flex w-full items-center justify-between rounded-2xl border p-3 text-left transition ${
+                      selected
+                        ? "border-blue-400 bg-blue-500/20"
+                        : "border-white/10 bg-black/20 hover:bg-white/10"
+                    }`}
+                    onClick={() =>
+                      setConf((prev) => ({
+                        ...prev,
+                        usePermision: true,
+                        session: selected ? {} : session,
+                      }))
+                    }
+                  >
+                    <span className="truncate">
+                      {session.deviceName || session.addr}
+                    </span>
+                    <span className="ml-3 shrink-0 text-xs text-white/50">
+                      {selected ? "Selected" : session.addr}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <label className="block">
+            <span className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/45">
+              Permission lifetime
+            </span>
+            <select
+              value={conf.oneTimeUse ? "one-time" : String(conf.durationMs)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setConf((prev) =>
+                  value === "one-time"
+                    ? { ...prev, oneTimeUse: true, durationMs: undefined }
+                    : {
+                        ...prev,
+                        oneTimeUse: false,
+                        durationMs: Number(value),
+                      },
+                );
+              }}
+              className="w-full rounded-2xl border border-white/10 bg-[#0d0d11] px-3 py-2 text-white"
+            >
+              <option value="one-time">One time</option>
+              <option value="300000">5 minutes</option>
+              <option value="3600000">1 hour</option>
+              <option value="86400000">1 day</option>
+              <option value="604800000">7 days</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </>
+  );
+}
 function getDeviceType(userAgent) {
   const mobileRegex =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;

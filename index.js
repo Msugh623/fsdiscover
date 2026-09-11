@@ -203,13 +203,14 @@ app.use(
 app.use(middleware.logger);
 app.use(
   "/fsexplorer",
+  authHandler.checkDirAuth,
   (req, res, next) => {
     const cookies = req.cookies;
     const { noAuthFsRead, safeMode } = runtimeConfig.config;
     const theToken = authHandler.config.authorizations.find(
       (auth) => auth.token == cookies?.uuid,
     );
-    if ((!noAuthFsRead || safeMode) && !theToken) {
+    if ((!noAuthFsRead || safeMode) && !theToken && !req.pem) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res
         .status(401)
@@ -219,7 +220,6 @@ app.use(
     }
     next();
   },
-  authHandler.checkDirAuth,
   express.static(path.join(runtimeConfig.config.publicDir), {
     index: false,
   }),
@@ -297,7 +297,7 @@ app.get("/runtime", authHandler.runtimeConfig.getSafeRuntimeConfig);
 app.post("/rq/login", authHandler.login);
 app.get("/fsexplorer*", handlers.sendUi);
 app.get("/hostname", handlers.getHost);
-app.get("/zipper*", handlers.zipDir);
+app.get("/zipper*", authHandler.checkDirAuth, handlers.zipDir);
 app.get("/fsdownload*", authHandler.checkDirAuth, handlers.downloadFile);
 app.get("/fs*", authHandler.checkDirAuth, handlers.getPath);
 app.get("/heartbeat", handlers.header);

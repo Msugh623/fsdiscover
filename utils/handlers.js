@@ -15,6 +15,7 @@ const { logger } = new UseLogger();
 const crypto = require("node:crypto");
 const schemas = require("./schemas");
 const { randomSuperhero } = require("superheroes");
+const { UsePem } = require("./usePem");
 
 const { platform } = os;
 function homedir() {
@@ -92,7 +93,8 @@ class Handlers {
     );
     if (
       (!runtimeConfig.config.noAuthFsRead || runtimeConfig.config.safeMode) &&
-      !theToken
+      !theToken &&
+      !req.pem
     ) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
@@ -100,7 +102,8 @@ class Handlers {
           ${runtimeConfig.config.safeMode ? "ERR_SAFEMODE_NO_READ" : "ERR_NO_AUTH_NO_DIR"}: "${os.hostname()}" Requires you log in to access File Explorer. <a href="/login"><button class="legacy-btn">Login</button></a> to be able to access files' 
       </center>`);
     }
-    const badChar = req.url
+    const pathUrl = (req.url || "").split("?")[0];
+    const badChar = pathUrl
       .split("/")
       .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
     if (badChar) {
@@ -109,7 +112,7 @@ class Handlers {
         .send(`Request pathname includes a forbidden character \"${badChar}\"`);
     }
     try {
-      const pathname = req.url
+      const pathname = pathUrl
         .replace("/fs", "")
         .replaceAll("%20", " ")
         .split("/")
@@ -121,6 +124,9 @@ class Handlers {
         if (data.startsWith("$ERR")) {
           errorHandlers.ENOENT(data, res);
           return;
+        }
+        if (req.pem?.oneTime) {
+          pem.consume(req.pem);
         }
         const prsData = await render(
           "Sprint FS Explorer - index of: " + pathname,
@@ -149,7 +155,7 @@ class Handlers {
     const theToken = useNativeAuthHandler().config.authorizations.find(
       (auth) => auth.token == req?.cookies?.uuid,
     );
-    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+    if (!runtimeConfig.config.noAuthFsRead && !theToken && !req.pem) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
@@ -187,6 +193,10 @@ class Handlers {
         return res.status(404).send("File not found: " + fullPath);
       }
 
+      if (req.pem?.oneTime) {
+        pem.consume(req.pem);
+      }
+
       const filename = path.basename(fullPath).replace(/\"/g, "");
       res.setHeader(
         "Content-Disposition",
@@ -209,7 +219,7 @@ class Handlers {
     const theToken = useNativeAuthHandler().config.authorizations.find(
       (auth) => auth.token == req?.cookies?.uuid,
     );
-    if (!runtimeConfig.config.noAuthFsRead && !theToken) {
+    if (!runtimeConfig.config.noAuthFsRead && !theToken && !req.pem) {
       req?.cookies?.uuid && res.clearCookie("uuid");
       return res.status(401).send(`<center>
           <h1> EACCES </h1> <hr> \n 401 Unauthorized - You Are not logged in. <br> <br>\n 
@@ -228,6 +238,9 @@ class Handlers {
       zipper.pipe(res);
       zipper.directory(path.join(homedir(), pathname), false);
       zipper.finalize();
+      if (req.pem?.oneTime) {
+        pem.consume(req.pem);
+      }
     } catch (error) {
       // console.error(error)
       res.status(500).send(`ERROR: ${error}`);
@@ -409,6 +422,7 @@ class Middleware {
 }
 
 const { runtimeConfig } = new UseRuntimeConfig();
+const { pem } = new UsePem();
 
 class AuthHandler {
   constructor() {
@@ -631,6 +645,10 @@ class AuthHandler {
       uuid: req?.cookies?.uuid,
       deviceName,
     };
+    const permission = pem.findValid(req.query?.pem, uInfo);
+    if (permission) {
+      req.pem = permission;
+    }
 
     // Always set the cookie so it persists across requests
     if (!req?.cookies?.device_name) {
@@ -662,7 +680,8 @@ class AuthHandler {
     if (
       this.config.forbidden.find(
         (v) => v.agent === uInfo.agent && v.addr === uInfo.addr,
-      )
+      ) &&
+      !req.pem
     ) {
       return res
         .status(403)
@@ -680,7 +699,8 @@ class AuthHandler {
       return next();
     }
 
-    const badChar = req.url
+    const badChar = (req.url || "")
+      .split("?")[0]
       .split("/")
       .find((char) => forbiddenChars.find((fchar) => char.includes(fchar)));
     if (badChar) {
@@ -844,7 +864,15 @@ class AuthHandler {
       date: `${new Date()}`,
       lastAccess: `${new Date()}`,
     };
-    const pathname = url.replace("/fs", "").replaceAll("%20", " ");
+    const permission = pem.findValid(req.query?.pem, user);
+    if (permission) {
+      req.pem = permission;
+      if (permission.oneTime) {
+        res.once("finish", () => pem.consume(permission));
+      }
+      return next();
+    }
+    const pathname = url.replace("/fs", "").replaceAll("%20", " ").trim();
     if (
       this.config.protectedroutes.find((u) => {
         return pathname.includes(u);
@@ -1096,6 +1124,18 @@ class AuthHandler {
 
   getProtectedRoutes = (_, res) => {
     res.status(200).json(this.config.protectedroutes);
+  };
+
+  generatePem = (req, res) => {
+    const body = req.body || {};
+    const permission = pem.create({
+      useragent: req.user?.agent,
+      addr: req.user?.addr,
+      session: body.session || null,
+      oneTime: body.oneTime !== false,
+      durationMs: body.durationMs,
+    });
+    res.status(201).json({ id: permission.id, pem: permission });
   };
 
   updatePassword = (req, res) => {

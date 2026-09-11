@@ -4,6 +4,14 @@ setlocal enabledelayedexpansion
 REM Define application directory and version file path
 set "APP_DIR=%LOCALAPPDATA%\fsdiscover"
 set "VERSION_FILE=%APP_DIR%\version"
+set "NODE_CMD="
+where node.exe >nul 2>&1
+if !errorlevel! equ 0 set "NODE_CMD=node.exe"
+set "NODE_ARCH=x64"
+if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" set "NODE_ARCH=arm64"
+if /I "%PROCESSOR_ARCHITEW6432%"=="ARM64" set "NODE_ARCH=arm64"
+if not defined NODE_CMD if exist "%LOCALAPPDATA%\Programs\nodejs\node.exe" set "NODE_CMD=%LOCALAPPDATA%\Programs\nodejs\node.exe"
+if not defined NODE_CMD if exist "%LOCALAPPDATA%\fsdiscover-runtime\node-v22.17.1-win-%NODE_ARCH%\node.exe" set "NODE_CMD=%LOCALAPPDATA%\fsdiscover-runtime\node-v22.17.1-win-%NODE_ARCH%\node.exe"
 
 REM Ensure version file exists
 if not exist "%VERSION_FILE%" (
@@ -87,9 +95,12 @@ if /I "%PARAM1%"=="-p" (
         echo "Initiator: Prefered network interface set to: %PARAM2%"
         echo "Initiator: Prefered network interface will be ignored if not available"
         set "PARAMS=--prefer %PARAM2%"
+        if defined PARAM2 if not "%PARAM2%"=="" <nul set /p="%PARAM2%" > __prefer
     )
 )
 
+if /I "%PARAM1%"=="--prefer" if /I not "%PARAM2%"=="" set "PARAM1=-prefer"
+if /I "%PARAM1%"=="--prefer" if /I "%PARAM2%"=="no-default" set "PARAM1=-prefer"
 if /I "%PARAM1%"=="-prefer" (
     if /I "%PARAM2%"=="no-default" (
         echo Initiator: Clearing saved preferred interface
@@ -108,21 +119,18 @@ if /I "%PARAM1%"=="-h" goto :show_help
 
 REM If no known argument, assume default run
 
-if exist ..\update\fsdiscover-main (
-  echo "Initiator: Implementing Updates..."
-  if exist ..\update\fsdiscover-main\package.json (
-    cd ..\update\fsdiscover-main
-    echo "Initiator: Installing Updates..."
-    call install.cmd
-    cd ..\..\
-    rmdir /S /Q update\fsdiscover-main
-    fsdiscover
-    echo "Initiator: Updates Installed Succesfully... fsdiscover shall proceed"
-  ) else (
-    echo "Initiator: Updates not Implemented... failed to locate package.json in update directory... fsdiscover shall proceed"
-    rmdir /S /Q ..\update
-  )
-) 
+set "UPDATE_DIR=%APP_DIR%\update\fsdiscover-main"
+if exist "%UPDATE_DIR%" (
+    echo "Initiator: Implementing Updates in the background..."
+    if exist "%UPDATE_DIR%\package.json" (
+        if not exist "%APP_DIR%\logs" mkdir "%APP_DIR%\logs" >nul 2>&1
+        start "FSdiscover Update" /b "%ComSpec%" /d /c "call ""%UPDATE_DIR%\install.cmd"" > ""%APP_DIR%\logs\update_install.log"" 2>&1 ^& rmdir /S /Q ""%UPDATE_DIR%"""
+        echo "Initiator: Update installer detached; FSdiscover will continue starting."
+    ) else (
+        echo "Initiator: Update ignored because package.json was not found."
+        rmdir /S /Q "%APP_DIR%\update" >nul 2>&1
+    )
+)
 
 REM If no explicit prefer was provided, fall back to saved __prefer file
 if not defined PARAMS (
@@ -136,14 +144,16 @@ if not defined PARAMS (
 )
 
 REM Check for node_modules before starting
-if exist node_modules (
-    node index.js %PARAMS%
-) else (
-    echo Failure: node_modules not found.
-    echo Run 'install.cmd' or 'npm install' to install dependencies.
-    exit /b 1
-)
-exit /b 0
+if not exist node_modules goto :runtime_fail
+if not defined NODE_CMD goto :runtime_fail
+"%NODE_CMD%" index.js %PARAMS%
+exit /b %errorlevel%
+
+:runtime_fail
+if not exist node_modules echo Failure: node_modules not found.
+if not defined NODE_CMD echo Failure: Node.js runtime not found.
+echo Run 'install.cmd' again or install Node.js LTS manually.
+exit /b 1
 
 :show_help
 echo Usage: fsdiscover [option]
