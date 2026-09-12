@@ -271,8 +271,9 @@ function OpenWith({ data }) {
           ? null
           : sessions.find((session) => session.socketid === id);
       const permission = await api.post("/admin/rq/genpem", {
-        oneTime: true,
+        oneTime: false,
         session: targetSession,
+        durationMs:300000
       });
       const separator = data.pathname.includes("?") ? "&" : "?";
       const meta = {
