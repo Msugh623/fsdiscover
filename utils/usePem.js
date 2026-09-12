@@ -57,7 +57,7 @@ class PemManager {
     durationMs,
   }) => {
     const createdAt = Date.now();
-    const effectiveOneTime = !session || Boolean(oneTime);
+    const effectiveOneTime = !Number(durationMs) || Boolean(oneTime);
     const expiresAt = effectiveOneTime
       ? null
       : createdAt + Math.max(Number(durationMs) || 0, 1000);

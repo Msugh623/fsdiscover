@@ -397,10 +397,10 @@ function Share({ data, meta }) {
   const [url, setUrl] = useState(fixUrl);
   const [conf, setConf] = useState({
     usePermision: false,
-    oneTimeUse: true,
+    oneTimeUse: false,
     path: fixUrl,
     session: {},
-    durationMs: "3600000",
+    durationMs: 3600000,
   });
 
   const selectedSession = conf.session?.addr ? conf.session : null;
