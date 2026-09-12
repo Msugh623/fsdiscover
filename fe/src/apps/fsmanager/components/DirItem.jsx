@@ -265,11 +265,21 @@ function OpenWith({ data }) {
   const { setModal, setModalTitle } = useStateContext();
   const { sessions } = useStateContext();
   async function handleSelect(id) {
-    const meta = {
-      ...data,
-      socketid: id,
-    };
     try {
+      const targetSession =
+        id === "host"
+          ? null
+          : sessions.find((session) => session.socketid === id);
+      const permission = await api.post("/admin/rq/genpem", {
+        oneTime: true,
+        session: targetSession,
+      });
+      const separator = data.pathname.includes("?") ? "&" : "?";
+      const meta = {
+        ...data,
+        pathname: `${data.pathname}${separator}pem=${permission.data.id}`,
+        socketid: id,
+      };
       await api.post("/admin/rq/exec", meta);
       id !== "host"
         ? setModal(<ConnectedDevice socketid={id} />)

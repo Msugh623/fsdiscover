@@ -119,16 +119,48 @@ if /I "%PARAM1%"=="-h" goto :show_help
 
 REM If no known argument, assume default run
 
-set "UPDATE_DIR=%APP_DIR%\update\fsdiscover-main"
+REM update.js stages updates beside the app directory, not inside it.
+set "UPDATE_ROOT=%LOCALAPPDATA%\update"
+set "UPDATE_DIR=%UPDATE_ROOT%\fsdiscover-main"
 if exist "%UPDATE_DIR%" (
-    echo "Initiator: Implementing Updates in the background..."
     if exist "%UPDATE_DIR%\package.json" (
         if not exist "%APP_DIR%\logs" mkdir "%APP_DIR%\logs" >nul 2>&1
-        start "FSdiscover Update" /b "%ComSpec%" /d /c "call ""%UPDATE_DIR%\install.cmd"" > ""%APP_DIR%\logs\update_install.log"" 2>&1 ^& rmdir /S /Q ""%UPDATE_DIR%"""
-        echo "Initiator: Update installer detached; FSdiscover will continue starting."
+        echo Initiator: Applying update in the background...
+
+        REM logger.js sweeps/clears everything in APP_DIR\logs on startup,
+        REM regardless of filename - so the live update log must NOT live
+        REM there while it's open for writing. Keep it in TEMP during the
+        REM run, then copy the finished log into logs\ once it's closed.
+        set "UPDATE_LOG_TMP=%TEMP%\fsdiscover_update_%RANDOM%.log"
+        set "RUNNER=%TEMP%\fsdiscover_update_%RANDOM%.cmd"
+        > "!RUNNER!" (
+            echo @echo off
+            echo cd /d "%UPDATE_DIR%"
+            echo call install.cmd ^> "!UPDATE_LOG_TMP!" 2^>^&1
+            echo cd /d "%APP_DIR%"
+            REM must cd OUT of UPDATE_DIR before deleting it, or rmdir fails silently
+            echo rmdir /S /Q "%UPDATE_DIR%"
+            REM log is closed now - safe to archive it into logs\
+            echo copy /y "!UPDATE_LOG_TMP!" "%APP_DIR%\logs\update_install.log" ^>nul 2^>^&1
+            echo del "!UPDATE_LOG_TMP!" ^>nul 2^>^&1
+            echo del "%%~f0"
+        )
+
+        REM Launch fully hidden - no console window at all - via a tiny VBS
+        REM wrapper. More reliable than "start /min", which still briefly
+        REM flashes a window before minimizing.
+        set "VBS=%TEMP%\fsdiscover_launch_%RANDOM%.vbs"
+        > "!VBS!" (
+            echo Set objShell = CreateObject^("WScript.Shell"^)
+            echo objShell.Run """!RUNNER!""", 0, False
+        )
+        wscript.exe //B "!VBS!"
+        del "!VBS!" >nul 2>&1
+
+        echo Initiator: Update running in the background; FSdiscover will continue starting.
     ) else (
-        echo "Initiator: Update ignored because package.json was not found."
-        rmdir /S /Q "%APP_DIR%\update" >nul 2>&1
+        echo Initiator: Update ignored because package.json was not found.
+        rmdir /S /Q "%UPDATE_ROOT%" >nul 2>&1
     )
 )
 
@@ -166,5 +198,5 @@ echo   -u, --uninstall       Uninstall (remove) fsdiscover
 echo   -v, --version         Show current version
 echo   -h, --help            Display help message
 echo.
-echo For more information, contact: sprintetmail@gmail.com
+echo For more information, contact: team@sprintet.com
 exit /b 0

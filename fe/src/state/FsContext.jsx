@@ -38,7 +38,7 @@ const FsContext = ({ children }) => {
     const path = location.pathname.replace("/fsexplorer", "");
     setLocChildren([]);
     setLocPath(path);
-    getFs(path);
+    getFs(path + location.search);
   }, [location]);
 
   return (

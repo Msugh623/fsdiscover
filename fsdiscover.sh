@@ -11,7 +11,7 @@ cd "$APP_DIR" || {
 PARAM1=${1:-nil}
 PARAM2=${2:-nil}
 
-if [ $PARAM1 == "--logs" ] || [ $PARAM1 == "-l" ]; then
+if [ "$PARAM1" = "--logs" ] || [ "$PARAM1" = "-l" ]; then
     echo "Opening logs directory... Please wait"
     cd logs
     open . || {
@@ -19,16 +19,16 @@ if [ $PARAM1 == "--logs" ] || [ $PARAM1 == "-l" ]; then
         pwd && ls -l
     }
     exit $?
-elif [ $PARAM1 == "--uninstall" ] || [ $PARAM1 == "-u" ]; then
+elif [ "$PARAM1" = "--uninstall" ] || [ "$PARAM1" = "-u" ]; then
     ./uninstall.sh
     exit $?
-elif [ $PARAM1 == "--version" ] || [ $PARAM1 == "-v" ]; then
+elif [ "$PARAM1" = "--version" ] || [ "$PARAM1" = "-v" ]; then
     echo $V
     exit 0
-elif [ $PARAM1 == "--config" ] || [ $PARAM1 == "-c" ]; then
+elif [ "$PARAM1" = "--config" ] || [ "$PARAM1" = "-c" ]; then
     cat auth.config.json
     exit 0
-elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
+elif [ "$PARAM1" = "--help" ] || [ "$PARAM1" = "-h" ]; then
     echo "Usage: fsdiscover [option...]"
     echo ""
     echo "-l, --logs            See Fsdiscover logs"
@@ -40,7 +40,7 @@ elif [ $PARAM1 == "--help" ] || [ $PARAM1 == "-h" ]; then
     echo "-v, --version         See current version"
     echo "-h, --help            See Help"
     echo ""
-    echo "For more information, contact sprintetmail@gmail.com"
+    echo "For more information, contact team@sprintet.com"
     exit 0
 fi
 
@@ -75,19 +75,39 @@ if [ -z "$PARAMS" ] && [ -f "__prefer" ]; then
   fi
 fi
 
-if [ -d ../update/fsdiscover-main ]; then
-  echo "Initiator: Implementing Updates..."
-  if [ -f ../update/fsdiscover-main/package.json ]; then
-    cd ../update/fsdiscover-main
-    chmod +x ./install.sh
-    bash -l ./install.sh --auto || ./install.sh --auto
-    cd ../../  
-    rm -r update/fsdiscover-main
-    rm sysnet.zip; 
-    exec fsdiscover
+
+UPDATE_ROOT="$APP_DIR/../update"
+UPDATE_DIR="$UPDATE_ROOT/fsdiscover-main"
+
+if [ -d "$UPDATE_DIR" ]; then
+  if [ -f "$UPDATE_DIR/package.json" ]; then
+    echo "Initiator: Applying update in the background..."
+    mkdir -p "$APP_DIR/logs"
+    
+    nohup bash -c '
+      set -f
+      trap "" HUP
+
+      # Avoid mktemp: GNU and BSD (macOS) mktemp disagree on how they
+      # handle a suffix after XXXXXX, so build the temp name by hand
+      # instead - works identically everywhere bash runs.
+      UPDATE_LOG_TMP="/tmp/fsdiscover_update_$$_${RANDOM}.log"
+
+      cd "'"$UPDATE_DIR"'" || exit 1
+      chmod +x ./install.sh
+      { bash -l ./install.sh --auto || ./install.sh --auto; } > "$UPDATE_LOG_TMP" 2>&1
+
+      rm -rf "'"$UPDATE_DIR"'"
+      rm -f "'"$UPDATE_ROOT"'/../sysnet.zip"
+
+      # Log is closed now - safe to move into logs/
+      mv -f "$UPDATE_LOG_TMP" "'"$APP_DIR"'/logs/update_install.log" 2>/dev/null
+    ' </dev/null >/dev/null 2>&1 &
+
+    disown 2>/dev/null || true
   else
     echo "Initiator: Updates not Implemented... failed to locate package.json in update directory... fsdiscover shall proceed"
-    rm -r update
+    rm -rf "$UPDATE_ROOT"
   fi
 fi
 
