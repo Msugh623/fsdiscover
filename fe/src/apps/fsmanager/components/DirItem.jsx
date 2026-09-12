@@ -167,7 +167,7 @@ const DirItem = ({ item, viewMode = "grid" }) => {
     key.toLowerCase().includes(name.toLowerCase()) ? (
     <>
       <div
-        className={`relative bg-[#111] rounded-3xl border border-white/10 shadow-2xl overflow-hidden transition hover:-translate-y-1 hover:shadow-2xl duration-200 slideUp ${viewMode === "list" ? "flex flex-col gap-0" : ""}`}
+        className={`relative bg-[#111] active:border-[#006ec9] rounded-3xl border border-white/10 shadow-2xl overflow-hidden transition hover:-translate-y-1 hover:shadow-2xl duration-200 slideUp ${viewMode === "list" ? "flex flex-col gap-0" : ""}`}
         onClick={() => {
           if (hasDd) {
             setHasDd(false);
@@ -400,6 +400,7 @@ function Share({ data, meta }) {
     oneTimeUse: true,
     path: fixUrl,
     session: {},
+    durationMs: "3600000",
   });
 
   const selectedSession = conf.session?.addr ? conf.session : null;
