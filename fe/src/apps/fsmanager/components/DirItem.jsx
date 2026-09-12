@@ -273,7 +273,7 @@ function OpenWith({ data }) {
       const permission = await api.post("/admin/rq/genpem", {
         oneTime: false,
         session: targetSession,
-        durationMs:300000
+        durationMs: 300000,
       });
       const separator = data.pathname.includes("?") ? "&" : "?";
       const meta = {
@@ -427,18 +427,20 @@ function Share({ data, meta }) {
         ? await generatePermissionUrl()
         : fixUrl;
       setUrl(shareUrl);
-      const fileInput = document.getElementById("fileUrl");
-      fileInput.focus();
-      fileInput.select();
-      document.execCommand("copy");
-      toast.success(`Link to ${meta.name} copied to clipboard`);
-      setTimeout(
-        () =>
-          toast.info(
-            "Make sure your other device is also connected to the same network or Wi-Fi",
-          ),
-        2500,
-      );
+      setTimeout(() => {
+        const fileInput = document.getElementById("fileUrl");
+        fileInput.focus();
+        fileInput.select();
+        document.execCommand("copy");
+        toast.success(`Link to ${meta.name} copied to clipboard`);
+        setTimeout(
+          () =>
+            toast.info(
+              "Make sure your other device is also connected to the same network or Wi-Fi",
+            ),
+          2500,
+        );
+      }, 400);
     } catch (err) {
       toast.error(
         err?.response?.data || err.message || "Unable to create link",
