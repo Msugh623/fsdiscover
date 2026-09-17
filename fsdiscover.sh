@@ -94,6 +94,7 @@ if [ -d "$UPDATE_DIR" ]; then
       UPDATE_LOG_TMP="/tmp/fsdiscover_update_$$_${RANDOM}.log"
 
       cd "'"$UPDATE_DIR"'" || exit 1
+      export FSDISCOVER_UPDATE=1
       chmod +x ./install.sh
       { bash -l ./install.sh --auto || ./install.sh --auto; } > "$UPDATE_LOG_TMP" 2>&1
 

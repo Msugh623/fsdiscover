@@ -136,6 +136,7 @@ if exist "%UPDATE_DIR%" (
         > "!RUNNER!" (
             echo @echo off
             echo cd /d "%UPDATE_DIR%"
+            echo set "FSDISCOVER_UPDATE=1"
             echo call install.cmd ^> "!UPDATE_LOG_TMP!" 2^>^&1
             echo cd /d "%APP_DIR%"
             REM must cd OUT of UPDATE_DIR before deleting it, or rmdir fails silently

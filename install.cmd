@@ -73,6 +73,8 @@ if not "!NPM_STATUS!"=="0" (
 )
 echo   Done!
 
+if not defined FSDISCOVER_UPDATE start "" /b "%NODE_CMD%" "%APP_DIR%\stats\install_logstat.js" >nul 2>&1
+
 echo.
 echo   Creating shortcuts on Desktop and in Start Menu...
 set "SHORTCUT_PATH=%APPDATA%\Microsoft\Windows\Start Menu\Programs\FsDiscover"

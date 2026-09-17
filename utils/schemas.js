@@ -1,4 +1,58 @@
 const os = require("os");
+const fs = require("fs");
+const path = require("path");
+const dirname = require("../dirname");
+
+const statTypes = Object.freeze({
+  INSTALL: "install",
+  UPDATE: "update",
+  CHECK_UPDATE: "checkupdate",
+});
+
+const statSchema = Object.freeze({
+  version: "",
+  osVersion: "",
+  platform: "",
+  datetime: "",
+  stat_type: "",
+  region: "",
+  arch: "",
+  dID: "",
+});
+
+const readJson = (filePath, fallback) => {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return fallback;
+  }
+};
+
+const readVersion = () => {
+  try {
+    return fs.readFileSync(path.join(dirname(), "version"), "utf8").trim();
+  } catch {
+    return readJson(path.join(dirname(), "package.json"), {}).version || "";
+  }
+};
+
+const createStat = (stat_type) => {
+  const runtime = readJson(path.join(dirname(), "runtime.config.json"), {});
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return {
+    ...statSchema,
+    version: readVersion(),
+    osVersion: os.release(),
+    platform: os.platform(),
+    datetime: new Date().toISOString(),
+    stat_type,
+    region: timezone || "unknown",
+    arch: os.arch(),
+    dID: runtime.deviceID || "",
+  };
+};
+
 const userspaces = Object.freeze({
   INDIVIDUAL: "individual",
   ORGANIZATION: "organization",
@@ -63,4 +117,7 @@ module.exports = {
   runtimeConfData,
   userspaces,
   neighborhoodData,
+  statTypes,
+  statSchema,
+  createStat,
 };

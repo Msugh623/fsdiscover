@@ -93,6 +93,10 @@ copy_files() {
 
 retry 3 2 copy_files || { echo "[ERROR] File copy failed."; exit 1; }
 
+if [ "$FSDISCOVER_UPDATE" != "1" ] && command -v node >/dev/null 2>&1; then
+    nohup node "$APP_DIR/stats/install_logstat.js" >/dev/null 2>&1 </dev/null &
+fi
+
 chmod +x "$APP_DIR/fsdiscover.sh" 2>/dev/null
 chmod 700 "$APP_DIR/temp" 2>/dev/null || true
 

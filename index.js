@@ -186,7 +186,7 @@ if (args.includes("--prefer") || args.includes("-p")) {
   netProb.prefer(face);
 }
 
-const netFace = netProb.autoDetect();
+let netFace = netProb.autoDetect();
 let networkStatusFlag = "";
 process.netFace = netFace;
 
@@ -395,6 +395,9 @@ async function refresh() {
       if (networkInterface == "wlan0") {
         return "\x1b[32mWi-Fi\x1b[39m";
       }
+      if (networkInterface == "Internal/Native_Loopback") {
+        return `\x1b[31mNo Network\x1b[39m`;
+      }
       if (networkInterface) {
         return `\x1b[32m${networkInterface}\x1b[39m`;
       }
@@ -528,5 +531,32 @@ setInterval(() => {
     compositor.height + compositor.width
   ) {
     refresh();
+  }
+  if (
+    netFace.interfaceName == "Internal/Native_Loopback" ||
+    networkStatusFlag == "Disconnected"
+  ) {
+    let newNetFace = netProb.autoDetect();
+    netFace = newNetFace;
+    process.netFace = newNetFace;
+    process.netUrl = `http://${netFace.address}:${port}`;
+    const qr = require("qrcode");
+    qr.toString(
+      process.netUrl,
+      { type: "terminal", margin: 100, small: true },
+      (err, code) => {
+        if (!err) {
+          logger.log(
+            "\n\nScan this qrcode on a device connected to the same network to acces fsdiscover\n",
+            false,
+          );
+          logger.log(code, false);
+          runtimeConfig.netQrcode = code;
+          refresh();
+          return;
+        }
+        logger.log("Initiator: Unable to generate qrcode", false);
+      },
+    );
   }
 }, 5000);

@@ -31,7 +31,7 @@ class Compositor {
       return;
     }
     const frame = this.toString();
-    process.stdout.write("\x1b[2J\x1b[H" + frame + "\n");
+    process.stdout.write("\x1b[2J\x1b[3J\x1b[H" + frame + "\n");
     this.dirty = false;
   }
   toString = (screen = this.screen) => {

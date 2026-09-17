@@ -139,7 +139,7 @@ getNewBeamData = () => {
 };
 sendBeam = (beam = "") => {
   this.client.send(beam, PORT, HOST, (err) => {
-    err && logger.log("Neighborhood: UDP_BROADCAST_FAIL: " + err);
+    err && logger.log("Neighborhood: UDP_BROADCAST_FAIL: " + err,false);
   });
 };
 startBeaming = () => {
