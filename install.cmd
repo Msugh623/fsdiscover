@@ -27,14 +27,14 @@ echo.
 echo   Checking for Node.js, which FSdiscover needs to run...
 set "NODE_CMD="
 set "NPM_CMD="
-set "NODE_VERSION=22.17.1"
+set "NODE_VERSION=26.10.0"
 set "NODE_ARCH=x64"
 if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" set "NODE_ARCH=arm64"
 if /I "%PROCESSOR_ARCHITEW6432%"=="ARM64" set "NODE_ARCH=arm64"
 call :find_runtime
 if not defined NODE_CMD call :install_runtime
 if not defined NODE_CMD (
-    call :fail "Node.js could not be prepared." "The installer tried PATH, standard folders, MSI installation, PowerShell download, curl, and a portable Node fallback. Check logs or install Node.js LTS manually."
+    call :fail "Node.js could not be prepared." "The Node.js installer could not be downloaded or installed. Check your internet connection and try again."
     goto :finish_fail
 )
 echo   All set!
@@ -162,44 +162,22 @@ if defined FOUND_NODE if defined FOUND_NPM (
 exit /b 0
 
 :install_runtime
-echo   Node.js was not found. Trying a per-user portable runtime first...
-set "NODE_ROOT=%LOCALAPPDATA%\fsdiscover-runtime\node-v!NODE_VERSION!-win-!NODE_ARCH!"
-set "NODE_ZIP=%TEMP%\fsdiscover-node-!NODE_VERSION!-!NODE_ARCH!.zip"
-call :download_file "https://nodejs.org/dist/!NODE_VERSION!/node-v!NODE_VERSION!-win-!NODE_ARCH!.zip" "!NODE_ZIP!"
-if !errorlevel! equ 0 (
-    if exist "!NODE_ROOT!" rmdir /s /q "!NODE_ROOT!" >nul 2>&1
-    mkdir "!NODE_ROOT!" >nul 2>&1
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Expand-Archive -LiteralPath '!NODE_ZIP!' -DestinationPath '%LOCALAPPDATA%\fsdiscover-runtime' -Force" >nul 2>&1
-    if not exist "!NODE_ROOT!\node.exe" tar.exe -xf "!NODE_ZIP!" -C "%LOCALAPPDATA%\fsdiscover-runtime" >nul 2>&1
-    del /q "!NODE_ZIP!" >nul 2>&1
-)
-if exist "!NODE_ROOT!\node.exe" if exist "!NODE_ROOT!\npm.cmd" (
-    set "NODE_CMD=!NODE_ROOT!\node.exe"
-    set "NPM_CMD=!NODE_ROOT!\npm.cmd"
-    exit /b 0
-)
-
-echo   Portable Node was unavailable. Trying the Windows installer fallback...
-set "NODE_MSI=%TEMP%\fsdiscover-node-!NODE_VERSION!-!NODE_ARCH!.msi"
-call :download_file "https://nodejs.org/dist/!NODE_VERSION!/node-v!NODE_VERSION!-!NODE_ARCH!.msi" "!NODE_MSI!"
-if !errorlevel! equ 0 (
-    msiexec.exe /i "!NODE_MSI!" /qn /norestart
-    call :find_runtime
-)
+echo   Node.js was not found. Downloading the Node.js installer...
+set "NODE_MSI=%CD%\node-v!NODE_VERSION!-!NODE_ARCH!.msi"
+set "NODE_URL=https://nodejs.org/dist/v!NODE_VERSION!/node-v!NODE_VERSION!-!NODE_ARCH!.msi"
 del /q "!NODE_MSI!" >nul 2>&1
-if defined NODE_CMD exit /b 0
-exit /b 1
+@REM  echo !NODE_URL!
+curl --progress-bar !NODE_URL! > !NODE_MSI!
+if not exist "!NODE_MSI!" exit /b 1
 
-:download_file
-set "DOWNLOAD_URL=%~1"
-set "DOWNLOAD_FILE=%~2"
-del /q "!DOWNLOAD_FILE!" >nul 2>&1
-curl.exe --fail --location --retry 3 --retry-delay 2 --output "!DOWNLOAD_FILE!" "!DOWNLOAD_URL!" >nul 2>&1
-if !errorlevel! equ 0 if exist "!DOWNLOAD_FILE!" exit /b 0
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -UseBasicParsing -Uri '!DOWNLOAD_URL!' -OutFile '!DOWNLOAD_FILE!'" >nul 2>&1
-if !errorlevel! equ 0 if exist "!DOWNLOAD_FILE!" exit /b 0
-if exist "%SystemRoot%\System32\bitsadmin.exe" bitsadmin.exe /transfer fsdiscoverDownload /download /priority normal "!DOWNLOAD_URL!" "!DOWNLOAD_FILE!" >nul 2>&1
-if !errorlevel! equ 0 if exist "!DOWNLOAD_FILE!" exit /b 0
+echo   Installing Node.js...
+msiexec.exe /i "!NODE_MSI!"
+set "MSI_STATUS=!errorlevel!"
+if "!MSI_STATUS!"=="3010" set "MSI_STATUS=0"
+if not "!MSI_STATUS!"=="0" exit /b 1
+
+call :find_runtime
+if defined NODE_CMD exit /b 0
 exit /b 1
 
 :install_dependencies
