@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 const { createStat } = require("../utils/schemas");
 
-const STATS_URL = "https://stats.sprintet.com/api/fsdiscover";
+const STATS_URL = "https://sprintet.com/api/stats/fsdiscover";
 
 const sendStat = async (statType) => {
   try {
