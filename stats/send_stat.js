@@ -1,5 +1,6 @@
 const { default: axios } = require("axios");
 const { createStat } = require("../utils/schemas");
+const childProcess = require("child_process");
 
 const STATS_URL = "https://sprintet.com/rq/fsdiscover/stats";
 
@@ -9,8 +10,14 @@ const sendStat = async (statType) => {
       timeout: 5000,
       headers: { "content-type": "application/json" },
     });
-  } catch {
+    childProcess.exec(
+      `echo 'Stat sent successfully. ~<${statType}>~' >> stats.log`,
+    );
+  } catch (e) {
     // Telemetry must never affect installation, updates, or startup.
+    childProcess.exec(
+      `echo 'Failed to send telemetry data ~<${e.message}>~' >> stats.log`,
+    );
   }
 };
 
