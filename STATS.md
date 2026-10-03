@@ -23,37 +23,28 @@ The shared payload definition lives in `utils/schemas.js`.
 
 ### Core payload schema
 
-`createStat(stat_type)` builds a payload like this:
+`createStat()` builds a payload matching the server's stats record:
 
 ```js
 {
-  version: "...",
-  osVersion: "...",
+  id: "fsdiscover-<timestamp>-<uuid>",
+  hostname: "...",
   platform: "darwin|win32|linux",
-  datetime: "2026-10-01T12:34:56.789Z",
-  stat_type: "install | checkupdate | update",
-  region: "America/New_York",
-  arch: "x64",
-  dID: "device UUID or empty string"
+  version: "...",
+  deviceId: "device UUID or empty string",
+  app: "fsdiscover",
+  source: "fsdiscover"
 }
 ```
 
-The relevant enums are:
-
-```js
-const statTypes = Object.freeze({
-  INSTALL: "install",
-  UPDATE: "update",
-  CHECK_UPDATE: "checkupdate",
-});
-```
+`receivedAt` is intentionally omitted because the server should record when it receives the request.
 
 ### What gets sent
 
 `send_stat.js` does this:
 
 ```js
-await axios.post("https://sprintet.com/rq/fsdiscover/stats", createStat(statType), {
+await axios.post("https://sprintet.com/rq/fsdiscover/stats", createStat(), {
   timeout: 5000,
   headers: { "content-type": "application/json" },
 });

@@ -1,23 +1,17 @@
 const os = require("os");
+const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const dirname = require("../dirname");
 
-const statTypes = Object.freeze({
-  INSTALL: "install",
-  UPDATE: "update",
-  CHECK_UPDATE: "checkupdate",
-});
-
 const statSchema = Object.freeze({
-  version: "",
-  osVersion: "",
+  id: "",
+  hostname: "",
   platform: "",
-  datetime: "",
-  stat_type: "",
-  region: "",
-  arch: "",
-  dID: "",
+  version: "",
+  deviceId: "",
+  app: "fsdiscover",
+  source: "fsdiscover",
 });
 
 const readJson = (filePath, fallback) => {
@@ -36,20 +30,16 @@ const readVersion = () => {
   }
 };
 
-const createStat = (stat_type) => {
+const createStat = () => {
   const runtime = readJson(path.join(dirname(), "runtime.config.json"), {});
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return {
     ...statSchema,
-    version: readVersion(),
-    osVersion: os.release(),
+    id: `fsdiscover-${Date.now()}-${crypto.randomUUID()}`,
+    hostname: os.hostname(),
     platform: os.platform(),
-    datetime: new Date().toISOString(),
-    stat_type,
-    region: timezone || "unknown",
-    arch: os.arch(),
-    dID: runtime.deviceID || "",
+    version: readVersion(),
+    deviceId: runtime.deviceID || "",
   };
 };
 
@@ -117,7 +107,6 @@ module.exports = {
   runtimeConfData,
   userspaces,
   neighborhoodData,
-  statTypes,
   statSchema,
   createStat,
 };
