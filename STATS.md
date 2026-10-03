@@ -52,7 +52,7 @@ const statTypes = Object.freeze({
 `send_stat.js` does this:
 
 ```js
-await axios.post("https://sprintet.com/api/stats/fsdiscover", createStat(statType), {
+await axios.post("https://sprintet.com/rq/fsdiscover/stats", createStat(statType), {
   timeout: 5000,
   headers: { "content-type": "application/json" },
 });
