@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "postinstall": "ls logs > logs.log || dir logs > logs.log || mkdir logs; ls temp > logs.log || dir temp > logs.log || mkdir temp"
+    "postinstall": "node postinstall.js"
   },
   "author": "Msugh623",
   "license": "ISC",

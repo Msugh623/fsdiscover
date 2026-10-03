@@ -17,6 +17,7 @@ The telemetry flow is split into tiny scripts under the root `stats/` folder:
 - `stats/install_logstat.js` — emits install event
 - `stats/checkupdate_logstat.js` — emits check-update event
 - `stats/update_logstat.js` — emits update event
+- `postinstall.js` — creates required directories and starts install telemetry after `npm install` (except during updates)
 
 The shared payload definition lives in `utils/schemas.js`.
 
